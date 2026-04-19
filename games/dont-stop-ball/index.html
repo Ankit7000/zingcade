@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dont Stop Ball | Zingcade</title>
+    <meta
+      name="description"
+      content="Play Dont Stop Ball, a lightweight browser survival game made with plain HTML, CSS, and JavaScript."
+    />
+    <style>
+      :root {
+        --bg: #07111e;
+        --panel: rgba(10, 22, 37, 0.86);
+        --panel-border: rgba(147, 197, 253, 0.18);
+        --text: #e8f1ff;
+        --muted: #9ab1ca;
+        --accent: #4ee3c1;
+        --danger: #ff6b6b;
+        --warning: #ffd166;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(78, 227, 193, 0.15), transparent 28%),
+          radial-gradient(circle at right 20%, rgba(255, 209, 102, 0.1), transparent 26%),
+          linear-gradient(180deg, #07111e 0%, #08101a 55%, #050a12 100%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        width: min(100% - 1.5rem, 1100px);
+        margin: 0 auto;
+        padding: 2rem 0 3rem;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .back-link {
+        color: var(--muted);
+      }
+
+      .title h1,
+      .title p {
+        margin: 0;
+      }
+
+      .title h1 {
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      .title p {
+        margin-top: 0.5rem;
+        color: var(--muted);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+      }
+
+      .game-panel {
+        padding: 1rem;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .hud-item {
+        padding: 0.9rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .hud-label {
+        display: block;
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+      }
+
+      .hud-value {
+        font-size: 1.45rem;
+        font-weight: 700;
+      }
+
+      .canvas-wrap {
+        position: relative;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        aspect-ratio: 7 / 12;
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(8, 20, 36, 0.95), rgba(4, 10, 18, 1));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        touch-action: none;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        border-radius: 20px;
+        background: rgba(4, 10, 18, 0.6);
+        text-align: center;
+        transition: opacity 0.2s ease;
+      }
+
+      .overlay[hidden] {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .overlay-card {
+        max-width: 26rem;
+      }
+
+      .overlay-card h2,
+      .overlay-card p {
+        margin: 0;
+      }
+
+      .overlay-card p {
+        margin-top: 0.85rem;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1.2rem;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        min-height: 46px;
+        padding: 0.85rem 1.2rem;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .button-primary {
+        color: #041018;
+        background: linear-gradient(135deg, var(--accent), #9cf8d7);
+      }
+
+      .button-secondary {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .info-panel {
+        padding: 1.5rem;
+      }
+
+      .info-panel h2,
+      .info-panel h3,
+      .info-panel p,
+      .info-panel li {
+        margin-top: 0;
+      }
+
+      .info-panel p,
+      .info-panel li {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .tips {
+        padding-left: 1.1rem;
+      }
+
+      .status-note {
+        margin-top: 1.2rem;
+        padding: 1rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          width: min(100% - 1rem, 1100px);
+          padding-top: 1rem;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: start;
+        }
+
+        .hud {
+          grid-template-columns: 1fr;
+        }
+
+        .actions button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="topbar">
+        <a class="back-link" href="/">&#8592; Back to Zingcade</a>
+        <div class="title">
+          <h1>Dont Stop Ball</h1>
+          <p>Stay alive, keep moving, and push your score higher.</p>
+        </div>
+      </div>
+
+      <section class="layout">
+        <div class="panel game-panel">
+          <div class="hud">
+            <div class="hud-item">
+              <span class="hud-label">Score</span>
+              <span class="hud-value" id="score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Best</span>
+              <span class="hud-value" id="best-score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Speed</span>
+              <span class="hud-value" id="speed">1x</span>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas
+              id="game"
+              width="420"
+              height="720"
+              aria-label="Dont Stop Ball game canvas"
+            ></canvas>
+
+            <div class="overlay" id="overlay">
+              <div class="overlay-card">
+                <h2 id="overlay-title">Dont Stop Ball</h2>
+                <p id="overlay-text">
+                  Move with arrow keys or WASD. You can also use the mouse or
+                  drag on touch screens. Avoid the incoming blocks and survive as
+                  the game speeds up.
+                </p>
+                <div class="actions">
+                  <button class="button-primary" id="start-button">Start Game</button>
+                  <button class="button-secondary" id="restart-button" hidden>
+                    Restart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel info-panel">
+          <h2>How to play</h2>
+          <p>
+            Your ball follows both direct input and pointer movement, so you can
+            quickly switch between keyboard and touch-friendly controls.
+          </p>
+
+          <h3>Controls</h3>
+          <ul class="tips">
+            <li>Keyboard: arrow keys or WASD</li>
+            <li>Mouse: move over the canvas to guide the ball</li>
+            <li>Touch: drag anywhere on the canvas</li>
+            <li>Restart: press Space, Enter, or use the restart button</li>
+          </ul>
+
+          <div class="status-note">
+            <strong>Difficulty:</strong>
+            <p>
+              The longer you last, the faster the hazards fall and the more often
+              they appear.
+            </p>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.getElementById("game");
+      const context = canvas.getContext("2d");
+
+      const overlay = document.getElementById("overlay");
+      const overlayTitle = document.getElementById("overlay-title");
+      const overlayText = document.getElementById("overlay-text");
+      const startButton = document.getElementById("start-button");
+      const restartButton = document.getElementById("restart-button");
+
+      const scoreElement = document.getElementById("score");
+      const bestScoreElement = document.getElementById("best-score");
+      const speedElement = document.getElementById("speed");
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const bestScoreKey = "zingcade-dont-stop-ball-best";
+
+      const input = {
+        left: false,
+        right: false,
+        up: false,
+        down: false,
+        pointerActive: false,
+        targetX: width / 2,
+        targetY: height * 0.82
+      };
+
+      const game = {
+        running: false,
+        gameOver: false,
+        score: 0,
+        best: Number(localStorage.getItem(bestScoreKey) || 0),
+        time: 0,
+        speedMultiplier: 1,
+        spawnTimer: 0,
+        spawnInterval: 1,
+        lastFrame: 0,
+        stars: [],
+        player: null,
+        obstacles: []
+      };
+
+      function createStars() {
+        game.stars = Array.from({ length: 40 }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 2 + 0.5,
+          speed: Math.random() * 28 + 14
+        }));
+      }
+
+      function resetGame() {
+        game.running = false;
+        game.gameOver = false;
+        game.score = 0;
+        game.time = 0;
+        game.speedMultiplier = 1;
+        game.spawnTimer = 0;
+        game.spawnInterval = 1;
+        game.lastFrame = 0;
+        game.obstacles = [];
+        game.player = {
+          x: width / 2,
+          y: height * 0.82,
+          radius: 18,
+          speed: 320
+        };
+
+        input.targetX = game.player.x;
+        input.targetY = game.player.y;
+
+        updateHud();
+        showOverlay(
+          "Dont Stop Ball",
+          "Move with arrow keys or WASD. You can also use the mouse or drag on touch screens. Avoid the incoming blocks and survive as the game speeds up.",
+          false
+        );
+      }
+
+      function startGame() {
+        if (!game.player) {
+          resetGame();
+        }
+
+        game.running = true;
+        game.gameOver = false;
+        hideOverlay();
+        requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        game.running = false;
+        game.gameOver = true;
+
+        if (game.score > game.best) {
+          game.best = game.score;
+          localStorage.setItem(bestScoreKey, String(game.best));
+        }
+
+        updateHud();
+        showOverlay(
+          "Game Over",
+          "Press Space, Enter, click Restart, or tap the canvas to jump back in.",
+          true
+        );
+      }
+
+      function updateHud() {
+        scoreElement.textContent = String(game.score);
+        bestScoreElement.textContent = String(game.best);
+        speedElement.textContent = game.speedMultiplier.toFixed(1) + "x";
+      }
+
+      function showOverlay(title, text, showRestart) {
+        overlayTitle.textContent = title;
+        overlayText.textContent = text;
+        restartButton.hidden = !showRestart;
+        startButton.hidden = showRestart;
+        overlay.hidden = false;
+      }
+
+      function hideOverlay() {
+        overlay.hidden = true;
+      }
+
+      function spawnObstacle() {
+        const dangerWidth = random(58, 132);
+        const dangerHeight = random(18, 30);
+        const padding = 12;
+
+        game.obstacles.push({
+          x: random(padding, width - dangerWidth - padding),
+          y: -dangerHeight - 30,
+          width: dangerWidth,
+          height: dangerHeight,
+          speed: random(210, 320) * game.speedMultiplier,
+          drift: random(-34, 34)
+        });
+      }
+
+      function update(dt) {
+        game.time += dt;
+        game.speedMultiplier = 1 + game.time * 0.06;
+        game.score = Math.floor(game.time * 10);
+
+        const keyboardX =
+          (input.right ? 1 : 0) - (input.left ? 1 : 0);
+        const keyboardY =
+          (input.down ? 1 : 0) - (input.up ? 1 : 0);
+
+        game.player.x += keyboardX * game.player.speed * dt;
+        game.player.y += keyboardY * game.player.speed * dt;
+
+        if (input.pointerActive) {
+          const pull = Math.min(1, dt * 7);
+          game.player.x += (input.targetX - game.player.x) * pull;
+          game.player.y += (input.targetY - game.player.y) * pull;
+        }
+
+        const margin = game.player.radius + 10;
+        game.player.x = clamp(game.player.x, margin, width - margin);
+        game.player.y = clamp(game.player.y, margin, height - margin);
+
+        game.spawnTimer += dt;
+        game.spawnInterval = Math.max(0.32, 1 - game.time * 0.018);
+
+        if (game.spawnTimer >= game.spawnInterval) {
+          game.spawnTimer = 0;
+          spawnObstacle();
+
+          if (game.time > 10 && Math.random() > 0.55) {
+            spawnObstacle();
+          }
+        }
+
+        for (const star of game.stars) {
+          star.y += star.speed * game.speedMultiplier * dt * 0.3;
+
+          if (star.y > height + 5) {
+            star.y = -5;
+            star.x = Math.random() * width;
+          }
+        }
+
+        for (let index = game.obstacles.length - 1; index >= 0; index -= 1) {
+          const obstacle = game.obstacles[index];
+          obstacle.y += obstacle.speed * dt;
+          obstacle.x += obstacle.drift * dt;
+
+          if (obstacle.x <= 8 || obstacle.x + obstacle.width >= width - 8) {
+            obstacle.drift *= -1;
+          }
+
+          if (circleHitsRect(game.player, obstacle)) {
+            endGame();
+            return;
+          }
+
+          if (obstacle.y > height + obstacle.height) {
+            game.obstacles.splice(index, 1);
+          }
+        }
+
+        updateHud();
+      }
+
+      function draw() {
+        context.clearRect(0, 0, width, height);
+
+        const playfield = context.createLinearGradient(0, 0, 0, height);
+        playfield.addColorStop(0, "#091728");
+        playfield.addColorStop(1, "#040b13");
+        context.fillStyle = playfield;
+        context.fillRect(0, 0, width, height);
+
+        drawGrid();
+        drawStars();
+        drawObstacles();
+        drawPlayer();
+      }
+
+      function drawGrid() {
+        context.save();
+        context.strokeStyle = "rgba(255, 255, 255, 0.04)";
+        context.lineWidth = 1;
+
+        for (let x = 0; x <= width; x += 35) {
+          context.beginPath();
+          context.moveTo(x, 0);
+          context.lineTo(x, height);
+          context.stroke();
+        }
+
+        for (let y = 0; y <= height; y += 35) {
+          context.beginPath();
+          context.moveTo(0, y);
+          context.lineTo(width, y);
+          context.stroke();
+        }
+
+        context.restore();
+      }
+
+      function drawStars() {
+        context.save();
+
+        for (const star of game.stars) {
+          context.fillStyle = "rgba(154, 177, 202, 0.8)";
+          context.beginPath();
+          context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+          context.fill();
+        }
+
+        context.restore();
+      }
+
+      function drawObstacles() {
+        for (const obstacle of game.obstacles) {
+          const fill = context.createLinearGradient(
+            obstacle.x,
+            obstacle.y,
+            obstacle.x,
+            obstacle.y + obstacle.height
+          );
+          fill.addColorStop(0, "#ff8a8a");
+          fill.addColorStop(1, "#e04848");
+
+          context.fillStyle = fill;
+          roundRect(
+            context,
+            obstacle.x,
+            obstacle.y,
+            obstacle.width,
+            obstacle.height,
+            10
+          );
+          context.fill();
+
+          context.strokeStyle = "rgba(255, 255, 255, 0.16)";
+          context.lineWidth = 2;
+          context.stroke();
+        }
+      }
+
+      function drawPlayer() {
+        const glow = context.createRadialGradient(
+          game.player.x - 6,
+          game.player.y - 6,
+          4,
+          game.player.x,
+          game.player.y,
+          28
+        );
+        glow.addColorStop(0, "#f3fff9");
+        glow.addColorStop(0.45, "#4ee3c1");
+        glow.addColorStop(1, "#0d6f62");
+
+        context.save();
+        context.shadowColor = "rgba(78, 227, 193, 0.45)";
+        context.shadowBlur = 24;
+        context.fillStyle = glow;
+        context.beginPath();
+        context.arc(game.player.x, game.player.y, game.player.radius, 0, Math.PI * 2);
+        context.fill();
+
+        context.shadowBlur = 0;
+        context.fillStyle = "rgba(255, 255, 255, 0.22)";
+        context.beginPath();
+        context.arc(
+          game.player.x - 6,
+          game.player.y - 7,
+          game.player.radius * 0.32,
+          0,
+          Math.PI * 2
+        );
+        context.fill();
+        context.restore();
+      }
+
+      function loop(timestamp) {
+        if (!game.running) {
+          draw();
+          return;
+        }
+
+        if (!game.lastFrame) {
+          game.lastFrame = timestamp;
+        }
+
+        const dt = Math.min(0.033, (timestamp - game.lastFrame) / 1000);
+        game.lastFrame = timestamp;
+
+        update(dt);
+        draw();
+
+        if (game.running) {
+          requestAnimationFrame(loop);
+        }
+      }
+
+      function handleRestartShortcut(event) {
+        if (event.code === "Space" || event.code === "Enter") {
+          event.preventDefault();
+
+          if (game.gameOver) {
+            resetGame();
+            startGame();
+            return;
+          }
+
+          if (!game.running) {
+            startGame();
+          }
+        }
+      }
+
+      function setKeyState(code, active) {
+        if (code === "ArrowLeft" || code === "KeyA") {
+          input.left = active;
+        }
+
+        if (code === "ArrowRight" || code === "KeyD") {
+          input.right = active;
+        }
+
+        if (code === "ArrowUp" || code === "KeyW") {
+          input.up = active;
+        }
+
+        if (code === "ArrowDown" || code === "KeyS") {
+          input.down = active;
+        }
+      }
+
+      function syncPointer(event) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = width / rect.width;
+        const scaleY = height / rect.height;
+
+        input.targetX = clamp((event.clientX - rect.left) * scaleX, 18, width - 18);
+        input.targetY = clamp((event.clientY - rect.top) * scaleY, 18, height - 18);
+      }
+
+      document.addEventListener("keydown", (event) => {
+        setKeyState(event.code, true);
+        handleRestartShortcut(event);
+      });
+
+      document.addEventListener("keyup", (event) => {
+        setKeyState(event.code, false);
+      });
+
+      canvas.addEventListener("pointerdown", (event) => {
+        input.pointerActive = true;
+        syncPointer(event);
+
+        if (game.gameOver) {
+          resetGame();
+          startGame();
+          return;
+        }
+
+        if (!game.running) {
+          startGame();
+        }
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        syncPointer(event);
+
+        if (event.pointerType === "mouse") {
+          input.pointerActive = true;
+        }
+      });
+
+      canvas.addEventListener("pointerup", () => {
+        input.pointerActive = false;
+      });
+
+      canvas.addEventListener("pointerleave", () => {
+        input.pointerActive = false;
+      });
+
+      startButton.addEventListener("click", () => {
+        resetGame();
+        startGame();
+      });
+
+      restartButton.addEventListener("click", () => {
+        resetGame();
+        startGame();
+      });
+
+      overlay.addEventListener("click", (event) => {
+        if (event.target.tagName === "BUTTON") {
+          return;
+        }
+
+        if (game.gameOver) {
+          resetGame();
+          startGame();
+          return;
+        }
+
+        if (!game.running) {
+          startGame();
+        }
+      });
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function random(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function circleHitsRect(circle, rect) {
+        const nearestX = clamp(circle.x, rect.x, rect.x + rect.width);
+        const nearestY = clamp(circle.y, rect.y, rect.y + rect.height);
+        const dx = circle.x - nearestX;
+        const dy = circle.y - nearestY;
+        return dx * dx + dy * dy < circle.radius * circle.radius;
+      }
+
+      function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + rectWidth - radius, y);
+        ctx.quadraticCurveTo(x + rectWidth, y, x + rectWidth, y + radius);
+        ctx.lineTo(x + rectWidth, y + rectHeight - radius);
+        ctx.quadraticCurveTo(
+          x + rectWidth,
+          y + rectHeight,
+          x + rectWidth - radius,
+          y + rectHeight
+        );
+        ctx.lineTo(x + radius, y + rectHeight);
+        ctx.quadraticCurveTo(x, y + rectHeight, x, y + rectHeight - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      }
+
+      bestScoreElement.textContent = String(game.best);
+      createStars();
+      resetGame();
+      draw();
+    </script>
+  </body>
+</html>
