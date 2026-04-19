@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Hop | Zingcade</title>
+    <meta
+      name="description"
+      content="Play Sky Hop, a lightweight browser platform climber where you bounce between cloud pads and chase a higher score."
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+      button {
+        border: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .page {
+        width: min(100% - 1.25rem, 1180px);
+        margin: 0 auto;
+        padding: 1rem 0 2.75rem;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.1rem;
+      }
+
+      .back-link,
+      .meta-pill {
+        color: var(--muted);
+      }
+
+      .back-link {
+        justify-self: start;
+      }
+
+      .title h1,
+      .title p {
+        margin: 0;
+      }
+
+      .title h1 {
+        font-size: clamp(2.2rem, 4vw, 3.4rem);
+        line-height: 0.98;
+      }
+
+      .title p {
+        margin-top: 0.55rem;
+        color: var(--muted);
+      }
+
+      .meta-pill {
+        justify-self: end;
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 0 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 700px) minmax(260px, 300px);
+        justify-content: center;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 28px;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+      }
+
+      .game-panel {
+        padding: 1rem 1rem 0.95rem;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .hud-item,
+      .control-row,
+      .status-note,
+      .callout {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .hud-item {
+        padding: 0.9rem;
+        border-radius: 18px;
+      }
+
+      .hud-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.74rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .hud-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+      }
+
+      .hud-height {
+        color: var(--accent);
+      }
+
+      .control-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        padding: 0.8rem 0.95rem;
+        border-radius: 18px;
+        margin-bottom: 0.9rem;
+      }
+
+      .hint {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .canvas-wrap {
+        position: relative;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        aspect-ratio: 7 / 12;
+        border-radius: 22px;
+        background: linear-gradient(180deg, #15263a 0%, #08121d 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        touch-action: none;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        border-radius: 22px;
+        background: rgba(4, 10, 18, 0.58);
+        backdrop-filter: blur(8px);
+        text-align: center;
+        transition: opacity 0.2s ease;
+      }
+
+      .overlay[hidden] {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .overlay-card {
+        max-width: 28rem;
+      }
+
+      .overlay-kicker {
+        margin: 0 0 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.76rem;
+        color: var(--accent);
+      }
+
+      .overlay-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .overlay-summary[hidden] {
+        display: none;
+      }
+
+      .summary-item {
+        padding: 0.85rem 0.9rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .summary-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .summary-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+      }
+
+      .overlay-card h2,
+      .overlay-card p {
+        margin: 0;
+      }
+
+      .overlay-card h2 {
+        font-size: clamp(2rem, 4vw, 2.7rem);
+      }
+
+      .overlay-card p {
+        margin-top: 0.85rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1.2rem;
+      }
+
+      .canvas-note {
+        margin-top: 0.85rem;
+        padding: 0.85rem 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .info-panel {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+      }
+
+      .info-block {
+        padding: 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .info-block h2,
+      .info-block h3,
+      .info-block p,
+      .info-block li,
+      .status-note p,
+      .callout p {
+        margin-top: 0;
+      }
+
+      .info-block p,
+      .info-block li,
+      .status-note p,
+      .callout p {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .tips {
+        padding-left: 1.1rem;
+        margin-bottom: 0;
+      }
+
+      .status-note,
+      .callout {
+        padding: 1rem;
+        border-radius: 18px;
+      }
+
+      .status-note strong,
+      .callout strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      @media (max-width: 980px) {
+        .layout,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .meta-pill {
+          justify-self: start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 1rem, 1160px);
+          padding-top: 1rem;
+        }
+
+        .hud {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .control-row,
+        .actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .actions button,
+        .actions a {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hud,
+        .overlay-summary {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a class="brand" href="/">Zingcade</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/games/">Games</a>
+        </nav>
+        <a class="button button-secondary nav-play" href="/games/">View Games</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="topbar">
+        <a class="back-link" href="/games/">&#8592; Back to Games</a>
+        <div class="title">
+          <h1>Sky Hop</h1>
+          <p>Bounce on cloud pads, climb higher, and keep the run alive.</p>
+        </div>
+        <div class="meta-pill">Keyboard, mouse, and touch</div>
+      </div>
+
+      <section class="layout">
+        <div class="panel game-panel">
+          <div class="hud">
+            <div class="hud-item">
+              <span class="hud-label">Score</span>
+              <span class="hud-value" id="score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Best</span>
+              <span class="hud-value" id="best-score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Hops</span>
+              <span class="hud-value" id="hops">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Height</span>
+              <span class="hud-value hud-height" id="height-score">0m</span>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="hint">
+              Move left and right, land while falling, and keep chaining jumps
+              before you slip below the screen.
+            </div>
+            <a class="button button-secondary" href="/games/">Games Hub</a>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas
+              id="game"
+              width="420"
+              height="720"
+              aria-label="Sky Hop game canvas"
+            ></canvas>
+
+            <div class="overlay" id="overlay">
+              <div class="overlay-card">
+                <p class="overlay-kicker" id="overlay-kicker">Sky Platformer</p>
+                <h2 id="overlay-title">Sky Hop</h2>
+                <p id="overlay-text">
+                  Slide left and right, land on cloud pads, and keep climbing.
+                  The higher you push, the more score you pull out of each run.
+                </p>
+                <div class="overlay-summary" id="overlay-summary" hidden>
+                  <div class="summary-item">
+                    <span class="summary-label">Score</span>
+                    <span class="summary-value" id="overlay-score">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Best</span>
+                    <span class="summary-value" id="overlay-best">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Hops</span>
+                    <span class="summary-value" id="overlay-hops">0</span>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="button button-primary" id="action-button" type="button">
+                    Start Hop
+                  </button>
+                  <a class="button button-secondary" id="games-link" href="/games/" hidden>
+                    View Games
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="canvas-note">
+            Use smaller corrections than you think. Clean landings on the next
+            platform beat wide panic swings at the last second.
+          </div>
+        </div>
+
+        <aside class="panel info-panel">
+          <section class="info-block">
+            <h2>How to play</h2>
+            <p>
+              Sky Hop is a climber. Your character bounces automatically when
+              it lands on a cloud pad, so the goal is to guide each landing and
+              keep the camera moving upward.
+            </p>
+          </section>
+
+          <section class="info-block">
+            <h3>Controls</h3>
+            <ul class="tips">
+              <li>Keyboard: Left and Right arrows or A and D</li>
+              <li>Mouse: move across the canvas to guide the hop line</li>
+              <li>Touch: drag left and right on the canvas</li>
+              <li>Restart: press Space or Enter after a run ends</li>
+            </ul>
+          </section>
+
+          <div class="status-note">
+            <strong>Game loop</strong>
+            <p>
+              Score comes from height and clean landings. Some cloud pads drift,
+              so the run stays readable but never fully static.
+            </p>
+          </div>
+
+          <div class="callout">
+            <strong>Sky Hop tip</strong>
+            <p>
+              Watch the next pad early. The best runs come from lining up the
+              next bounce before the current jump peaks.
+            </p>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.getElementById("game");
+      const context = canvas.getContext("2d");
+
+      const overlay = document.getElementById("overlay");
+      const overlayKicker = document.getElementById("overlay-kicker");
+      const overlayTitle = document.getElementById("overlay-title");
+      const overlayText = document.getElementById("overlay-text");
+      const actionButton = document.getElementById("action-button");
+      const gamesLink = document.getElementById("games-link");
+      const overlaySummary = document.getElementById("overlay-summary");
+      const overlayScore = document.getElementById("overlay-score");
+      const overlayBest = document.getElementById("overlay-best");
+      const overlayHops = document.getElementById("overlay-hops");
+
+      const scoreElement = document.getElementById("score");
+      const bestScoreElement = document.getElementById("best-score");
+      const hopsElement = document.getElementById("hops");
+      const heightElement = document.getElementById("height-score");
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const bestScoreKey = "zingcade-sky-hop-best";
+
+      const input = {
+        left: false,
+        right: false,
+        pointerActive: false,
+        targetX: width / 2
+      };
+
+      const game = {
+        running: false,
+        gameOver: false,
+        score: 0,
+        best: loadBestScore(),
+        hops: 0,
+        climb: 0,
+        lastFrame: 0,
+        player: null,
+        stars: [],
+        platforms: [],
+        particles: []
+      };
+
+      function loadBestScore() {
+        try {
+          return Number(localStorage.getItem(bestScoreKey) || 0);
+        } catch (error) {
+          return 0;
+        }
+      }
+
+      function saveBestScore() {
+        try {
+          localStorage.setItem(bestScoreKey, String(game.best));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function createStars() {
+        game.stars = Array.from({ length: 34 }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 2 + 0.6,
+          speed: Math.random() * 18 + 8,
+          alpha: Math.random() * 0.45 + 0.2
+        }));
+      }
+
+      function createPlayer() {
+        return {
+          x: width / 2,
+          y: height - 160,
+          radius: 16,
+          vx: 0,
+          vy: -620,
+          speed: 285
+        };
+      }
+
+      function buildPlatform(y) {
+        const platformWidth = random(74, 118);
+        return {
+          x: random(18, width - platformWidth - 18),
+          y,
+          width: platformWidth,
+          height: 16,
+          drift: Math.random() > 0.58 ? random(24, 52) * (Math.random() > 0.5 ? 1 : -1) : 0,
+          boost: Math.random() > 0.78
+        };
+      }
+
+      function resetPlatforms() {
+        game.platforms = [];
+        let y = height - 84;
+        for (let index = 0; index < 10; index += 1) {
+          const platform = buildPlatform(y);
+          if (index === 0) {
+            platform.x = width / 2 - platform.width / 2;
+            platform.boost = false;
+            platform.drift = 0;
+          }
+          game.platforms.push(platform);
+          y -= random(68, 102);
+        }
+      }
+
+      function resetGame() {
+        game.running = false;
+        game.gameOver = false;
+        game.score = 0;
+        game.hops = 0;
+        game.climb = 0;
+        game.lastFrame = 0;
+        game.player = createPlayer();
+        game.particles = [];
+        resetPlatforms();
+        updateHud();
+        showOverlay(
+          "Sky Hop",
+          "Slide left and right, land on cloud pads, and keep climbing before you fall out of the sky.",
+          "Start Hop",
+          false,
+          false,
+          "Sky Platformer"
+        );
+      }
+
+      function startGame() {
+        if (game.running) {
+          return;
+        }
+
+        if (!game.player) {
+          resetGame();
+        }
+
+        game.running = true;
+        game.gameOver = false;
+        game.lastFrame = 0;
+        hideOverlay();
+        requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        game.running = false;
+        game.gameOver = true;
+
+        if (game.score > game.best) {
+          game.best = game.score;
+          saveBestScore();
+        }
+
+        updateHud();
+        showOverlay(
+          "Run Over",
+          "You climbed " + formatHeight(game.climb) + ". Restart and try to chain cleaner landings.",
+          "Restart Run",
+          true,
+          true,
+          "Height Lost"
+        );
+      }
+
+      function updateHud() {
+        game.score = Math.floor(game.climb / 7) + game.hops * 4;
+        scoreElement.textContent = String(game.score);
+        bestScoreElement.textContent = String(game.best);
+        hopsElement.textContent = String(game.hops);
+        heightElement.textContent = formatHeight(game.climb);
+      }
+
+      function showOverlay(title, text, actionLabel, showGamesLink, showSummary, kicker) {
+        overlayKicker.textContent = kicker;
+        overlayTitle.textContent = title;
+        overlayText.textContent = text;
+        actionButton.textContent = actionLabel;
+        gamesLink.hidden = !showGamesLink;
+        overlaySummary.hidden = !showSummary;
+        overlayScore.textContent = String(game.score);
+        overlayBest.textContent = String(game.best);
+        overlayHops.textContent = String(game.hops);
+        overlay.hidden = false;
+      }
+
+      function hideOverlay() {
+        overlay.hidden = true;
+      }
+
+      function createBurst(x, y, color) {
+        for (let index = 0; index < 10; index += 1) {
+          game.particles.push({
+            x,
+            y,
+            vx: random(-120, 120),
+            vy: random(-160, 40),
+            radius: random(1.8, 4),
+            life: random(0.22, 0.5),
+            maxLife: 0.5,
+            color
+          });
+        }
+      }
+
+      function recyclePlatforms() {
+        let minY = Math.min(...game.platforms.map((platform) => platform.y));
+
+        for (let index = game.platforms.length - 1; index >= 0; index -= 1) {
+          if (game.platforms[index].y > height + 40) {
+            game.platforms.splice(index, 1);
+          }
+        }
+
+        while (game.platforms.length < 10) {
+          minY -= random(74, 108);
+          game.platforms.push(buildPlatform(minY));
+        }
+      }
+
+      function update(dt) {
+        const previousY = game.player.y;
+        const keyboardX = (input.right ? 1 : 0) - (input.left ? 1 : 0);
+
+        game.player.x += keyboardX * game.player.speed * dt;
+
+        if (input.pointerActive) {
+          const pull = Math.min(1, dt * 8);
+          game.player.x += (input.targetX - game.player.x) * pull;
+        }
+
+        game.player.vy += 1360 * dt;
+        game.player.y += game.player.vy * dt;
+
+        if (game.player.x < -game.player.radius) {
+          game.player.x = width + game.player.radius;
+        }
+
+        if (game.player.x > width + game.player.radius) {
+          game.player.x = -game.player.radius;
+        }
+
+        for (const star of game.stars) {
+          star.y += star.speed * dt;
+
+          if (star.y > height + 4) {
+            star.y = -4;
+            star.x = Math.random() * width;
+          }
+        }
+
+        for (const platform of game.platforms) {
+          platform.x += platform.drift * dt;
+
+          if (platform.x <= 10 || platform.x + platform.width >= width - 10) {
+            platform.drift *= -1;
+          }
+        }
+
+        for (const platform of game.platforms) {
+          const falling = game.player.vy > 0;
+          const crossedTop =
+            previousY + game.player.radius <= platform.y &&
+            game.player.y + game.player.radius >= platform.y;
+          const withinPad =
+            game.player.x >= platform.x - game.player.radius * 0.2 &&
+            game.player.x <= platform.x + platform.width + game.player.radius * 0.2;
+
+          if (falling && crossedTop && withinPad) {
+            game.player.y = platform.y - game.player.radius;
+            game.player.vy = platform.boost ? -760 : -620;
+            game.hops += 1;
+            createBurst(
+              game.player.x,
+              platform.y,
+              platform.boost ? "255, 198, 114" : "140, 245, 218"
+            );
+          }
+        }
+
+        const cameraLine = height * 0.38;
+
+        if (game.player.y < cameraLine && game.player.vy < 0) {
+          const shift = cameraLine - game.player.y;
+          game.player.y = cameraLine;
+          game.climb += shift;
+
+          for (const platform of game.platforms) {
+            platform.y += shift;
+          }
+
+          for (const particle of game.particles) {
+            particle.y += shift;
+          }
+        }
+
+        recyclePlatforms();
+
+        for (let index = game.particles.length - 1; index >= 0; index -= 1) {
+          const particle = game.particles[index];
+          particle.life -= dt;
+          particle.x += particle.vx * dt;
+          particle.y += particle.vy * dt;
+          particle.vx *= 0.985;
+          particle.vy += 180 * dt;
+
+          if (particle.life <= 0) {
+            game.particles.splice(index, 1);
+          }
+        }
+
+        updateHud();
+
+        if (game.player.y - game.player.radius > height + 40) {
+          endGame();
+        }
+      }
+
+      function draw() {
+        context.clearRect(0, 0, width, height);
+        drawBackground();
+        drawStars();
+        drawPlatforms();
+        drawParticles();
+        drawPlayer();
+        drawVignette();
+      }
+
+      function drawBackground() {
+        const fill = context.createLinearGradient(0, 0, 0, height);
+        fill.addColorStop(0, "#1b3048");
+        fill.addColorStop(0.5, "#0f1f31");
+        fill.addColorStop(1, "#07111a");
+        context.fillStyle = fill;
+        context.fillRect(0, 0, width, height);
+
+        const glow = context.createRadialGradient(
+          width / 2,
+          height * 0.24,
+          10,
+          width / 2,
+          height * 0.24,
+          240
+        );
+        glow.addColorStop(0, "rgba(255, 255, 255, 0.16)");
+        glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+        context.fillStyle = glow;
+        context.fillRect(0, 0, width, height);
+      }
+
+      function drawStars() {
+        context.save();
+        for (const star of game.stars) {
+          context.fillStyle = "rgba(243, 246, 239, " + star.alpha + ")";
+          context.beginPath();
+          context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.restore();
+      }
+
+      function drawPlatforms() {
+        for (const platform of game.platforms) {
+          const fill = context.createLinearGradient(
+            platform.x,
+            platform.y,
+            platform.x,
+            platform.y + platform.height
+          );
+          fill.addColorStop(0, platform.boost ? "#ffe2a8" : "#f6fbff");
+          fill.addColorStop(1, platform.boost ? "#ffb86a" : "#a8c8ef");
+          context.fillStyle = fill;
+          roundRect(context, platform.x, platform.y, platform.width, platform.height, 10);
+          context.fill();
+
+          context.strokeStyle = platform.boost
+            ? "rgba(255, 198, 114, 0.42)"
+            : "rgba(255, 255, 255, 0.22)";
+          context.lineWidth = 2;
+          context.stroke();
+        }
+      }
+
+      function drawParticles() {
+        context.save();
+        for (const particle of game.particles) {
+          const alpha = Math.max(0, particle.life / particle.maxLife);
+          context.fillStyle = "rgba(" + particle.color + ", " + alpha.toFixed(2) + ")";
+          context.beginPath();
+          context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.restore();
+      }
+
+      function drawPlayer() {
+        const glow = context.createRadialGradient(
+          game.player.x - 5,
+          game.player.y - 6,
+          4,
+          game.player.x,
+          game.player.y,
+          26
+        );
+        glow.addColorStop(0, "#ffffff");
+        glow.addColorStop(0.48, "#8cf5da");
+        glow.addColorStop(1, "#12806c");
+
+        context.save();
+        context.shadowColor = "rgba(140, 245, 218, 0.4)";
+        context.shadowBlur = 24;
+        context.fillStyle = glow;
+        context.beginPath();
+        context.arc(game.player.x, game.player.y, game.player.radius, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+      }
+
+      function drawVignette() {
+        const vignette = context.createRadialGradient(
+          width / 2,
+          height / 2,
+          160,
+          width / 2,
+          height / 2,
+          520
+        );
+        vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+        vignette.addColorStop(1, "rgba(0, 0, 0, 0.32)");
+        context.fillStyle = vignette;
+        context.fillRect(0, 0, width, height);
+      }
+
+      function loop(timestamp) {
+        if (!game.running) {
+          draw();
+          return;
+        }
+
+        if (!game.lastFrame) {
+          game.lastFrame = timestamp;
+        }
+
+        const dt = Math.min(0.033, (timestamp - game.lastFrame) / 1000);
+        game.lastFrame = timestamp;
+
+        update(dt);
+        draw();
+
+        if (game.running) {
+          requestAnimationFrame(loop);
+        }
+      }
+
+      function activatePrimaryAction() {
+        if (game.gameOver) {
+          resetGame();
+          startGame();
+          return;
+        }
+
+        if (!game.running) {
+          startGame();
+        }
+      }
+
+      function syncPointer(event) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = width / rect.width;
+        input.targetX = clamp((event.clientX - rect.left) * scaleX, 0, width);
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "ArrowLeft" || event.code === "KeyA") {
+          input.left = true;
+        }
+
+        if (event.code === "ArrowRight" || event.code === "KeyD") {
+          input.right = true;
+        }
+
+        if (event.code === "Space" || event.code === "Enter") {
+          event.preventDefault();
+          activatePrimaryAction();
+        }
+      });
+
+      document.addEventListener("keyup", (event) => {
+        if (event.code === "ArrowLeft" || event.code === "KeyA") {
+          input.left = false;
+        }
+
+        if (event.code === "ArrowRight" || event.code === "KeyD") {
+          input.right = false;
+        }
+      });
+
+      canvas.addEventListener("pointerdown", (event) => {
+        input.pointerActive = true;
+        syncPointer(event);
+        if (!game.running) {
+          activatePrimaryAction();
+        }
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        syncPointer(event);
+        if (event.pointerType === "mouse") {
+          input.pointerActive = true;
+        }
+      });
+
+      canvas.addEventListener("pointerup", () => {
+        input.pointerActive = false;
+      });
+
+      canvas.addEventListener("pointerleave", () => {
+        input.pointerActive = false;
+      });
+
+      actionButton.addEventListener("click", () => {
+        activatePrimaryAction();
+      });
+
+      overlay.addEventListener("click", (event) => {
+        if (event.target.tagName === "BUTTON" || event.target.tagName === "A") {
+          return;
+        }
+
+        if (!game.running) {
+          activatePrimaryAction();
+        }
+      });
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function random(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function formatHeight(value) {
+        return Math.floor(value / 10) + "m";
+      }
+
+      function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + rectWidth - radius, y);
+        ctx.quadraticCurveTo(x + rectWidth, y, x + rectWidth, y + radius);
+        ctx.lineTo(x + rectWidth, y + rectHeight - radius);
+        ctx.quadraticCurveTo(
+          x + rectWidth,
+          y + rectHeight,
+          x + rectWidth - radius,
+          y + rectHeight
+        );
+        ctx.lineTo(x + radius, y + rectHeight);
+        ctx.quadraticCurveTo(x, y + rectHeight, x, y + rectHeight - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      }
+
+      createStars();
+      resetGame();
+      bestScoreElement.textContent = String(game.best);
+      draw();
+    </script>
+  </body>
+</html>
