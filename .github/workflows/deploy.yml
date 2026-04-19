@@ -1,0 +1,21 @@
+name: Deploy Zingcade
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ZINGCADE_SSH_HOST }}
+          username: ${{ secrets.ZINGCADE_SSH_USER }}
+          key: ${{ secrets.ZINGCADE_SSH_KEY }}
+          script: |
+            cd /var/www/zingcade
+            git pull origin main
