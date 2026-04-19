@@ -6,14 +6,23 @@
     <title>Zingcade | Fast Browser Games</title>
     <meta
       name="description"
-      content="Zingcade is a lightweight static game site with fast browser games you can open and play instantly."
+      content="Zingcade is a lightweight static arcade with instant-play browser games, sharp visuals, and fast sessions."
     />
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
     <header class="site-header">
-      <div class="container">
+      <div class="container nav-shell">
         <a class="brand" href="/">Zingcade</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="#featured">Featured</a>
+          <a href="/games/">Games</a>
+          <a href="#how-it-works">Why It Works</a>
+          <a href="#about">About</a>
+        </nav>
+        <a class="button button-primary nav-play" href="/games/dont-stop-ball/"
+          >Play Now</a
+        >
       </div>
     </header>
 
@@ -21,81 +30,181 @@
       <section class="hero">
         <div class="container hero-grid">
           <div class="hero-copy">
-            <p class="eyebrow">Instant browser play</p>
-            <h1>Small games. Sharp controls. Zero setup.</h1>
+            <p class="eyebrow">Static Arcade, No Friction</p>
+            <h1>Fast browser games with a pulse, not just a placeholder.</h1>
             <p class="hero-text">
-              Zingcade is a lightweight arcade site built for quick sessions,
-              clean visuals, and fast loading on desktop and mobile.
+              Zingcade is built for quick sessions and clean game pages. Open a
+              game instantly, get readable controls immediately, and stay in the
+              action without heavy frameworks or slow loads.
             </p>
             <div class="hero-actions">
-              <a class="button button-primary" href="/games/dont-stop-ball/"
-                >Play Dont Stop Ball</a
-              >
-              <a class="button button-secondary" href="#about">About Zingcade</a>
+              <a class="button button-primary" href="/games/dont-stop-ball/">Play Now</a>
+              <a class="button button-secondary" href="/games/">View Games</a>
+            </div>
+
+            <div class="hero-stats" aria-label="Site highlights">
+              <article class="stat-card">
+                <span class="stat-value">1</span>
+                <span class="stat-label">Live arcade game</span>
+              </article>
+              <article class="stat-card">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Install steps required</span>
+              </article>
+              <article class="stat-card">
+                <span class="stat-value">HTML</span>
+                <span class="stat-label">CSS and JS only</span>
+              </article>
             </div>
           </div>
 
-          <div class="hero-panel">
-            <div class="panel-badge">Featured Right Now</div>
-            <h2>Dont Stop Ball</h2>
-            <p>
-              Dodge incoming hazards, stay alive, and keep your score climbing as
-              the pace ramps up.
-            </p>
-            <ul class="feature-list">
-              <li>Keyboard, mouse, and touch controls</li>
-              <li>Fast restart after game over</li>
-              <li>Built with plain HTML, CSS, and JavaScript</li>
-            </ul>
+          <div class="hero-stage" aria-hidden="true">
+            <div class="stage-frame">
+              <div class="stage-screen">
+                <div class="stage-chips">
+                  <span>Featured Build</span>
+                  <span>Touch Friendly</span>
+                  <span>Instant Restart</span>
+                </div>
+
+                <div class="stage-playfield">
+                  <div class="scan-line"></div>
+                  <div class="playfield-ball"></div>
+                  <div class="hazard hazard-one"></div>
+                  <div class="hazard hazard-two"></div>
+                  <div class="hazard hazard-three"></div>
+                </div>
+
+                <div class="stage-footer">
+                  <div>
+                    <p class="stage-kicker">Current spotlight</p>
+                    <h2>Dont Stop Ball</h2>
+                  </div>
+                  <p class="stage-copy">
+                    A quick survival dodge game with keyboard, mouse, and touch
+                    input.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="featured">
+      <section class="featured" id="featured">
         <div class="container">
           <div class="section-heading">
-            <p class="eyebrow">Featured game</p>
-            <h2>Start with one clean arcade challenge</h2>
+            <div>
+              <p class="eyebrow">Featured Game</p>
+              <h2>One polished arcade challenge, built to replay fast.</h2>
+            </div>
+            <p class="section-copy">
+              The homepage points straight to a focused first game instead of a
+              vague catalog. That keeps the landing experience sharper.
+            </p>
           </div>
 
-          <article class="game-card">
-            <div class="game-card-content">
+          <article class="spotlight-card">
+            <div class="spotlight-copy">
               <p class="game-label">Arcade Survival</p>
               <h3>Dont Stop Ball</h3>
               <p>
-                Stay in motion, dodge the drop zone, and survive longer as the
-                game speeds up. Designed to feel responsive without extra
-                libraries or heavy assets.
+                Slide through falling danger lanes, react to warning flashes,
+                and stay alive long enough to reach the harder speed bands.
               </p>
-              <a class="button button-primary" href="/games/dont-stop-ball/"
-                >Play Now</a
-              >
+
+              <div class="detail-row">
+                <div class="detail-chip">Keyboard + pointer controls</div>
+                <div class="detail-chip">Best score tracking</div>
+                <div class="detail-chip">Pause and instant restart</div>
+              </div>
+
+              <div class="hero-actions">
+                <a class="button button-primary" href="/games/dont-stop-ball/"
+                  >Play the Game</a
+                >
+                <a class="button button-secondary" href="/games/">View Games</a>
+              </div>
             </div>
-            <div class="game-card-visual" aria-hidden="true">
-              <div class="orb orb-large"></div>
-              <div class="orb orb-small"></div>
-              <div class="grid-glow"></div>
+
+            <div class="spotlight-stack">
+              <article class="mini-panel">
+                <p class="mini-label">Game feel</p>
+                <h4>Telegraphed danger</h4>
+                <p>
+                  Incoming hazards signal their lane before they drop, which
+                  makes the game feel fairer and more readable.
+                </p>
+              </article>
+              <article class="mini-panel">
+                <p class="mini-label">Session loop</p>
+                <h4>Short runs, fast retries</h4>
+                <p>
+                  The whole flow stays light: start quickly, fail clearly, hit
+                  restart, and go again.
+                </p>
+              </article>
             </div>
           </article>
+        </div>
+      </section>
+
+      <section class="process" id="how-it-works">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Why It Works</p>
+              <h2>A static stack can still feel intentional.</h2>
+            </div>
+          </div>
+
+          <div class="process-grid">
+            <article class="process-card">
+              <p class="process-step">01</p>
+              <h3>Direct entry points</h3>
+              <p>
+                Every game lives in its own route under
+                <code>/games/&lt;slug&gt;/</code>, so pages stay easy to review
+                and deploy.
+              </p>
+            </article>
+            <article class="process-card">
+              <p class="process-step">02</p>
+              <h3>Visuals with restraint</h3>
+              <p>
+                Gradients, motion, and layered cards create atmosphere without
+                adding asset bloat or framework overhead.
+              </p>
+            </article>
+            <article class="process-card">
+              <p class="process-step">03</p>
+              <h3>Replay-first layout</h3>
+              <p>
+                Controls, difficulty notes, and call-to-action placement stay
+                obvious on both desktop and mobile.
+              </p>
+            </article>
+          </div>
         </div>
       </section>
 
       <section class="about" id="about">
         <div class="container about-grid">
           <div>
-            <p class="eyebrow">About</p>
-            <h2>Built to stay simple and fast</h2>
+            <p class="eyebrow">About Zingcade</p>
+            <h2>Built small on purpose.</h2>
           </div>
           <div class="about-copy">
             <p>
-              Zingcade is a static HTML game site. That means no framework
-              overhead, no server-side dependencies, and an easy deployment path
-              to GitHub or a VPS.
+              Zingcade stays inside a simple static stack so game pages remain
+              easy to inspect, edit, and ship anywhere. That constraint is part
+              of the point, not a compromise.
             </p>
-            <p>
-              The first release focuses on a clean homepage and one original game
-              so the project can grow in a reviewable way.
-            </p>
+            <div class="about-checks">
+              <div class="check-item">No framework runtime required</div>
+              <div class="check-item">Works as plain hosted files</div>
+              <div class="check-item">Room to add more games incrementally</div>
+            </div>
           </div>
         </div>
       </section>
@@ -104,7 +213,7 @@
     <footer class="site-footer">
       <div class="container footer-content">
         <p>Zingcade</p>
-        <p>Static browser games for quick play.</p>
+        <p>Static browser games for quick play and clean review cycles.</p>
       </div>
     </footer>
   </body>
