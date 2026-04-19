@@ -17,9 +17,9 @@
       }
 
       .page {
-        width: min(100% - 1.5rem, 1120px);
+        width: min(100% - 1.25rem, 1180px);
         margin: 0 auto;
-        padding: 1.25rem 0 3rem;
+        padding: 1rem 0 2.75rem;
       }
 
       .topbar {
@@ -27,7 +27,7 @@
         grid-template-columns: auto 1fr auto;
         gap: 1rem;
         align-items: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.1rem;
       }
 
       .back-link,
@@ -67,9 +67,9 @@
 
       .layout {
         display: grid;
-        grid-template-columns: minmax(0, 620px) minmax(280px, 340px);
+        grid-template-columns: minmax(0, 700px) minmax(260px, 300px);
         justify-content: center;
-        gap: 1.25rem;
+        gap: 1rem;
         align-items: start;
       }
 
@@ -174,9 +174,17 @@
         max-width: 28rem;
       }
 
+      .overlay-kicker {
+        margin: 0 0 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.76rem;
+        color: var(--accent);
+      }
+
       .overlay-summary {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.75rem;
         margin-top: 1rem;
       }
@@ -206,6 +214,16 @@
         font-weight: 800;
       }
 
+      .canvas-note {
+        margin-top: 0.85rem;
+        padding: 0.85rem 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
       .overlay-card h2,
       .overlay-card p {
         margin: 0;
@@ -231,8 +249,15 @@
 
       .info-panel {
         display: grid;
-        gap: 0.9rem;
-        padding: 1.2rem;
+        gap: 0.75rem;
+        padding: 1rem;
+      }
+
+      .info-block {
+        padding: 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
       }
 
       .info-block h2,
@@ -297,6 +322,7 @@
         }
 
         .actions button,
+        .actions a,
         .control-row button {
           width: 100%;
         }
@@ -304,6 +330,10 @@
 
       @media (max-width: 480px) {
         .hud {
+          grid-template-columns: 1fr;
+        }
+
+        .overlay-summary {
           grid-template-columns: 1fr;
         }
       }
@@ -377,6 +407,7 @@
 
             <div class="overlay" id="overlay">
               <div class="overlay-card">
+                <p class="overlay-kicker" id="overlay-kicker">Arcade Survival</p>
                 <h2 id="overlay-title">Dont Stop Ball</h2>
                 <p id="overlay-text">
                   Dodge falling hazard bars, watch for lane warnings, and use
@@ -390,6 +421,10 @@
                   <div class="summary-item">
                     <span class="summary-label">Best</span>
                     <span class="summary-value" id="overlay-best">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Stage</span>
+                    <span class="summary-value" id="overlay-stage">Warmup</span>
                   </div>
                 </div>
                 <div class="actions">
@@ -406,6 +441,10 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="canvas-note">
+            Stay low, read the warning beam early, and use small adjustments
+            instead of wide panic moves when the speed climbs.
           </div>
         </div>
 
@@ -445,6 +484,14 @@
               early and still have room to slip around wide bars.
             </p>
           </div>
+
+          <div class="callout">
+            <strong>Quick loop</strong>
+            <p>
+              Start fast, fail clearly, restart instantly. The whole page is
+              tuned to keep the playfield front and center.
+            </p>
+          </div>
         </aside>
       </section>
     </main>
@@ -454,6 +501,7 @@
       const context = canvas.getContext("2d");
 
       const overlay = document.getElementById("overlay");
+      const overlayKicker = document.getElementById("overlay-kicker");
       const overlayTitle = document.getElementById("overlay-title");
       const overlayText = document.getElementById("overlay-text");
       const actionButton = document.getElementById("action-button");
@@ -462,6 +510,7 @@
       const overlaySummary = document.getElementById("overlay-summary");
       const overlayScore = document.getElementById("overlay-score");
       const overlayBest = document.getElementById("overlay-best");
+      const overlayStage = document.getElementById("overlay-stage");
 
       const scoreElement = document.getElementById("score");
       const bestScoreElement = document.getElementById("best-score");
@@ -566,7 +615,8 @@
           "Dodge falling hazard bars, watch for the red warning lanes, and survive through the faster stages.",
           "Start Game",
           false,
-          false
+          false,
+          "Arcade Survival"
         );
       }
 
@@ -601,7 +651,8 @@
           "Take a breath. Press P, tap Resume, or click the playfield to jump back in.",
           "Resume",
           false,
-          false
+          false,
+          "Run Paused"
         );
       }
 
@@ -627,10 +678,11 @@
         pauseButton.textContent = "Pause";
         showOverlay(
           "Run Over",
-          "Tap restart to jump straight back in, or head back to the games hub.",
+          "You made it through " + game.stageLabel + ". Tap restart to jump back in or head to the games hub.",
           "Restart Run",
           true,
-          true
+          true,
+          "Score Locked In"
         );
       }
 
@@ -641,7 +693,8 @@
         stageElement.textContent = game.stageLabel;
       }
 
-      function showOverlay(title, text, actionLabel, showGamesLink, showSummary) {
+      function showOverlay(title, text, actionLabel, showGamesLink, showSummary, kicker) {
+        overlayKicker.textContent = kicker;
         overlayTitle.textContent = title;
         overlayText.textContent = text;
         actionButton.textContent = actionLabel;
@@ -649,6 +702,7 @@
         overlaySummary.hidden = !showSummary;
         overlayScore.textContent = String(game.score);
         overlayBest.textContent = String(game.best);
+        overlayStage.textContent = game.stageLabel;
         overlay.hidden = false;
       }
 
