@@ -278,6 +278,32 @@
         padding: 1rem;
       }
 
+      .content-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .content-card {
+        padding: 1rem 1.05rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+      }
+
+      .content-card h2,
+      .content-card p {
+        margin: 0;
+      }
+
+      .content-card p {
+        margin-top: 0.7rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
       .info-block {
         padding: 0.95rem;
         border-radius: 18px;
@@ -336,6 +362,7 @@
           padding-top: 1rem;
         }
 
+        .content-strip,
         .status-strip,
         .overlay-summary {
           grid-template-columns: 1fr;
@@ -370,6 +397,8 @@
         <nav class="site-nav" aria-label="Primary">
           <a href="/">Home</a>
           <a href="/games/">Games</a>
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
         </nav>
         <a class="button button-secondary nav-play" href="/games/">View Games</a>
       </div>
@@ -530,7 +559,49 @@
           </div>
         </aside>
       </section>
+
+      <section class="content-strip" aria-label="Game summary">
+        <article class="content-card">
+          <p class="mini-label">What It Is</p>
+          <h2>Vertical platform climbing.</h2>
+          <p>
+            Sky Hop is a browser climber about guiding each fall, reading the next cloud,
+            and riding cleaner landings into a longer height run.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Controls</p>
+          <h2>Keyboard, mouse, and touch.</h2>
+          <p>
+            Move with Left and Right or A and D, pull the line with the mouse, or drag on
+            touch. Press P to pause and Space or Enter to start again quickly.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Tip Or Challenge</p>
+          <h2>Reach the 120m marker cleanly.</h2>
+          <p>
+            Try to hit the next platform before the bounce peak, especially when tiny or
+            crumble pads appear. Earlier setup usually beats harder last-second steering.
+          </p>
+        </article>
+      </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="container footer-content">
+        <div class="footer-brand">
+          <p>Zingcade</p>
+          <p>Static browser games for quick play and clean review cycles.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+        </nav>
+      </div>
+    </footer>
 
     <script>
       const canvas = document.getElementById("game");

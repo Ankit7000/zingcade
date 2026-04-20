@@ -101,6 +101,14 @@ code {
   padding: 5.5rem 0;
 }
 
+.page-main {
+  padding: 4.25rem 0 5rem;
+}
+
+.page-hero {
+  padding: 4.5rem 0 2rem;
+}
+
 .hero-grid,
 .about-grid,
 .spotlight-card {
@@ -656,6 +664,95 @@ code {
   gap: 0.85rem;
 }
 
+.info-shell,
+.info-card,
+.contact-method,
+.faq-card {
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.info-shell {
+  padding: 2rem;
+  border-radius: var(--radius);
+}
+
+.info-hero-grid,
+.info-grid,
+.contact-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.info-hero-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+  align-items: start;
+}
+
+.info-card,
+.contact-method,
+.faq-card {
+  padding: 1.35rem;
+  border-radius: 24px;
+}
+
+.info-grid,
+.contact-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.page-prose {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.page-prose p,
+.page-prose li,
+.contact-method p,
+.faq-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.page-prose h2,
+.page-prose h3,
+.contact-method h3,
+.faq-card h3 {
+  margin: 0 0 0.65rem;
+  line-height: 1.05;
+}
+
+.page-prose ul,
+.contact-method ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.page-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.page-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+
+.contact-link {
+  color: var(--accent);
+}
+
 .check-item {
   padding: 1rem 1.1rem;
   border-radius: 18px;
@@ -671,8 +768,34 @@ code {
 .footer-content {
   display: flex;
   justify-content: space-between;
+  align-items: start;
   gap: 1rem;
   padding: 1.35rem 0;
+}
+
+.footer-brand {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.footer-brand p {
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  color: var(--muted);
+}
+
+.footer-links a {
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+  color: var(--text);
 }
 
 .hub-hero {
@@ -1030,6 +1153,9 @@ code {
   .spotlight-card,
   .more-games-row,
   .about-grid,
+  .info-hero-grid,
+  .info-grid,
+  .contact-grid,
   .process-grid,
   .why-play-grid,
   .stage-footer,
@@ -1069,7 +1195,9 @@ code {
   .hero,
   .featured,
   .process,
-  .about {
+  .about,
+  .page-main,
+  .page-hero {
     padding: 4.25rem 0;
   }
 
@@ -1106,6 +1234,13 @@ code {
 
   .site-footer {
     margin-inline: 0.75rem;
+  }
+
+  .info-shell,
+  .info-card,
+  .contact-method,
+  .faq-card {
+    padding: 1.4rem;
   }
 }
 
