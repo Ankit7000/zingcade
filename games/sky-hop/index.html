@@ -341,10 +341,46 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
         touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       .touch-button:active {
         background: rgba(140, 245, 218, 0.16);
+      }
+      
+      .milestone-flash {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.5);
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 100;
+        line-height: 1;
+        text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: clamp(2rem, 6vw, 3rem);
+        white-space: nowrap;
+      }
+      
+      .milestone-flash.show {
+        animation: milestonePop 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+
+      @keyframes milestonePop {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        15% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+        30% { transform: translate(-50%, -50%) scale(1); }
+        70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -100%) scale(1.05); }
+      }
+      
+      @keyframes uiPulse {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.04); }
       }
 
       .info-panel {
@@ -435,6 +471,10 @@
         .page {
           width: min(100% - 1rem, 1160px);
           padding-top: 1rem;
+        }
+        
+        .game-panel {
+          --canvas-max-width: min(100%, 62dvh);
         }
 
         .hud {
@@ -601,21 +641,21 @@
                     <span class="summary-label">Height</span>
                     <span class="summary-value" id="overlay-height">0m</span>
                   </div>
-                  <div class="summary-item">
+                  <div class="summary-item" id="overlay-best-card">
                     <span class="summary-label">Best Height</span>
                     <span class="summary-value" id="overlay-best-height">0m</span>
                   </div>
                 </div>
                 <div class="actions">
-                  <button class="button button-primary" id="action-button" type="button">
-                    Start Hop
+                  <button class="button button-primary" id="action-button" type="button" style="animation: uiPulse 2s infinite ease-in-out alternate;">
+                    Play Again
                   </button>
-                  <a class="button button-secondary" id="games-link" href="/games/" hidden>
-                    View Games
-                  </a>
+                  <a class="button button-secondary" href="/games/">View All Games</a>
                 </div>
               </div>
             </div>
+            
+            <div id="milestone-alert" class="milestone-flash">Low Clouds</div>
           </div>
 
           <div class="touch-controls" aria-label="Touch controls">
@@ -718,13 +758,14 @@
       const overlayKicker = document.getElementById("overlay-kicker");
       const overlayTitle = document.getElementById("overlay-title");
       const overlayText = document.getElementById("overlay-text");
-      const actionButton = document.getElementById("action-button");
-      const gamesLink = document.getElementById("games-link");
-      const pauseButton = document.getElementById("pause-button");
       const overlaySummary = document.getElementById("overlay-summary");
       const overlayScore = document.getElementById("overlay-score");
       const overlayHeight = document.getElementById("overlay-height");
       const overlayBestHeight = document.getElementById("overlay-best-height");
+      const overlayBestCard = document.getElementById("overlay-best-card");
+      
+      const actionButton = document.getElementById("action-button");
+      const pauseButton = document.getElementById("pause-button");
 
       const scoreElement = document.getElementById("score");
       const bestScoreElement = document.getElementById("best-score");
@@ -922,7 +963,7 @@
           return;
         }
         if (kind === "boost") {
-          tone({ frequency: 380, endFrequency: 760, duration: 0.14, type: "sawtooth", gain: 0.038 });
+          tone({ frequency: 380, endFrequency: 760, duration: 0.14, type: "sawtooth", gain: 0.055 });
           return;
         }
         if (kind === "tiny") {
@@ -930,7 +971,7 @@
           return;
         }
         if (kind === "crumble") {
-          tone({ frequency: 350, endFrequency: 180, duration: 0.12, type: "sawtooth", gain: 0.032 });
+          tone({ frequency: 350, endFrequency: 180, duration: 0.12, type: "square", gain: 0.045 });
           return;
         }
         if (kind === "spring") {
@@ -1038,18 +1079,18 @@
         saveBestHeight();
 
         showOverlay({
-          kicker: wasRecord ? "New Height Record" : "Fall Complete",
+          kicker: wasRecord && reachedHeight > 0 ? "New Height Record" : "Fall Complete",
           title: "Sky Hop",
-          text: wasRecord
+          text: wasRecord && reachedHeight > 0
             ? "You pushed the climb higher than before. Restart while the route memory is still clear."
             : "Keep the combo alive longer and use spring pads to rescue late routes.",
           actionLabel: "Restart Hop",
           showSummary: true,
-          showGames: true
+          wasRecord: wasRecord && reachedHeight > 0
         });
       }
 
-      function showOverlay({ kicker, title, text, actionLabel, showSummary, showGames }) {
+      function showOverlay({ kicker, title, text, actionLabel, showSummary, wasRecord }) {
         overlayKicker.textContent = kicker;
         overlayTitle.textContent = title;
         overlayText.textContent = text;
@@ -1058,13 +1099,20 @@
         overlayScore.textContent = String(Math.floor(game.score));
         overlayHeight.textContent = getHeightMeters() + "m";
         overlayBestHeight.textContent = Math.floor(game.bestHeight) + "m";
-        gamesLink.hidden = !showGames;
+        
+        if (wasRecord) {
+          overlayBestCard.style.boxShadow = "inset 0 0 15px rgba(140, 245, 218, 0.4)";
+          overlayBestCard.style.borderColor = "rgba(140, 245, 218, 0.6)";
+        } else {
+          overlayBestCard.style.boxShadow = "none";
+          overlayBestCard.style.borderColor = "rgba(255, 255, 255, 0.08)";
+        }
+        
         overlay.hidden = false;
       }
 
       function hideOverlay() {
         overlay.hidden = true;
-        gamesLink.hidden = true;
       }
 
       function activatePrimaryAction() {
@@ -1088,7 +1136,7 @@
             text: "Resume when you are ready. The combo bar and platform motion are frozen.",
             actionLabel: "Resume Hop",
             showSummary: false,
-            showGames: true
+            wasRecord: false
           });
           return;
         }
@@ -1128,9 +1176,16 @@
 
         if (nextZoneIndex !== game.zoneIndex) {
           game.zoneIndex = nextZoneIndex;
-          game.stageFlash = 1.35;
           game.stageText = ZONES[nextZoneIndex].name;
           game.stageColor = ZONES[nextZoneIndex].accent;
+          
+          const milestoneAlert = document.getElementById("milestone-alert");
+          milestoneAlert.textContent = game.stageText;
+          milestoneAlert.style.color = game.stageColor;
+          milestoneAlert.classList.remove("show");
+          void milestoneAlert.offsetWidth;
+          milestoneAlert.classList.add("show");
+          
           createBurst(width / 2, 188, ZONES[nextZoneIndex].accent, 24, 30, 150);
           playSound("zone");
         }
@@ -1807,19 +1862,7 @@
       }
 
       function drawStageFlash() {
-        if (game.stageFlash <= 0) {
-          return;
-        }
-
-        context.save();
-        context.globalAlpha = Math.min(1, game.stageFlash) * 0.95;
-        context.fillStyle = game.stageColor;
-        context.font = '900 32px "Orbitron", sans-serif';
-        context.textAlign = "center";
-        context.shadowBlur = 24;
-        context.shadowColor = game.stageColor;
-        context.fillText(game.stageText, width / 2, 180);
-        context.restore();
+        // Obsolete, handled via DOM milestone alert
       }
 
       function draw() {
