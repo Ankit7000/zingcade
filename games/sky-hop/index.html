@@ -1931,7 +1931,11 @@
         if (game.mode !== "playing" && event.pointerType !== "mouse") {
           return;
         }
-        if (event.pointerType === "mouse" || game.pointerActive) {
+        if (event.pointerType !== "mouse") {
+          // Touch/pen: pointermove only fires while finger is pressed, so always
+          // force pointerActive=true so the player keeps following the drag.
+          syncPointer(event, true);
+        } else {
           syncPointer(event);
         }
       });

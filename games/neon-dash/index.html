@@ -75,7 +75,7 @@
     .actions{display:flex;flex-wrap:wrap;justify-content:center;gap:.65rem;margin-top:1.1rem}
     .canvas-tip{margin-top:.75rem;padding:.8rem .9rem;border-radius:16px;background:rgba(255,255,255,0.04);
       border:1px solid rgba(255,255,255,0.06);color:var(--nd-muted);line-height:1.65;font-size:.94rem}
-    .mob-btns{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;margin-top:.75rem}
+    .mob-btns{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin-top:.75rem}
     .mob-btn{flex:1;min-height:54px;border-radius:16px;font-family:"Orbitron",sans-serif;font-size:.9rem;
       letter-spacing:.08em;color:#fff;background:rgba(140,245,218,0.08);border:1px solid rgba(140,245,218,0.22);
       box-shadow:inset 0 0 18px rgba(140,245,218,0.08);touch-action:none}
@@ -99,7 +99,9 @@
       .hud{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}.hud-item{padding:.75rem}
       .hud-value,.summary-value{font-size:1rem}.content-strip,.overlay-summary{grid-template-columns:1fr}
       .ctrl-row,.actions{flex-direction:column;align-items:stretch}.actions button,.actions a,.ctrl-row button{width:100%}}
-    @media(pointer:coarse), (max-width:720px){.mob-btns{display:grid}.mob-btn{min-height:60px}}
+    @media(pointer:coarse), (max-width:720px){.mob-btns{display:grid}.mob-btn{min-height:60px}
+      .canvas-wrap{max-height:calc(100dvh - 260px);overflow:hidden}
+      canvas{height:100%;aspect-ratio:unset}}
     @media(hover:hover) and (pointer:fine){.mob-btns{display:none!important}}
   </style>
 </head>
@@ -159,10 +161,10 @@
       </div>
       <div class="canvas-tip" id="tip">Read the lane ahead. The city gets faster - move early, react early.</div>
       <div class="mob-btns">
-        <button class="mob-btn" id="mobLeft" type="button">&lt; LEFT</button>
+        <button class="mob-btn" id="mobLeft" type="button" style="grid-row:span 2">&lt; LEFT</button>
         <button class="mob-btn" id="mobUp" type="button">JUMP</button>
+        <button class="mob-btn" id="mobRight" type="button" style="grid-row:span 2">RIGHT &gt;</button>
         <button class="mob-btn" id="mobDown" type="button">SLIDE</button>
-        <button class="mob-btn" id="mobRight" type="button">RIGHT &gt;</button>
       </div>
     </div>
     <aside class="panel info-panel">

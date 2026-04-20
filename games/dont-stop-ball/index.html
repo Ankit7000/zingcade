@@ -1991,7 +1991,11 @@
           return;
         }
 
-        if (event.pointerType === "mouse" || game.pointerActive) {
+        if (event.pointerType !== "mouse") {
+          // Touch/pen: pointermove only fires while finger is pressed, so always
+          // force pointerActive=true so the ball keeps following the drag each frame.
+          syncPointer(event, true);
+        } else {
           syncPointer(event);
         }
       });
