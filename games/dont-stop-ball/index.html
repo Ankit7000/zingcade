@@ -6,9 +6,15 @@
     <title>Dont Stop Ball | Zingcade</title>
     <meta
       name="description"
-      content="Play Dont Stop Ball, a polished browser survival game with smoother movement, varied hazard patterns, score chains, and fast restarts."
+      content="Play Dont Stop Ball, a polished browser survival game with lives, power-ups, faster stage ramps, and a smoother dodge flow."
     />
     <link rel="canonical" href="https://zingcade.com/games/dont-stop-ball/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/css/styles.css" />
     <style>
       button {
@@ -116,14 +122,43 @@
         color: var(--muted);
       }
 
+      .hud-value,
+      .summary-value,
+      .touch-button {
+        font-family: "Orbitron", sans-serif;
+      }
+
       .hud-value {
-        font-size: 1.35rem;
-        font-weight: 800;
+        font-size: 1.28rem;
+        font-weight: 900;
       }
 
       .hud-stage,
-      .hud-chain {
+      .hud-chain,
+      .hud-lives {
         color: var(--accent);
+      }
+
+      .hud-value.celebrate {
+        color: #fff0aa;
+        text-shadow: 0 0 18px rgba(255, 198, 114, 0.7);
+      }
+
+      .lives-hearts {
+        display: inline-flex;
+        gap: 0.18rem;
+        align-items: center;
+      }
+
+      .heart {
+        display: inline-block;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      .heart.active {
+        color: #ff7d6c;
+        text-shadow: 0 0 14px rgba(255, 125, 108, 0.8);
       }
 
       .control-row {
@@ -143,7 +178,7 @@
 
       .status-strip {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.75rem;
         padding: 0.75rem;
         border-radius: 18px;
@@ -177,14 +212,18 @@
         touch-action: none;
       }
 
-      .overlay {
+      .overlay,
+      .damage-flash {
         position: absolute;
         inset: 0;
+        border-radius: 22px;
+      }
+
+      .overlay {
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 1rem;
-        border-radius: 22px;
         background: rgba(4, 10, 18, 0.58);
         backdrop-filter: blur(8px);
         text-align: center;
@@ -194,6 +233,13 @@
       .overlay[hidden] {
         opacity: 0;
         pointer-events: none;
+      }
+
+      .damage-flash {
+        pointer-events: none;
+        background: radial-gradient(circle at center, rgba(255, 125, 108, 0.38), rgba(255, 46, 46, 0.12));
+        opacity: 0;
+        transition: opacity 0.08s linear;
       }
 
       .overlay-card {
@@ -236,8 +282,8 @@
       }
 
       .summary-value {
-        font-size: 1.35rem;
-        font-weight: 800;
+        font-size: 1.28rem;
+        font-weight: 900;
       }
 
       .canvas-note {
@@ -248,6 +294,28 @@
         border: 1px solid rgba(255, 255, 255, 0.06);
         color: var(--muted);
         line-height: 1.6;
+      }
+
+      .touch-controls {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.85rem;
+      }
+
+      .touch-button {
+        min-height: 58px;
+        border-radius: 18px;
+        background: rgba(140, 245, 218, 0.09);
+        border: 1px solid rgba(140, 245, 218, 0.3);
+        color: var(--text);
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .touch-button:active {
+        background: rgba(140, 245, 218, 0.16);
       }
 
       .overlay-card h2,
@@ -382,6 +450,12 @@
         }
       }
 
+      @media (pointer: coarse), (max-width: 720px) {
+        .touch-controls {
+          display: grid;
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
@@ -410,7 +484,7 @@
         <a class="back-link" href="/games/">&#8592; Back to Games</a>
         <div class="title">
           <h1>Dont Stop Ball</h1>
-          <p>Thread the open lanes, stack a dodge chain, and push into faster stages.</p>
+          <p>Three lives, clutch power-ups, and six hotter stages turn each dodge into a run worth saving.</p>
         </div>
         <div class="meta-pill">Keyboard, mouse, and touch</div>
       </div>
@@ -427,7 +501,11 @@
               <span class="hud-value" id="best-score">0</span>
             </div>
             <div class="hud-item">
-              <span class="hud-label">Chain</span>
+              <span class="hud-label">Lives</span>
+              <span class="hud-value hud-lives lives-hearts" id="lives-display"></span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Streak</span>
               <span class="hud-value hud-chain" id="chain-count">0</span>
             </div>
             <div class="hud-item">
@@ -442,8 +520,8 @@
 
           <div class="control-row">
             <div class="hint">
-              Move with arrows or WASD. Press <strong>P</strong> to pause. Press
-              <strong>Space</strong> or <strong>Enter</strong> to start or restart.
+              Move with arrows or A and D. Mouse and touch drag track the ball smoothly.
+              Press <strong>P</strong> to pause. Press <strong>Space</strong> or <strong>Enter</strong> to start or restart.
             </div>
             <button class="button button-secondary" id="pause-button" type="button">
               Pause
@@ -454,13 +532,19 @@
             <div class="status-pill">
               <span class="hud-label">Challenge</span>
               <span class="status-copy" id="challenge-text">
-                Chain 4 clean dodges to wake up the first score boost.
+                Hold a 5-dodge streak to cash in cleaner score bursts.
+              </span>
+            </div>
+            <div class="status-pill">
+              <span class="hud-label">Power</span>
+              <span class="status-copy" id="power-text">
+                No active power-up. Catch pickups for Shield, Slow-Mo, or Ghost.
               </span>
             </div>
             <div class="status-pill">
               <span class="hud-label">Stage Note</span>
               <span class="status-copy" id="run-note">
-                Warmup is for reading the lane telegraphs before the bars drop.
+                Warmup gives you space to read the first telegraphs before the pressure climbs.
               </span>
             </div>
           </div>
@@ -473,13 +557,14 @@
               aria-label="Dont Stop Ball game canvas"
             ></canvas>
 
+            <div class="damage-flash" id="damage-flash"></div>
+
             <div class="overlay" id="overlay">
               <div class="overlay-card">
                 <p class="overlay-kicker" id="overlay-kicker">Arcade Survival</p>
                 <h2 id="overlay-title">Dont Stop Ball</h2>
                 <p id="overlay-text">
-                  Dodge the hazard patterns, build a clean chain, and restart fast when
-                  the run breaks.
+                  Dodge the drop patterns, spend your power-ups well, and try to survive into Meltdown.
                 </p>
                 <div class="overlay-summary" id="overlay-summary" hidden>
                   <div class="summary-item">
@@ -491,7 +576,7 @@
                     <span class="summary-value" id="overlay-best">0</span>
                   </div>
                   <div class="summary-item">
-                    <span class="summary-label">Best Chain</span>
+                    <span class="summary-label">Best Streak</span>
                     <span class="summary-value" id="overlay-chain">0</span>
                   </div>
                 </div>
@@ -506,9 +591,14 @@
               </div>
             </div>
           </div>
+
+          <div class="touch-controls" aria-label="Touch controls">
+            <button class="touch-button" id="touch-left" type="button">Hold Left</button>
+            <button class="touch-button" id="touch-right" type="button">Hold Right</button>
+          </div>
+
           <div class="canvas-note" id="canvas-note">
-            Each clean dodge extends the chain window. Bigger chains boost score, so
-            staying calm matters more than wide panic swerves.
+            Shield blocks one mistake, Slow-Mo opens a short recovery window, and Ghost lets you cut through a bad read.
           </div>
         </div>
 
@@ -516,46 +606,39 @@
           <section class="info-block">
             <h2>How to play</h2>
             <p>
-              Dont Stop Ball is about reading the warning beam early, gliding into the
-              safe lane, and holding composure as the game mixes single bars, split
-              gates, heavy blocks, and sweeping lines.
+              Dont Stop Ball is a survival dodger about calm movement. The ball now glides with more weight, every hit costs one of three lives, and later stages stack bars, split gates, sweepers, and spinning hazards with less mercy.
             </p>
           </section>
 
           <section class="info-block">
             <h3>Controls</h3>
             <ul class="tips">
-              <li>Keyboard: arrow keys or WASD for smooth steering</li>
-              <li>Mouse: move across the canvas to pull the ball into position</li>
-              <li>Touch: drag anywhere on the canvas</li>
+              <li>Keyboard: Left and Right arrows or A and D</li>
+              <li>Mouse: move across the canvas to pull the ball into line</li>
+              <li>Touch: drag on the canvas or hold the mobile D-pad buttons</li>
               <li>Pause: press P or tap the pause button</li>
               <li>Start or restart: press Space, Enter, tap the overlay, or tap the canvas</li>
             </ul>
           </section>
 
           <div class="status-note">
-            <strong>Difficulty ramp</strong>
+            <strong>Power-up mix</strong>
             <p>
-              Warmup teaches the read. Heated and Frenzy tighten the spawn gaps.
-              Overdrive and Redline start stacking patterns and faster sweepers.
+              Shield soaks a hit, Slow-Mo buys space when the screen gets crowded, and Ghost turns one panic moment into a clean recovery line.
             </p>
           </div>
 
           <div class="callout">
-            <strong>Replay hook</strong>
+            <strong>Stage ramp</strong>
             <p>
-              A dodge chain turns steady survival into score pressure. The next chain
-              target is always visible, so each run gives you a concrete goal besides
-              just lasting longer.
+              Warmup and Heated teach the read. Frenzy introduces spinners, then Overdrive, Redline, and Meltdown keep shrinking the safe timing window.
             </p>
           </div>
 
           <div class="callout">
             <strong>Survival tip</strong>
             <p>
-              Stay in the lower half, then make shorter corrections than you think you
-              need. The smoother steering rewards gentle adjustments over last-second
-              snaps.
+              Let the ball settle between moves. The smoother steering rewards short corrections more than wide panic swings, especially when invincibility frames are gone.
             </p>
           </div>
         </aside>
@@ -564,26 +647,23 @@
       <section class="content-strip" aria-label="Game summary">
         <article class="content-card">
           <p class="mini-label">What It Is</p>
-          <h2>Read-and-react survival.</h2>
+          <h2>High-pressure dodge survival.</h2>
           <p>
-            Dont Stop Ball is a dodge game built around quick lane reads, clean movement,
-            and short repeatable runs that turn calm survival into a score chase.
+            Dont Stop Ball is a one-more-run dodge game about reading the drop, using three lives well, and reaching the hotter stage bands without wasting a recovery tool.
           </p>
         </article>
         <article class="content-card">
           <p class="mini-label">Controls</p>
-          <h2>Three input options.</h2>
+          <h2>Three ways to steer.</h2>
           <p>
-            Use arrows or WASD, steer with the mouse, or drag on touch. Press P to pause,
-            and use Space or Enter for fast starts and restarts.
+            Use keyboard, mouse, or touch drag. On mobile, the extra D-pad lets you hold cleaner side steps through busy waves and late spinners.
           </p>
         </article>
         <article class="content-card">
           <p class="mini-label">Tip Or Challenge</p>
-          <h2>Hold a chain through Frenzy.</h2>
+          <h2>Reach Redline with all lives.</h2>
           <p>
-            Try to keep a live dodge chain once the patterns speed up. Smaller corrective
-            moves usually protect both your position and your multiplier.
+            Try to save Slow-Mo for Frenzy or later. If you can hit Redline on a live streak, the score will usually take care of itself.
           </p>
         </article>
       </section>
@@ -622,57 +702,133 @@
 
       const scoreElement = document.getElementById("score");
       const bestScoreElement = document.getElementById("best-score");
+      const livesDisplay = document.getElementById("lives-display");
       const chainElement = document.getElementById("chain-count");
       const speedElement = document.getElementById("speed");
       const stageElement = document.getElementById("stage-label");
       const challengeElement = document.getElementById("challenge-text");
+      const powerElement = document.getElementById("power-text");
       const runNoteElement = document.getElementById("run-note");
       const canvasNoteElement = document.getElementById("canvas-note");
+      const damageFlashElement = document.getElementById("damage-flash");
+      const touchLeftButton = document.getElementById("touch-left");
+      const touchRightButton = document.getElementById("touch-right");
 
       const width = canvas.width;
       const height = canvas.height;
       const bestScoreKey = "zingcade-dont-stop-ball-best";
-      const chainMilestones = [4, 8, 12, 16, 20];
 
-      const input = {
-        left: false,
-        right: false,
-        up: false,
-        down: false,
-        pointerActive: false,
-        targetX: width / 2,
-        targetY: height * 0.82
+      const STAGES = [
+        {
+          name: "Warmup",
+          start: 0,
+          speed: 240,
+          spawnMin: 1.05,
+          spawnMax: 1.35,
+          note: "Warmup gives you space to read the first telegraphs before the pressure climbs.",
+          colors: ["#0d2134", "#07111d"]
+        },
+        {
+          name: "Heated",
+          start: 16,
+          speed: 285,
+          spawnMin: 0.92,
+          spawnMax: 1.18,
+          note: "Heated shortens the recovery gap and starts leaning on heavier blocks.",
+          colors: ["#14233f", "#0a1322"]
+        },
+        {
+          name: "Frenzy",
+          start: 32,
+          speed: 340,
+          spawnMin: 0.82,
+          spawnMax: 1.06,
+          note: "Frenzy adds spinners, tighter gates, and the first real traffic stacks.",
+          colors: ["#1c2747", "#0a1020"]
+        },
+        {
+          name: "Overdrive",
+          start: 50,
+          speed: 405,
+          spawnMin: 0.74,
+          spawnMax: 0.96,
+          note: "Overdrive punishes lazy resets. You need shorter moves and cleaner exits.",
+          colors: ["#231f44", "#0a0e1c"]
+        },
+        {
+          name: "Redline",
+          start: 70,
+          speed: 470,
+          spawnMin: 0.68,
+          spawnMax: 0.88,
+          note: "Redline stacks sweepers with split gates and forces quick follow-up reads.",
+          colors: ["#311a40", "#100814"]
+        },
+        {
+          name: "Meltdown",
+          start: 92,
+          speed: 545,
+          spawnMin: 0.6,
+          spawnMax: 0.82,
+          note: "Meltdown is the stress test. If you still have lives here, cash the run in.",
+          colors: ["#3b162f", "#13050d"]
+        }
+      ];
+
+      const POWER_COLORS = {
+        shield: "#8cf5da",
+        slow: "#ffc672",
+        ghost: "#c5a6ff"
       };
 
       const game = {
-        running: false,
-        paused: false,
-        gameOver: false,
-        score: 0,
-        displayedScore: 0,
-        best: loadBestScore(),
+        mode: "start",
         time: 0,
-        speedMultiplier: 1,
-        stageLabel: "Warmup",
-        spawnTimer: 0,
-        spawnInterval: 0.96,
-        particleTimer: 0,
-        lastFrame: 0,
-        chain: 0,
-        bestChain: 0,
-        chainTimer: 0,
-        multiplier: 1,
-        stars: [],
-        player: null,
-        trail: [],
-        obstacles: [],
-        warnings: [],
+        score: 0,
+        best: loadBestScore(),
+        bestAtRunStart: loadBestScore(),
+        lives: 3,
+        streak: 0,
+        bestStreak: 0,
+        stageIndex: 0,
+        stageFlash: 0,
+        stageFlashText: "Warmup",
+        stageFlashColor: "#8cf5da",
+        spawnTimer: 0.8,
+        pickupTimer: 5,
+        shake: 0,
+        damageFlash: 0,
         particles: [],
+        obstacles: [],
+        pickups: [],
         floatingTexts: [],
-        announcement: null,
-        noteLock: 0,
-        runNote: ""
+        stars: [],
+        ribbons: [],
+        pointerX: width / 2,
+        pointerActive: false,
+        pointerType: "mouse",
+        newBestTriggered: false,
+        bestPulse: 0,
+        input: {
+          left: false,
+          right: false
+        },
+        player: {
+          x: width / 2,
+          targetX: width / 2,
+          y: 610,
+          radius: 18,
+          vx: 0,
+          invulnerable: 0,
+          shield: 0,
+          slow: 0,
+          ghost: 0
+        }
       };
+
+      let animationFrame = 0;
+      let lastTimestamp = 0;
+      let audioContext = null;
 
       function loadBestScore() {
         try {
@@ -690,396 +846,233 @@
         }
       }
 
+      function unlockAudio() {
+        if (!window.AudioContext && !window.webkitAudioContext) {
+          return null;
+        }
+
+        if (!audioContext) {
+          const AudioCtor = window.AudioContext || window.webkitAudioContext;
+          audioContext = new AudioCtor();
+        }
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch(() => {});
+        }
+
+        return audioContext;
+      }
+
+      function tone({
+        frequency = 440,
+        endFrequency = frequency,
+        duration = 0.12,
+        type = "sine",
+        gain = 0.04
+      }) {
+        const audio = unlockAudio();
+        if (!audio) {
+          return;
+        }
+
+        const now = audio.currentTime;
+        const oscillator = audio.createOscillator();
+        const envelope = audio.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          Math.max(40, endFrequency),
+          now + duration
+        );
+
+        envelope.gain.setValueAtTime(0.0001, now);
+        envelope.gain.exponentialRampToValueAtTime(gain, now + 0.02);
+        envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        oscillator.connect(envelope);
+        envelope.connect(audio.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.03);
+      }
+
+      function playSound(kind) {
+        if (kind === "start") {
+          tone({ frequency: 260, endFrequency: 360, duration: 0.16, type: "triangle", gain: 0.05 });
+          return;
+        }
+        if (kind === "dodge") {
+          tone({ frequency: 520, endFrequency: 680, duration: 0.08, type: "square", gain: 0.028 });
+          return;
+        }
+        if (kind === "hit") {
+          tone({ frequency: 200, endFrequency: 80, duration: 0.2, type: "sawtooth", gain: 0.06 });
+          return;
+        }
+        if (kind === "shield") {
+          tone({ frequency: 560, endFrequency: 840, duration: 0.14, type: "triangle", gain: 0.04 });
+          return;
+        }
+        if (kind === "pickup") {
+          tone({ frequency: 700, endFrequency: 960, duration: 0.12, type: "triangle", gain: 0.035 });
+          return;
+        }
+        if (kind === "slow") {
+          tone({ frequency: 410, endFrequency: 250, duration: 0.18, type: "sine", gain: 0.04 });
+          return;
+        }
+        if (kind === "ghost") {
+          tone({ frequency: 620, endFrequency: 420, duration: 0.18, type: "triangle", gain: 0.038 });
+          return;
+        }
+        if (kind === "stage") {
+          tone({ frequency: 330, endFrequency: 520, duration: 0.16, type: "triangle", gain: 0.045 });
+          return;
+        }
+        if (kind === "best") {
+          tone({ frequency: 540, endFrequency: 860, duration: 0.18, type: "triangle", gain: 0.05 });
+          return;
+        }
+        if (kind === "gameover") {
+          tone({ frequency: 240, endFrequency: 70, duration: 0.26, type: "sawtooth", gain: 0.055 });
+        }
+      }
+
       function createStars() {
-        game.stars = Array.from({ length: 54 }, () => ({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          radius: Math.random() * 2 + 0.5,
-          speed: Math.random() * 30 + 14,
-          alpha: Math.random() * 0.45 + 0.18
+        game.stars = Array.from({ length: 42 }, () => ({
+          x: random(0, width),
+          y: random(0, height),
+          size: random(1, 2.8),
+          speed: random(6, 22),
+          alpha: random(0.18, 0.65)
+        }));
+
+        game.ribbons = Array.from({ length: 7 }, (_, index) => ({
+          y: 80 + index * 92,
+          offset: random(0, Math.PI * 2),
+          alpha: random(0.05, 0.14)
         }));
       }
 
-      function createPlayer() {
-        return {
-          x: width / 2,
-          y: height * 0.82,
-          radius: 18,
-          vx: 0,
-          vy: 0,
-          maxSpeed: 360,
-          tilt: 0,
-          squash: 0
-        };
-      }
-
-      function resetGame() {
-        game.running = false;
-        game.paused = false;
-        game.gameOver = false;
-        game.score = 0;
-        game.displayedScore = 0;
+      function resetRun() {
+        game.mode = "playing";
         game.time = 0;
-        game.speedMultiplier = 1;
-        game.stageLabel = "Warmup";
-        game.spawnTimer = 0;
-        game.spawnInterval = 0.96;
-        game.particleTimer = 0;
-        game.lastFrame = 0;
-        game.chain = 0;
-        game.bestChain = 0;
-        game.chainTimer = 0;
-        game.multiplier = 1;
+        game.score = 0;
+        game.lives = 3;
+        game.streak = 0;
+        game.bestStreak = 0;
+        game.stageIndex = 0;
+        game.stageFlash = 1.5;
+        game.stageFlashText = STAGES[0].name;
+        game.stageFlashColor = "#8cf5da";
+        game.spawnTimer = 0.7;
+        game.pickupTimer = 5.4;
+        game.shake = 0;
+        game.damageFlash = 0;
         game.obstacles = [];
-        game.warnings = [];
+        game.pickups = [];
         game.particles = [];
-        game.trail = [];
         game.floatingTexts = [];
-        game.announcement = null;
-        game.noteLock = 0;
-        game.player = createPlayer();
-        updateRunNote(getStageNote("Warmup"), true);
-
-        input.targetX = game.player.x;
-        input.targetY = game.player.y;
-
-        updateHud();
-        pauseButton.textContent = "Pause";
-        showOverlay(
-          "Dont Stop Ball",
-          "Glide through the open lane, build a clean dodge chain, and tap straight back into the next run.",
-          "Start Game",
-          false,
-          false,
-          "Arcade Survival"
-        );
-      }
-
-      function startGame() {
-        if (game.running) {
-          return;
-        }
-
-        if (!game.player) {
-          resetGame();
-        }
-
-        game.running = true;
-        game.paused = false;
-        game.gameOver = false;
-        game.lastFrame = 0;
-        pauseButton.textContent = "Pause";
+        game.pointerX = width / 2;
+        game.pointerActive = false;
+        game.newBestTriggered = false;
+        game.bestPulse = 0;
+        game.bestAtRunStart = game.best;
+        game.player.x = width / 2;
+        game.player.targetX = width / 2;
+        game.player.y = 610;
+        game.player.vx = 0;
+        game.player.invulnerable = 0;
+        game.player.shield = 0;
+        game.player.slow = 0;
+        game.player.ghost = 0;
         hideOverlay();
-        requestAnimationFrame(loop);
-      }
-
-      function pauseGame() {
-        if (!game.running || game.gameOver) {
-          return;
-        }
-
-        game.running = false;
-        game.paused = true;
-        pauseButton.textContent = "Resume";
-        showOverlay(
-          "Paused",
-          "Your chain is safe. Press P, hit Resume, or tap the playfield when you want back in.",
-          "Resume",
-          false,
-          false,
-          "Run Paused"
-        );
-      }
-
-      function resumeGame() {
-        if (!game.paused || game.gameOver) {
-          return;
-        }
-
-        startGame();
-      }
-
-      function endGame() {
-        game.running = false;
-        game.paused = false;
-        game.gameOver = true;
-
-        if (game.score > game.best) {
-          game.best = Math.floor(game.score);
-          saveBestScore();
-        }
-
         updateHud();
-        pauseButton.textContent = "Pause";
-
-        const newBest = Math.floor(game.score) >= game.best && game.best > 0;
-        const recap = newBest
-          ? "New best score. Hit restart while the rhythm is still fresh."
-          : "You reached " + game.stageLabel + ". Restart fast and chase the next chain target.";
-
-        showOverlay(
-          "Run Over",
-          recap,
-          "Restart Run",
-          true,
-          true,
-          newBest ? "New Personal Best" : "Score Locked In"
-        );
       }
 
-      function updateHud() {
-        const shownScore = Math.max(game.displayedScore, Math.floor(game.score));
-        scoreElement.textContent = String(shownScore);
-        bestScoreElement.textContent = String(Math.floor(game.best));
-        chainElement.textContent = String(game.chain);
-        speedElement.textContent = game.speedMultiplier.toFixed(1) + "x";
-        stageElement.textContent = game.stageLabel;
-        challengeElement.textContent = getChallengeText();
-        runNoteElement.textContent = game.runNote;
-        canvasNoteElement.textContent =
-          game.chain > 0
-            ? "Chain active. Another clean dodge in the next few beats keeps the bonus alive."
-            : "Each clean dodge extends the chain window. Stay smooth and rebuild it.";
+      function startRun() {
+        unlockAudio();
+        resetRun();
+        playSound("start");
       }
 
-      function showOverlay(title, text, actionLabel, showGamesLink, showSummary, kicker) {
+      function endRun() {
+        game.mode = "gameover";
+        game.best = Math.max(game.best, Math.floor(game.score));
+        saveBestScore();
+        playSound("gameover");
+
+        const kicker = game.newBestTriggered ? "New Best Run" : "Run Broken";
+        const text = game.newBestTriggered
+          ? "You pushed past your old best. Restart while the movement is still fresh."
+          : "Spend the power-ups cleaner and try to carry all three lives into the later stages.";
+
+        showOverlay({
+          kicker,
+          title: "Dont Stop Ball",
+          text,
+          actionLabel: "Restart Game",
+          showSummary: true,
+          showGames: true
+        });
+      }
+
+      function showOverlay({ kicker, title, text, actionLabel, showSummary, showGames }) {
         overlayKicker.textContent = kicker;
         overlayTitle.textContent = title;
         overlayText.textContent = text;
         actionButton.textContent = actionLabel;
-        gamesLink.hidden = !showGamesLink;
         overlaySummary.hidden = !showSummary;
         overlayScore.textContent = String(Math.floor(game.score));
         overlayBest.textContent = String(Math.floor(game.best));
-        overlayChain.textContent = String(game.bestChain);
+        overlayChain.textContent = String(game.bestStreak);
+        gamesLink.hidden = !showGames;
         overlay.hidden = false;
       }
 
       function hideOverlay() {
         overlay.hidden = true;
+        gamesLink.hidden = true;
       }
 
-      function getStageLabel(time) {
-        if (time < 12) {
-          return "Warmup";
+      function activatePrimaryAction() {
+        if (game.mode === "start" || game.mode === "gameover") {
+          startRun();
+          return;
         }
 
-        if (time < 24) {
-          return "Heated";
-        }
-
-        if (time < 40) {
-          return "Frenzy";
-        }
-
-        if (time < 56) {
-          return "Overdrive";
-        }
-
-        return "Redline";
-      }
-
-      function getStageNote(label) {
-        if (label === "Warmup") {
-          return "Warmup is for reading the lane telegraphs before the bars drop.";
-        }
-
-        if (label === "Heated") {
-          return "Heated adds wider gates. Stay low so you can pick the gap early.";
-        }
-
-        if (label === "Frenzy") {
-          return "Frenzy mixes doubles and sweepers. Start moving on the warning, not the impact.";
-        }
-
-        if (label === "Overdrive") {
-          return "Overdrive punishes oversteer. Small corrections beat full-lane panic swings.";
-        }
-
-        return "Redline stacks fast hazards. Trust the read and keep the chain alive.";
-      }
-
-      function getChallengeText() {
-        const nextMilestone = chainMilestones.find((value) => value > game.chain);
-
-        if (!nextMilestone) {
-          return "Max chain target cleared. Hold the line and cash in the multiplier.";
-        }
-
-        const remaining = nextMilestone - game.chain;
-        const nextBonus = multiplierForChain(nextMilestone).toFixed(2);
-
-        if (game.chain === 0) {
-          return "Chain " + nextMilestone + " clean dodges to unlock x" + nextBonus + ".";
-        }
-
-        return (
-          remaining +
-          " more clean dodge" +
-          (remaining === 1 ? "" : "s") +
-          " for x" +
-          nextBonus +
-          "."
-        );
-      }
-
-      function multiplierForChain(chain) {
-        return 1 + Math.min(1.5, Math.floor(chain / 4) * 0.25);
-      }
-
-      function choosePattern() {
-        const roll = Math.random();
-        const margin = 16;
-
-        if (game.time < 8 || roll < 0.28) {
-          return [
-            buildWarning({
-              x: random(margin, width - 126 - margin),
-              width: random(76, 126),
-              height: random(18, 28),
-              speed: random(230, 315),
-              drift: random(-40, 40),
-              type: "standard"
-            })
-          ];
-        }
-
-        if (roll < 0.5) {
-          const gapWidth = random(92, 126);
-          const gapX = random(58, width - gapWidth - 58);
-          return [
-            buildWarning({
-              x: margin,
-              width: gapX - margin,
-              height: random(18, 24),
-              speed: random(245, 320),
-              drift: random(-18, 18),
-              type: "gate"
-            }),
-            buildWarning({
-              x: gapX + gapWidth,
-              width: width - margin - (gapX + gapWidth),
-              height: random(18, 24),
-              speed: random(245, 320),
-              drift: random(-18, 18),
-              type: "gate"
-            })
-          ].filter((warning) => warning.width > 34);
-        }
-
-        if (roll < 0.7) {
-          const firstX = random(margin, width - 92 - margin);
-          const secondX = clamp(firstX + random(72, 148), margin, width - 84 - margin);
-          return [
-            buildWarning({
-              x: firstX,
-              width: random(54, 92),
-              height: random(18, 24),
-              speed: random(250, 340),
-              drift: random(-56, 56),
-              type: "split"
-            }),
-            buildWarning({
-              x: secondX,
-              width: random(46, 86),
-              height: random(18, 24),
-              speed: random(255, 350),
-              drift: random(-70, 70),
-              type: "split",
-              delay: 0.08
-            })
-          ];
-        }
-
-        if (roll < 0.84) {
-          return [
-            buildWarning({
-              x: random(margin, width - 150 - margin),
-              width: random(112, 150),
-              height: random(28, 38),
-              speed: random(210, 270),
-              drift: random(-24, 24),
-              type: "heavy",
-              ttl: 0.6
-            })
-          ];
-        }
-
-        const sweeperWidth = random(52, 74);
-        const startsLeft = Math.random() > 0.5;
-        return [
-          buildWarning({
-            x: startsLeft ? margin : width - sweeperWidth - margin,
-            width: sweeperWidth,
-            height: random(18, 24),
-            speed: random(300, 380),
-            drift: startsLeft ? random(110, 180) : random(-180, -110),
-            type: "sweeper",
-            ttl: 0.44
-          })
-        ];
-      }
-
-      function buildWarning(config) {
-        return {
-          x: config.x,
-          y: -(config.height || 22) - 30,
-          width: config.width,
-          height: config.height || 22,
-          speed: (config.speed || 260) * game.speedMultiplier,
-          drift: config.drift || 0,
-          type: config.type || "standard",
-          ttl: config.ttl || 0.5,
-          delay: config.delay || 0,
-          pulse: Math.random() * Math.PI * 2
-        };
-      }
-
-      function queuePattern() {
-        const pattern = choosePattern();
-        for (const warning of pattern) {
-          game.warnings.push(warning);
+        if (game.mode === "paused") {
+          game.mode = "playing";
+          hideOverlay();
         }
       }
 
-      function materializeObstacle(warning) {
-        game.obstacles.push({
-          x: warning.x,
-          y: warning.y,
-          width: warning.width,
-          height: warning.height,
-          speed: warning.speed,
-          drift: warning.drift,
-          type: warning.type,
-          scored: false
-        });
-      }
-
-      function createTrailParticle() {
-        game.particles.push({
-          x: game.player.x + random(-4, 4),
-          y: game.player.y + random(-2, 8),
-          vx: random(-18, 18),
-          vy: random(26, 70),
-          radius: random(1.6, 3.2),
-          life: random(0.2, 0.42),
-          maxLife: 0.42,
-          color: "140, 245, 218"
-        });
-      }
-
-      function createBurst(x, y, color, amount) {
-        for (let index = 0; index < amount; index += 1) {
-          game.particles.push({
-            x,
-            y,
-            vx: random(-220, 220),
-            vy: random(-220, 220),
-            radius: random(2.2, 5.8),
-            life: random(0.35, 0.8),
-            maxLife: 0.8,
-            color
+      function togglePause(forcePause = false) {
+        if (game.mode === "playing") {
+          game.mode = "paused";
+          showOverlay({
+            kicker: "Paused",
+            title: "Catch Your Breath",
+            text: "Resume when you are ready. The stage timer and power-up timers are frozen.",
+            actionLabel: "Resume Run",
+            showSummary: false,
+            showGames: true
           });
+          return;
+        }
+
+        if (game.mode === "paused" && !forcePause) {
+          game.mode = "playing";
+          hideOverlay();
+        }
+      }
+
+      function setKeyState(code, pressed) {
+        if (code === "ArrowLeft" || code === "KeyA") {
+          game.input.left = pressed;
+        }
+        if (code === "ArrowRight" || code === "KeyD") {
+          game.input.right = pressed;
         }
       }
 
@@ -1089,200 +1082,369 @@
           y,
           text,
           color,
-          life: 0.85,
-          maxLife: 0.85
+          life: 1
         });
       }
 
-      function announce(text, color) {
-        game.announcement = {
-          text,
-          color,
-          life: 1.35,
-          maxLife: 1.35
-        };
+      function createBurst(x, y, color, count, speedMin, speedMax) {
+        for (let index = 0; index < count; index += 1) {
+          const angle = random(0, Math.PI * 2);
+          const speed = random(speedMin, speedMax);
+          game.particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: random(2, 6),
+            life: random(0.35, 0.85),
+            color
+          });
+        }
       }
 
-      function updateRunNote(text, force) {
-        if (!force && game.noteLock > 0) {
+      function getStage() {
+        return STAGES[game.stageIndex];
+      }
+
+      function maybeAdvanceStage() {
+        let nextStageIndex = 0;
+        for (let index = STAGES.length - 1; index >= 0; index -= 1) {
+          if (game.time >= STAGES[index].start) {
+            nextStageIndex = index;
+            break;
+          }
+        }
+
+        if (nextStageIndex !== game.stageIndex) {
+          game.stageIndex = nextStageIndex;
+          game.stageFlash = 1.45;
+          game.stageFlashText = STAGES[nextStageIndex].name;
+          game.stageFlashColor = nextStageIndex >= 4 ? "#ff7d6c" : "#8cf5da";
+          createBurst(width / 2, height * 0.34, nextStageIndex >= 4 ? "#ff7d6c" : "#8cf5da", 26, 35, 150);
+          playSound("stage");
+        }
+      }
+
+      function getSpeedMultiplier() {
+        const base = getStage().speed / STAGES[0].speed;
+        return base * (game.player.slow > 0 ? 0.72 : 1);
+      }
+
+      function scheduleNextObstacle() {
+        const stage = getStage();
+        const slowFactor = game.player.slow > 0 ? 1.2 : 1;
+        game.spawnTimer = random(stage.spawnMin, stage.spawnMax) * slowFactor;
+      }
+
+      function scheduleNextPickup() {
+        game.pickupTimer = random(6.5, 10.5);
+      }
+
+      function weightedObstacleKind() {
+        const stageIndex = game.stageIndex;
+        const roll = Math.random();
+        if (stageIndex >= 2 && roll < 0.12) {
+          return "spinner";
+        }
+        if (roll < 0.34) {
+          return "bar";
+        }
+        if (roll < 0.54) {
+          return "gate";
+        }
+        if (roll < 0.74) {
+          return "heavy";
+        }
+        return "sweeper";
+      }
+
+      function spawnObstacle() {
+        const kind = weightedObstacleKind();
+        const stageSpeed = getStage().speed * (game.player.slow > 0 ? 0.72 : 1);
+
+        if (kind === "bar") {
+          const obstacle = {
+            kind,
+            x: random(18, width - 108),
+            y: -38,
+            width: random(86, 114),
+            height: 22,
+            speed: stageSpeed + random(-14, 24),
+            drift: random(-26, 26),
+            scored: false
+          };
+          game.obstacles.push(obstacle);
           return;
         }
 
-        game.runNote = text;
-        game.noteLock = force ? 0 : 1.4;
+        if (kind === "heavy") {
+          const obstacle = {
+            kind,
+            x: random(14, width - 138),
+            y: -44,
+            width: random(112, 138),
+            height: 28,
+            speed: stageSpeed + random(4, 34),
+            drift: random(-20, 20),
+            scored: false
+          };
+          game.obstacles.push(obstacle);
+          return;
+        }
+
+        if (kind === "gate") {
+          const gapWidth = random(100, 136);
+          const gapX = random(42, width - gapWidth - 42);
+          game.obstacles.push({
+            kind,
+            x: 0,
+            y: -36,
+            width,
+            height: 24,
+            gapX,
+            gapWidth,
+            speed: stageSpeed + random(-6, 28),
+            scored: false
+          });
+          return;
+        }
+
+        if (kind === "sweeper") {
+          const sweepWidth = random(152, 210);
+          game.obstacles.push({
+            kind,
+            x: random(14, width - sweepWidth - 14),
+            y: -34,
+            width: sweepWidth,
+            height: 18,
+            speed: stageSpeed + random(10, 42),
+            drift: random(-78, 78),
+            scored: false
+          });
+          return;
+        }
+
+        game.obstacles.push({
+          kind: "spinner",
+          x: random(98, width - 98),
+          y: -72,
+          armLength: random(56, 74),
+          armWidth: random(14, 18),
+          speed: stageSpeed + random(12, 38),
+          spin: random(1.8, 3.8) * (Math.random() < 0.5 ? -1 : 1),
+          angle: random(0, Math.PI * 2),
+          scored: false
+        });
+      }
+
+      function spawnPickup() {
+        const types = ["shield", "slow", "ghost"];
+        const type = types[Math.floor(Math.random() * types.length)];
+        game.pickups.push({
+          type,
+          x: random(50, width - 50),
+          y: -36,
+          size: 14,
+          speed: getStage().speed * 0.82,
+          wobble: random(0, Math.PI * 2)
+        });
+      }
+
+      function collectPickup(pickup) {
+        if (pickup.type === "shield") {
+          game.player.shield = Math.min(game.player.shield + 1, 2);
+          spawnFloatingText(pickup.x, pickup.y - 12, "Shield", POWER_COLORS.shield);
+          createBurst(pickup.x, pickup.y, POWER_COLORS.shield, 16, 24, 110);
+          playSound("pickup");
+        } else if (pickup.type === "slow") {
+          game.player.slow = 4.8;
+          spawnFloatingText(pickup.x, pickup.y - 12, "Slow-Mo", POWER_COLORS.slow);
+          createBurst(pickup.x, pickup.y, POWER_COLORS.slow, 18, 28, 130);
+          playSound("slow");
+        } else {
+          game.player.ghost = 4;
+          game.player.invulnerable = Math.max(game.player.invulnerable, 0.35);
+          spawnFloatingText(pickup.x, pickup.y - 12, "Ghost", POWER_COLORS.ghost);
+          createBurst(pickup.x, pickup.y, POWER_COLORS.ghost, 18, 28, 130);
+          playSound("ghost");
+        }
       }
 
       function registerDodge(obstacle) {
-        game.chain += 1;
-        game.bestChain = Math.max(game.bestChain, game.chain);
-        game.chainTimer = 2.1;
-        game.multiplier = multiplierForChain(game.chain);
-
-        const bonus =
-          8 +
-          Math.round(game.multiplier * 4) +
-          (obstacle.type === "heavy" ? 4 : 0) +
-          (obstacle.type === "sweeper" ? 2 : 0);
-
+        game.streak += 1;
+        game.bestStreak = Math.max(game.bestStreak, game.streak);
+        const bonus = 16 + game.streak * 2 + game.stageIndex * 5;
         game.score += bonus;
-        createBurst(game.player.x, game.player.y + 6, "140, 245, 218", 6);
-        spawnFloatingText(game.player.x, game.player.y - 42, "+" + bonus, "140, 245, 218");
+        playSound("dodge");
+        const label =
+          obstacle.kind === "spinner"
+            ? "Spin!"
+            : obstacle.kind === "gate"
+              ? "Split"
+              : obstacle.kind === "sweeper"
+                ? "Sweep"
+                : "Clean";
+        spawnFloatingText(
+          clamp(game.player.x + random(-28, 28), 40, width - 40),
+          game.player.y - 34,
+          "+" + bonus + " " + label,
+          game.streak >= 8 ? "#ffc672" : "#8cf5da"
+        );
+      }
 
-        if (chainMilestones.includes(game.chain)) {
-          announce("Chain " + game.chain, "255, 198, 114");
-          createBurst(game.player.x, game.player.y, "255, 198, 114", 12);
-          updateRunNote(
-            "Chain " +
-              game.chain +
-              " active. Score is now rolling at x" +
-              game.multiplier.toFixed(2) +
-              ".",
-            false
-          );
+      function hitPlayer(obstacle) {
+        if (game.player.invulnerable > 0 || game.player.ghost > 0) {
+          return;
+        }
+
+        obstacle.remove = true;
+        game.damageFlash = 0.85;
+        game.shake = Math.max(game.shake, 12);
+
+        if (game.player.shield > 0) {
+          game.player.shield -= 1;
+          game.player.invulnerable = 1.15;
+          createBurst(game.player.x, game.player.y, POWER_COLORS.shield, 18, 25, 130);
+          spawnFloatingText(game.player.x, game.player.y - 28, "Shield Save", POWER_COLORS.shield);
+          playSound("shield");
+          return;
+        }
+
+        game.lives -= 1;
+        game.streak = 0;
+        game.player.invulnerable = 1.55;
+        createBurst(game.player.x, game.player.y, "#ff7d6c", 22, 28, 170);
+        spawnFloatingText(game.player.x, game.player.y - 26, "-1 Life", "#ff7d6c");
+        playSound("hit");
+
+        if (game.lives <= 0) {
+          endRun();
         }
       }
 
-      function update(dt) {
-        game.time += dt;
-        const nextStage = getStageLabel(game.time);
-        if (nextStage !== game.stageLabel) {
-          game.stageLabel = nextStage;
-          announce(nextStage, "255, 198, 114");
-          updateRunNote(getStageNote(nextStage), false);
+      function maybeTriggerNewBest() {
+        if (!game.newBestTriggered && Math.floor(game.score) > game.bestAtRunStart) {
+          game.newBestTriggered = true;
+          game.best = Math.floor(game.score);
+          game.bestPulse = 1.8;
+          game.stageFlash = 1.2;
+          game.stageFlashText = "New Best!";
+          game.stageFlashColor = "#ffc672";
+          createBurst(width / 2, height * 0.28, "#ffc672", 28, 35, 170);
+          playSound("best");
+          saveBestScore();
+        }
+      }
+
+      function updatePlayer(dt) {
+        const axis = (game.input.right ? 1 : 0) - (game.input.left ? 1 : 0);
+
+        if (game.pointerActive) {
+          game.player.targetX += (game.pointerX - game.player.targetX) * Math.min(1, dt * 18);
         }
 
-        game.speedMultiplier = 1 + game.time * 0.048;
-        game.score += dt * 13 * game.multiplier;
-        game.displayedScore += (Math.floor(game.score) - game.displayedScore) * Math.min(1, dt * 14);
-
-        if (game.noteLock > 0) {
-          game.noteLock -= dt;
+        if (axis !== 0) {
+          game.pointerActive = false;
+          game.player.targetX += axis * 360 * dt;
         }
 
-        const keyboardX = (input.right ? 1 : 0) - (input.left ? 1 : 0);
-        const keyboardY = (input.down ? 1 : 0) - (input.up ? 1 : 0);
+        game.player.targetX = clamp(game.player.targetX, 24, width - 24);
+        const pull = game.player.targetX - game.player.x;
+        game.player.vx += pull * 34 * dt;
+        game.player.vx *= Math.exp(-8.5 * dt);
+        game.player.x += game.player.vx * dt * 60;
+        game.player.x = clamp(game.player.x, 22, width - 22);
 
-        let desiredVx = keyboardX * game.player.maxSpeed;
-        let desiredVy = keyboardY * game.player.maxSpeed * 0.88;
-
-        if (input.pointerActive) {
-          desiredVx += (input.targetX - game.player.x) * 4.4;
-          desiredVy += (input.targetY - game.player.y) * 4.1;
+        if (game.player.invulnerable > 0) {
+          game.player.invulnerable = Math.max(0, game.player.invulnerable - dt);
         }
-
-        game.player.vx += (desiredVx - game.player.vx) * Math.min(1, dt * 10);
-        game.player.vy += (desiredVy - game.player.vy) * Math.min(1, dt * 10);
-        game.player.x += game.player.vx * dt;
-        game.player.y += game.player.vy * dt;
-
-        game.player.tilt += (clamp(game.player.vx / 260, -0.35, 0.35) - game.player.tilt) * Math.min(1, dt * 8);
-        const speedBlend = Math.min(1, Math.hypot(game.player.vx, game.player.vy) / 360);
-        game.player.squash += (speedBlend - game.player.squash) * Math.min(1, dt * 10);
-
-        const margin = game.player.radius + 10;
-        if (game.player.x < margin) {
-          game.player.x = margin;
-          game.player.vx *= 0.2;
+        if (game.player.slow > 0) {
+          game.player.slow = Math.max(0, game.player.slow - dt);
         }
-        if (game.player.x > width - margin) {
-          game.player.x = width - margin;
-          game.player.vx *= 0.2;
+        if (game.player.ghost > 0) {
+          game.player.ghost = Math.max(0, game.player.ghost - dt);
         }
-        if (game.player.y < margin) {
-          game.player.y = margin;
-          game.player.vy *= 0.2;
-        }
-        if (game.player.y > height - margin) {
-          game.player.y = height - margin;
-          game.player.vy *= 0.2;
-        }
+      }
 
-        game.spawnTimer += dt;
-        game.spawnInterval = Math.max(0.24, 0.94 - game.time * 0.014);
-
-        while (game.spawnTimer >= game.spawnInterval) {
-          game.spawnTimer -= game.spawnInterval;
-          queuePattern();
-        }
-
-        for (const star of game.stars) {
-          star.y += star.speed * game.speedMultiplier * dt * 0.24;
-
-          if (star.y > height + 5) {
-            star.y = -5;
-            star.x = Math.random() * width;
-          }
-        }
-
-        for (let index = game.warnings.length - 1; index >= 0; index -= 1) {
-          const warning = game.warnings[index];
-          if (warning.delay > 0) {
-            warning.delay -= dt;
-            continue;
-          }
-
-          warning.ttl -= dt;
-
-          if (warning.ttl <= 0) {
-            materializeObstacle(warning);
-            game.warnings.splice(index, 1);
-          }
-        }
+      function updateObstacles(dt) {
+        const stageSpeed = getStage().speed * (game.player.slow > 0 ? 0.72 : 1);
+        const player = game.player;
 
         for (let index = game.obstacles.length - 1; index >= 0; index -= 1) {
           const obstacle = game.obstacles[index];
-          obstacle.y += obstacle.speed * dt;
-          obstacle.x += obstacle.drift * dt;
 
-          if (obstacle.x <= 8 || obstacle.x + obstacle.width >= width - 8) {
-            obstacle.drift *= -1;
-            obstacle.x = clamp(obstacle.x, 8, width - obstacle.width - 8);
+          if (obstacle.kind === "spinner") {
+            obstacle.y += obstacle.speed * dt;
+            obstacle.angle += obstacle.spin * dt;
+          } else {
+            obstacle.y += obstacle.speed * dt;
+            obstacle.x += obstacle.drift * dt;
+
+            if (obstacle.kind !== "gate") {
+              const maxX = width - obstacle.width - 10;
+              if (obstacle.x <= 10 || obstacle.x >= maxX) {
+                obstacle.drift *= -1;
+              }
+              obstacle.x = clamp(obstacle.x, 10, maxX);
+            }
           }
 
-          if (!obstacle.scored && obstacle.y > game.player.y + game.player.radius + 12) {
+          if (!obstacle.scored && obstacle.y > player.y + player.radius + 18) {
             obstacle.scored = true;
             registerDodge(obstacle);
           }
 
-          if (circleHitsRect(game.player, obstacle)) {
-            createBurst(game.player.x, game.player.y, "255, 125, 108", 28);
-            endGame();
-            return;
+          if (checkObstacleCollision(obstacle, player)) {
+            hitPlayer(obstacle);
           }
 
-          if (obstacle.y > height + obstacle.height + 40) {
+          if (obstacle.remove || obstacle.y > height + 110) {
             game.obstacles.splice(index, 1);
           }
         }
 
-        if (game.chain > 0) {
-          game.chainTimer -= dt;
-          if (game.chainTimer <= 0) {
-            game.chain = 0;
-            game.multiplier = 1;
-            updateRunNote("Chain dropped. Rebuild it with the next clean dodge.", false);
+        for (let index = game.pickups.length - 1; index >= 0; index -= 1) {
+          const pickup = game.pickups[index];
+          pickup.wobble += dt * 3.2;
+          pickup.y += pickup.speed * dt;
+          pickup.x += Math.sin(pickup.wobble) * 24 * dt;
+
+          if (distance(pickup.x, pickup.y, player.x, player.y) <= player.radius + pickup.size + 2) {
+            collectPickup(pickup);
+            game.pickups.splice(index, 1);
+            continue;
+          }
+
+          if (pickup.y > height + 40) {
+            game.pickups.splice(index, 1);
           }
         }
 
-        game.particleTimer += dt;
-        if (game.particleTimer >= 0.04) {
-          game.particleTimer = 0;
-          createTrailParticle();
+        game.spawnTimer -= dt;
+        if (game.spawnTimer <= 0) {
+          spawnObstacle();
+          scheduleNextObstacle();
         }
 
-        game.trail.unshift({ x: game.player.x, y: game.player.y, squash: game.player.squash });
-        if (game.trail.length > 14) {
-          game.trail.length = 14;
+        game.pickupTimer -= dt;
+        if (game.pickupTimer <= 0) {
+          spawnPickup();
+          scheduleNextPickup();
         }
 
+        const scoreRate = 16 + stageSpeed * 0.045;
+        game.score += scoreRate * dt;
+        game.score = Math.max(0, game.score);
+      }
+
+      function updateParticles(dt) {
         for (let index = game.particles.length - 1; index >= 0; index -= 1) {
           const particle = game.particles[index];
-          particle.life -= dt;
           particle.x += particle.vx * dt;
           particle.y += particle.vy * dt;
           particle.vx *= 0.985;
           particle.vy *= 0.985;
-
+          particle.life -= dt;
           if (particle.life <= 0) {
             game.particles.splice(index, 1);
           }
@@ -1290,347 +1452,467 @@
 
         for (let index = game.floatingTexts.length - 1; index >= 0; index -= 1) {
           const label = game.floatingTexts[index];
+          label.y -= 26 * dt;
           label.life -= dt;
-          label.y -= 28 * dt;
           if (label.life <= 0) {
             game.floatingTexts.splice(index, 1);
           }
         }
 
-        if (game.announcement) {
-          game.announcement.life -= dt;
-          if (game.announcement.life <= 0) {
-            game.announcement = null;
-          }
+        if (game.mode === "playing") {
+          const trailColor = game.player.ghost > 0 ? "#c5a6ff" : "#8cf5da";
+          game.particles.push({
+            x: game.player.x + random(-5, 5),
+            y: game.player.y + random(-4, 4),
+            vx: random(-18, 18),
+            vy: random(18, 72),
+            size: random(1.8, 4.8),
+            life: random(0.18, 0.42),
+            color: trailColor
+          });
         }
 
+        if (game.bestPulse > 0) {
+          game.bestPulse = Math.max(0, game.bestPulse - dt);
+        }
+
+        if (game.stageFlash > 0) {
+          game.stageFlash = Math.max(0, game.stageFlash - dt);
+        }
+
+        if (game.damageFlash > 0) {
+          game.damageFlash = Math.max(0, game.damageFlash - dt * 2.1);
+        }
+
+        if (game.shake > 0) {
+          game.shake = Math.max(0, game.shake - dt * 22);
+        }
+      }
+
+      function updateHud() {
+        const stage = getStage();
+        game.best = Math.max(game.best, Math.floor(game.score));
+
+        scoreElement.textContent = String(Math.floor(game.score));
+        bestScoreElement.textContent = String(Math.floor(game.best));
+        bestScoreElement.classList.toggle("celebrate", game.bestPulse > 0);
+        chainElement.textContent = String(game.streak);
+        speedElement.textContent = getSpeedMultiplier().toFixed(1) + "x";
+        stageElement.textContent = stage.name;
+        runNoteElement.textContent = stage.note;
+        challengeElement.textContent =
+          game.streak >= 10
+            ? "Hot streak live. One more clean read keeps the gold score rhythm running."
+            : "Hold a " + (Math.max(5, Math.ceil((game.streak + 1) / 5) * 5)) + "-dodge streak to force bigger bonus bursts.";
+        canvasNoteElement.textContent =
+          game.player.ghost > 0
+            ? "Ghost is active. Use the phase window to reset your line before the next stack drops."
+            : game.player.slow > 0
+              ? "Slow-Mo is active. This is the safest time to rebuild position and protect your lives."
+              : game.player.shield > 0
+                ? "Shield is loaded. You can absorb one bad read, but the best score still comes from staying clean."
+                : "Shield blocks one mistake, Slow-Mo opens a short recovery window, and Ghost lets you cut through a bad read.";
+
+        const activePowers = [];
+        if (game.player.shield > 0) {
+          activePowers.push("Shield x" + game.player.shield);
+        }
+        if (game.player.slow > 0) {
+          activePowers.push("Slow-Mo " + game.player.slow.toFixed(1) + "s");
+        }
+        if (game.player.ghost > 0) {
+          activePowers.push("Ghost " + game.player.ghost.toFixed(1) + "s");
+        }
+        powerElement.textContent =
+          activePowers.length > 0
+            ? activePowers.join(" | ")
+            : "No active power-up. Catch pickups for Shield, Slow-Mo, or Ghost.";
+
+        livesDisplay.innerHTML = Array.from({ length: 3 }, (_, index) => {
+          const active = index < game.lives ? "heart active" : "heart";
+          return '<span class="' + active + '">&#10084;</span>';
+        }).join("");
+
+        overlayScore.textContent = String(Math.floor(game.score));
+        overlayBest.textContent = String(Math.floor(game.best));
+        overlayChain.textContent = String(game.bestStreak);
+        damageFlashElement.style.opacity = String(game.damageFlash * 0.72);
+      }
+
+      function update(dt) {
+        if (game.mode !== "playing") {
+          updateParticles(dt);
+          updateHud();
+          return;
+        }
+
+        game.time += dt;
+        maybeAdvanceStage();
+        updatePlayer(dt);
+        updateObstacles(dt);
+        updateParticles(dt);
+        maybeTriggerNewBest();
         updateHud();
       }
 
-      function draw() {
-        context.clearRect(0, 0, width, height);
-        drawBackground();
-        drawGrid();
-        drawStars();
-        drawWarnings();
-        drawObstacles();
-        drawParticles();
-        drawTrail();
-        drawPlayer();
-        drawFloatingTexts();
-        drawAnnouncement();
-        drawVignette();
+      function checkObstacleCollision(obstacle, player) {
+        if (obstacle.kind === "spinner") {
+          const centerY = obstacle.y;
+          for (let arm = 0; arm < 4; arm += 1) {
+            const angle = obstacle.angle + arm * (Math.PI / 2);
+            const x2 = obstacle.x + Math.cos(angle) * obstacle.armLength;
+            const y2 = centerY + Math.sin(angle) * obstacle.armLength;
+            const dist = pointToSegmentDistance(player.x, player.y, obstacle.x, centerY, x2, y2);
+            if (dist <= player.radius + obstacle.armWidth * 0.5) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        if (obstacle.kind === "gate") {
+          const bandTop = obstacle.y;
+          const bandBottom = obstacle.y + obstacle.height;
+          if (player.y + player.radius < bandTop || player.y - player.radius > bandBottom) {
+            return false;
+          }
+          return (
+            player.x - player.radius < obstacle.gapX ||
+            player.x + player.radius > obstacle.gapX + obstacle.gapWidth
+          );
+        }
+
+        return circleHitsRect(player, obstacle);
       }
 
       function drawBackground() {
-        const playfield = context.createLinearGradient(0, 0, 0, height);
-        playfield.addColorStop(0, "#0a1626");
-        playfield.addColorStop(0.6, "#07111d");
-        playfield.addColorStop(1, "#040a12");
-        context.fillStyle = playfield;
+        const stage = getStage();
+        const gradient = context.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, stage.colors[0]);
+        gradient.addColorStop(1, stage.colors[1]);
+        context.fillStyle = gradient;
         context.fillRect(0, 0, width, height);
 
-        const glow = context.createRadialGradient(
-          width / 2,
-          height * 0.82,
-          10,
-          width / 2,
-          height * 0.82,
-          240
-        );
-        glow.addColorStop(0, "rgba(140, 245, 218, 0.16)");
-        glow.addColorStop(1, "rgba(140, 245, 218, 0)");
-        context.fillStyle = glow;
-        context.fillRect(0, 0, width, height);
-      }
-
-      function drawGrid() {
-        context.save();
-        context.strokeStyle = "rgba(255, 255, 255, 0.04)";
-        context.lineWidth = 1;
-
-        for (let x = 0; x <= width; x += 35) {
-          context.beginPath();
-          context.moveTo(x, 0);
-          context.lineTo(x, height);
-          context.stroke();
-        }
-
-        for (let y = 0; y <= height; y += 35) {
-          context.beginPath();
-          context.moveTo(0, y);
-          context.lineTo(width, y);
-          context.stroke();
-        }
-
-        context.strokeStyle = "rgba(140, 245, 218, 0.14)";
-        context.lineWidth = 3;
-        context.strokeRect(8, 8, width - 16, height - 16);
-        context.restore();
-      }
-
-      function drawStars() {
-        context.save();
         for (const star of game.stars) {
-          context.fillStyle = "rgba(183, 195, 190, " + star.alpha + ")";
-          context.beginPath();
-          context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-          context.fill();
+          const y = (star.y + game.time * star.speed) % height;
+          context.globalAlpha = star.alpha;
+          context.fillStyle = "#d9f7ff";
+          context.fillRect(star.x, y, star.size, star.size);
         }
-        context.restore();
+        context.globalAlpha = 1;
+
+        context.strokeStyle = "rgba(140,245,218,0.08)";
+        context.lineWidth = 1;
+        for (let row = 0; row < 9; row += 1) {
+          const y = ((row * 92 + game.time * getStage().speed * 0.25) % height) - 24;
+          context.beginPath();
+          context.moveTo(22, y);
+          context.lineTo(width - 22, y);
+          context.stroke();
+        }
+
+        for (const ribbon of game.ribbons) {
+          context.beginPath();
+          context.strokeStyle =
+            game.stageIndex >= 4
+              ? "rgba(255,125,108," + ribbon.alpha + ")"
+              : "rgba(140,245,218," + ribbon.alpha + ")";
+          context.lineWidth = 2;
+          for (let x = 0; x <= width; x += 14) {
+            const y = ribbon.y + Math.sin(ribbon.offset + x * 0.022 + game.time * 0.8) * 14;
+            if (x === 0) {
+              context.moveTo(x, y);
+            } else {
+              context.lineTo(x, y);
+            }
+          }
+          context.stroke();
+        }
+
+        context.strokeStyle = "rgba(255,255,255,0.05)";
+        context.lineWidth = 2;
+        context.strokeRect(12, 12, width - 24, height - 24);
       }
 
-      function drawWarnings() {
-        context.save();
-        for (const warning of game.warnings) {
-          if (warning.delay > 0) {
-            continue;
-          }
-
-          const flash = 0.32 + Math.abs(Math.sin((warning.ttl + warning.pulse) * 18)) * 0.48;
-          context.fillStyle = "rgba(255, 125, 108, " + flash.toFixed(2) + ")";
-          roundRect(context, warning.x, 18, warning.width, 16, 8);
+      function drawPickups() {
+        for (const pickup of game.pickups) {
+          const color = POWER_COLORS[pickup.type];
+          const pulse = 1 + Math.sin(game.time * 6 + pickup.wobble) * 0.14;
+          context.save();
+          context.translate(pickup.x, pickup.y);
+          context.rotate(game.time * 1.8);
+          context.shadowBlur = 18;
+          context.shadowColor = color;
+          context.fillStyle = color;
+          context.beginPath();
+          context.moveTo(0, -pickup.size * pulse);
+          context.lineTo(pickup.size * pulse, 0);
+          context.lineTo(0, pickup.size * pulse);
+          context.lineTo(-pickup.size * pulse, 0);
+          context.closePath();
           context.fill();
-
-          const beam = context.createLinearGradient(0, 18, 0, height);
-          beam.addColorStop(0, "rgba(255, 125, 108, 0.28)");
-          beam.addColorStop(1, "rgba(255, 125, 108, 0)");
-          context.fillStyle = beam;
-          context.fillRect(warning.x, 26, warning.width, height - 26);
+          context.restore();
         }
-        context.restore();
       }
 
       function drawObstacles() {
         for (const obstacle of game.obstacles) {
-          const fill = context.createLinearGradient(
+          context.save();
+          context.shadowBlur = obstacle.kind === "spinner" ? 18 : 14;
+          context.shadowColor = "rgba(255, 125, 108, 0.9)";
+
+          if (obstacle.kind === "spinner") {
+            context.translate(obstacle.x, obstacle.y);
+            context.rotate(obstacle.angle);
+            context.lineWidth = obstacle.armWidth;
+            context.lineCap = "round";
+            const gradient = context.createLinearGradient(-obstacle.armLength, 0, obstacle.armLength, 0);
+            gradient.addColorStop(0, "#ffb68a");
+            gradient.addColorStop(1, "#ff6254");
+            context.strokeStyle = gradient;
+
+            context.beginPath();
+            context.moveTo(-obstacle.armLength, 0);
+            context.lineTo(obstacle.armLength, 0);
+            context.stroke();
+
+            context.beginPath();
+            context.moveTo(0, -obstacle.armLength);
+            context.lineTo(0, obstacle.armLength);
+            context.stroke();
+
+            context.fillStyle = "#fff0dd";
+            context.beginPath();
+            context.arc(0, 0, 8, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+            continue;
+          }
+
+          const gradient = context.createLinearGradient(
             obstacle.x,
             obstacle.y,
             obstacle.x,
             obstacle.y + obstacle.height
           );
+          gradient.addColorStop(0, "#ffb68a");
+          gradient.addColorStop(1, obstacle.kind === "heavy" ? "#ff5a56" : "#ff7d6c");
+          context.fillStyle = gradient;
 
-          if (obstacle.type === "heavy") {
-            fill.addColorStop(0, "#ffd0a6");
-            fill.addColorStop(1, "#ff8a63");
-          } else if (obstacle.type === "sweeper") {
-            fill.addColorStop(0, "#ffb4a7");
-            fill.addColorStop(1, "#ff5e6d");
-          } else {
-            fill.addColorStop(0, "#ff9b8d");
-            fill.addColorStop(1, "#f05555");
+          if (obstacle.kind === "gate") {
+            roundRect(context, 0, obstacle.y, obstacle.gapX, obstacle.height, 10);
+            context.fill();
+            roundRect(
+              context,
+              obstacle.gapX + obstacle.gapWidth,
+              obstacle.y,
+              width - obstacle.gapX - obstacle.gapWidth,
+              obstacle.height,
+              10
+            );
+            context.fill();
+            context.restore();
+            continue;
           }
 
-          context.fillStyle = fill;
-          roundRect(
-            context,
-            obstacle.x,
-            obstacle.y,
-            obstacle.width,
-            obstacle.height,
-            10
-          );
+          roundRect(context, obstacle.x, obstacle.y, obstacle.width, obstacle.height, 10);
           context.fill();
 
-          context.strokeStyle =
-            obstacle.type === "heavy"
-              ? "rgba(255, 232, 201, 0.22)"
-              : "rgba(255, 255, 255, 0.16)";
+          context.strokeStyle = "rgba(255,255,255,0.2)";
           context.lineWidth = 2;
           context.stroke();
 
-          if (obstacle.type === "sweeper") {
-            context.strokeStyle = "rgba(255, 255, 255, 0.15)";
-            context.lineWidth = 1.5;
-            for (let offset = 8; offset < obstacle.width; offset += 12) {
+          if (obstacle.kind === "sweeper") {
+            context.strokeStyle = "rgba(255, 236, 226, 0.28)";
+            for (let stripe = 10; stripe < obstacle.width; stripe += 18) {
               context.beginPath();
-              context.moveTo(obstacle.x + offset, obstacle.y + 2);
-              context.lineTo(obstacle.x + offset - 8, obstacle.y + obstacle.height - 2);
+              context.moveTo(obstacle.x + stripe, obstacle.y + 3);
+              context.lineTo(obstacle.x + stripe - 10, obstacle.y + obstacle.height - 3);
               context.stroke();
             }
           }
-        }
-      }
 
-      function drawParticles() {
-        context.save();
-        for (const particle of game.particles) {
-          const alpha = Math.max(0, particle.life / particle.maxLife);
-          context.fillStyle = "rgba(" + particle.color + ", " + alpha.toFixed(2) + ")";
-          context.beginPath();
-          context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-          context.fill();
+          context.restore();
         }
-        context.restore();
-      }
-
-      function drawTrail() {
-        context.save();
-        for (let index = game.trail.length - 1; index >= 0; index -= 1) {
-          const point = game.trail[index];
-          const alpha = (game.trail.length - index) / game.trail.length;
-          const radius = 5 + alpha * 8 + point.squash * 2.5;
-
-          context.fillStyle = "rgba(140, 245, 218, " + (alpha * 0.13).toFixed(2) + ")";
-          context.beginPath();
-          context.arc(point.x, point.y, radius, 0, Math.PI * 2);
-          context.fill();
-        }
-        context.restore();
       }
 
       function drawPlayer() {
-        const stretch = 1 + game.player.squash * 0.18;
-        const squeeze = 1 - game.player.squash * 0.1;
-
-        context.save();
-        context.translate(game.player.x, game.player.y);
-        context.rotate(game.player.tilt);
-        context.scale(stretch, squeeze);
-
-        const glow = context.createRadialGradient(-6, -6, 4, 0, 0, 28);
-        glow.addColorStop(0, "#f3fff9");
-        glow.addColorStop(0.45, "#8cf5da");
-        glow.addColorStop(1, "#0f665e");
-
-        context.shadowColor = "rgba(140, 245, 218, 0.4)";
-        context.shadowBlur = 28;
-        context.fillStyle = glow;
-        context.beginPath();
-        context.arc(0, 0, game.player.radius, 0, Math.PI * 2);
-        context.fill();
-
-        context.shadowBlur = 0;
-        context.fillStyle = "rgba(255, 255, 255, 0.22)";
-        context.beginPath();
-        context.arc(-6, -7, game.player.radius * 0.32, 0, Math.PI * 2);
-        context.fill();
-        context.restore();
-      }
-
-      function drawFloatingTexts() {
-        context.save();
-        context.textAlign = "center";
-        context.font = "700 18px Trebuchet MS";
-        for (const label of game.floatingTexts) {
-          const alpha = Math.max(0, label.life / label.maxLife);
-          context.fillStyle = "rgba(" + label.color + ", " + alpha.toFixed(2) + ")";
-          context.fillText(label.text, label.x, label.y);
-        }
-        context.restore();
-      }
-
-      function drawAnnouncement() {
-        if (!game.announcement) {
+        const player = game.player;
+        if (player.invulnerable > 0 && Math.floor(player.invulnerable * 18) % 2 === 0) {
           return;
         }
 
-        const alpha = Math.max(0, game.announcement.life / game.announcement.maxLife);
         context.save();
-        context.textAlign = "center";
-        context.font = "800 28px Trebuchet MS";
-        context.fillStyle = "rgba(" + game.announcement.color + ", " + alpha.toFixed(2) + ")";
-        context.fillText(game.announcement.text, width / 2, 82);
+        context.translate(player.x, player.y);
+
+        if (player.ghost > 0) {
+          context.globalAlpha = 0.36;
+          context.fillStyle = "#c5a6ff";
+          context.beginPath();
+          context.arc(-player.vx * 0.04, 0, player.radius + 6, 0, Math.PI * 2);
+          context.fill();
+          context.globalAlpha = 1;
+        }
+
+        context.shadowBlur = 20;
+        context.shadowColor = player.ghost > 0 ? "rgba(197,166,255,0.9)" : "rgba(140,245,218,0.9)";
+        const gradient = context.createRadialGradient(-5, -7, 4, 0, 0, player.radius + 6);
+        gradient.addColorStop(0, "#ffffff");
+        gradient.addColorStop(0.2, player.ghost > 0 ? "#dcd0ff" : "#dffdf7");
+        gradient.addColorStop(0.65, player.ghost > 0 ? "#b38cff" : "#8cf5da");
+        gradient.addColorStop(1, "rgba(140,245,218,0.08)");
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(0, 0, player.radius, 0, Math.PI * 2);
+        context.fill();
+
+        context.strokeStyle = "rgba(255,255,255,0.4)";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(0, 0, player.radius - 2, 0, Math.PI * 2);
+        context.stroke();
+
+        if (player.shield > 0) {
+          context.shadowBlur = 10;
+          context.strokeStyle = "rgba(140,245,218,0.9)";
+          context.lineWidth = 4;
+          context.beginPath();
+          context.arc(0, 0, player.radius + 8, 0, Math.PI * 2);
+          context.stroke();
+        }
+
         context.restore();
       }
 
-      function drawVignette() {
-        const vignette = context.createRadialGradient(
-          width / 2,
-          height / 2,
-          140,
-          width / 2,
-          height / 2,
-          480
-        );
-        vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
-        vignette.addColorStop(1, "rgba(0, 0, 0, 0.36)");
-        context.fillStyle = vignette;
-        context.fillRect(0, 0, width, height);
+      function drawParticles() {
+        for (const particle of game.particles) {
+          context.globalAlpha = Math.max(0, particle.life * 1.4);
+          context.fillStyle = particle.color;
+          context.beginPath();
+          context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.globalAlpha = 1;
+
+        context.font = '700 16px "Orbitron", sans-serif';
+        context.textAlign = "center";
+        for (const label of game.floatingTexts) {
+          context.globalAlpha = Math.max(0, label.life);
+          context.fillStyle = label.color;
+          context.fillText(label.text, label.x, label.y);
+        }
+        context.globalAlpha = 1;
+      }
+
+      function drawStageFlash() {
+        if (game.stageFlash <= 0) {
+          return;
+        }
+
+        context.save();
+        context.globalAlpha = Math.min(1, game.stageFlash) * 0.95;
+        context.fillStyle = game.stageFlashColor;
+        context.font = '900 34px "Orbitron", sans-serif';
+        context.textAlign = "center";
+        context.shadowBlur = 22;
+        context.shadowColor = game.stageFlashColor;
+        context.fillText(game.stageFlashText, width / 2, 174);
+        context.restore();
+      }
+
+      function draw() {
+        context.clearRect(0, 0, width, height);
+        context.save();
+
+        if (game.shake > 0) {
+          context.translate(random(-game.shake, game.shake), random(-game.shake, game.shake));
+        }
+
+        drawBackground();
+        drawPickups();
+        drawObstacles();
+        drawParticles();
+        drawPlayer();
+        drawStageFlash();
+
+        context.restore();
       }
 
       function loop(timestamp) {
-        if (!game.running) {
-          draw();
-          return;
-        }
-
-        if (!game.lastFrame) {
-          game.lastFrame = timestamp;
-        }
-
-        const dt = Math.min(0.033, (timestamp - game.lastFrame) / 1000);
-        game.lastFrame = timestamp;
+        const dt = Math.min(0.033, (timestamp - lastTimestamp) / 1000 || 0);
+        lastTimestamp = timestamp;
 
         update(dt);
         draw();
-
-        if (game.running) {
-          requestAnimationFrame(loop);
-        }
+        animationFrame = window.requestAnimationFrame(loop);
       }
 
-      function activatePrimaryAction() {
-        if (game.gameOver) {
-          resetGame();
-          startGame();
-          return;
-        }
-
-        if (game.paused) {
-          resumeGame();
-          return;
-        }
-
-        if (!game.running) {
-          startGame();
-        }
+      function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const lengthSquared = dx * dx + dy * dy || 1;
+        let t = ((px - x1) * dx + (py - y1) * dy) / lengthSquared;
+        t = clamp(t, 0, 1);
+        const closestX = x1 + dx * t;
+        const closestY = y1 + dy * t;
+        return Math.hypot(px - closestX, py - closestY);
       }
 
-      function togglePause() {
-        if (game.gameOver) {
-          return;
-        }
-
-        if (game.running) {
-          pauseGame();
-          return;
-        }
-
-        if (game.paused) {
-          resumeGame();
-        }
+      function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + rectWidth, y, x + rectWidth, y + rectHeight, radius);
+        ctx.arcTo(x + rectWidth, y + rectHeight, x, y + rectHeight, radius);
+        ctx.arcTo(x, y + rectHeight, x, y, radius);
+        ctx.arcTo(x, y, x + rectWidth, y, radius);
+        ctx.closePath();
       }
 
-      function setKeyState(code, active) {
-        if (code === "ArrowLeft" || code === "KeyA") {
-          input.left = active;
-        }
-
-        if (code === "ArrowRight" || code === "KeyD") {
-          input.right = active;
-        }
-
-        if (code === "ArrowUp" || code === "KeyW") {
-          input.up = active;
-        }
-
-        if (code === "ArrowDown" || code === "KeyS") {
-          input.down = active;
-        }
+      function circleHitsRect(circle, rect) {
+        const closestX = clamp(circle.x, rect.x, rect.x + rect.width);
+        const closestY = clamp(circle.y, rect.y, rect.y + rect.height);
+        return distance(circle.x, circle.y, closestX, closestY) < circle.radius;
       }
 
-      function syncPointer(event) {
+      function syncPointer(event, forceActive) {
         const rect = canvas.getBoundingClientRect();
         const scaleX = width / rect.width;
-        const scaleY = height / rect.height;
+        game.pointerX = (event.clientX - rect.left) * scaleX;
+        game.pointerType = event.pointerType || "mouse";
+        if (typeof forceActive === "boolean") {
+          game.pointerActive = forceActive;
+        } else if (game.pointerType === "mouse") {
+          game.pointerActive = true;
+        }
+      }
 
-        input.targetX = clamp((event.clientX - rect.left) * scaleX, 18, width - 18);
-        input.targetY = clamp((event.clientY - rect.top) * scaleY, 18, height - 18);
+      function bindTouchButton(button, stateKey) {
+        const setState = (value) => {
+          game.input[stateKey] = value;
+          if (value) {
+            unlockAudio();
+          }
+        };
+
+        button.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          setState(true);
+        });
+        button.addEventListener("pointerup", () => setState(false));
+        button.addEventListener("pointercancel", () => setState(false));
+        button.addEventListener("pointerleave", () => setState(false));
       }
 
       document.addEventListener("keydown", (event) => {
-        setKeyState(event.code, true);
+        if (event.repeat && (event.code === "Space" || event.code === "Enter")) {
+          return;
+        }
+
+        if (event.code === "Space" || event.code === "Enter") {
+          event.preventDefault();
+          activatePrimaryAction();
+          return;
+        }
 
         if (event.code === "KeyP") {
           event.preventDefault();
@@ -1638,107 +1920,97 @@
           return;
         }
 
-        if (event.code === "Space" || event.code === "Enter") {
-          event.preventDefault();
-          activatePrimaryAction();
-        }
+        setKeyState(event.code, true);
       });
 
       document.addEventListener("keyup", (event) => {
         setKeyState(event.code, false);
       });
 
-      window.addEventListener("blur", () => {
-        if (game.running) {
-          pauseGame();
-        }
-      });
-
       canvas.addEventListener("pointerdown", (event) => {
-        input.pointerActive = true;
-        syncPointer(event);
+        unlockAudio();
 
-        if (!game.running) {
+        if (game.mode !== "playing") {
           activatePrimaryAction();
+          return;
         }
+
+        syncPointer(event, true);
       });
 
       canvas.addEventListener("pointermove", (event) => {
-        syncPointer(event);
-        if (event.pointerType === "mouse") {
-          input.pointerActive = true;
+        if (game.mode !== "playing" && event.pointerType !== "mouse") {
+          return;
+        }
+
+        if (event.pointerType === "mouse" || game.pointerActive) {
+          syncPointer(event);
         }
       });
 
       canvas.addEventListener("pointerup", () => {
-        input.pointerActive = false;
+        if (game.pointerType !== "mouse") {
+          game.pointerActive = false;
+        }
       });
 
       canvas.addEventListener("pointercancel", () => {
-        input.pointerActive = false;
+        if (game.pointerType !== "mouse") {
+          game.pointerActive = false;
+        }
       });
 
-      canvas.addEventListener("pointerleave", () => {
-        input.pointerActive = false;
+      overlay.addEventListener("click", (event) => {
+        event.preventDefault();
+        activatePrimaryAction();
       });
 
-      actionButton.addEventListener("click", () => {
+      actionButton.addEventListener("click", (event) => {
+        event.preventDefault();
         activatePrimaryAction();
       });
 
       pauseButton.addEventListener("click", () => {
+        if (game.mode === "start" || game.mode === "gameover") {
+          return;
+        }
         togglePause();
       });
 
-      overlay.addEventListener("click", (event) => {
-        if (event.target.tagName === "BUTTON" || event.target.tagName === "A") {
-          return;
-        }
+      bindTouchButton(touchLeftButton, "left");
+      bindTouchButton(touchRightButton, "right");
 
-        if (!game.running) {
-          activatePrimaryAction();
+      window.addEventListener("blur", () => {
+        if (game.mode === "playing") {
+          togglePause(true);
         }
       });
 
+      function distance(x1, y1, x2, y2) {
+        return Math.hypot(x1 - x2, y1 - y2);
+      }
+
       function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
+        return Math.min(max, Math.max(min, value));
       }
 
       function random(min, max) {
         return Math.random() * (max - min) + min;
       }
 
-      function circleHitsRect(circle, rect) {
-        const nearestX = clamp(circle.x, rect.x, rect.x + rect.width);
-        const nearestY = clamp(circle.y, rect.y, rect.y + rect.height);
-        const dx = circle.x - nearestX;
-        const dy = circle.y - nearestY;
-        return dx * dx + dy * dy < circle.radius * circle.radius;
-      }
-
-      function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + rectWidth - radius, y);
-        ctx.quadraticCurveTo(x + rectWidth, y, x + rectWidth, y + radius);
-        ctx.lineTo(x + rectWidth, y + rectHeight - radius);
-        ctx.quadraticCurveTo(
-          x + rectWidth,
-          y + rectHeight,
-          x + rectWidth - radius,
-          y + rectHeight
-        );
-        ctx.lineTo(x + radius, y + rectHeight);
-        ctx.quadraticCurveTo(x, y + rectHeight, x, y + rectHeight - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-      }
-
       bestScoreElement.textContent = String(game.best);
       createStars();
-      resetGame();
+      updateHud();
+      showOverlay({
+        kicker: "Arcade Survival",
+        title: "Dont Stop Ball",
+        text: "Three lives. Three power-ups. Six stages. Start clean and try to carry your streak into Meltdown.",
+        actionLabel: "Start Game",
+        showSummary: false,
+        showGames: false
+      });
       draw();
+      animationFrame = window.requestAnimationFrame(loop);
     </script>
   </body>
 </html>

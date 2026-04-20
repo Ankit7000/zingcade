@@ -6,9 +6,15 @@
     <title>Sky Hop | Zingcade</title>
     <meta
       name="description"
-      content="Play Sky Hop, a polished browser platform climber with smoother air control, forgiving landings, varied cloud pads, and milestone-driven replays."
+      content="Play Sky Hop, a polished browser climber with combo scoring, seven platform types, shifting sky zones, and stronger landing feel."
     />
     <link rel="canonical" href="https://zingcade.com/games/sky-hop/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/css/styles.css" />
     <style>
       button {
@@ -116,13 +122,20 @@
         color: var(--muted);
       }
 
+      .hud-value,
+      .summary-value,
+      .touch-button {
+        font-family: "Orbitron", sans-serif;
+      }
+
       .hud-value {
-        font-size: 1.35rem;
-        font-weight: 800;
+        font-size: 1.24rem;
+        font-weight: 900;
       }
 
       .hud-height,
-      .hud-zone {
+      .hud-zone,
+      .hud-combo {
         color: var(--accent);
       }
 
@@ -143,7 +156,7 @@
 
       .status-strip {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.75rem;
         padding: 0.75rem;
         border-radius: 18px;
@@ -163,6 +176,24 @@
         font-weight: 700;
       }
 
+      .combo-shell {
+        position: relative;
+        height: 10px;
+        border-radius: 999px;
+        margin-top: 0.75rem;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .combo-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #8cf5da, #ffc672, #ff7d6c);
+        box-shadow: 0 0 16px rgba(255, 198, 114, 0.4);
+      }
+
       .canvas-wrap {
         position: relative;
       }
@@ -172,7 +203,7 @@
         width: 100%;
         aspect-ratio: 7 / 12;
         border-radius: 22px;
-        background: linear-gradient(180deg, #15263a 0%, #08121d 100%);
+        background: linear-gradient(180deg, #16304c 0%, #08121d 100%);
         border: 1px solid rgba(255, 255, 255, 0.06);
         touch-action: none;
       }
@@ -236,8 +267,8 @@
       }
 
       .summary-value {
-        font-size: 1.35rem;
-        font-weight: 800;
+        font-size: 1.28rem;
+        font-weight: 900;
       }
 
       .overlay-card h2,
@@ -271,6 +302,28 @@
         border: 1px solid rgba(255, 255, 255, 0.06);
         color: var(--muted);
         line-height: 1.6;
+      }
+
+      .touch-controls {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.85rem;
+      }
+
+      .touch-button {
+        min-height: 58px;
+        border-radius: 18px;
+        background: rgba(140, 245, 218, 0.09);
+        border: 1px solid rgba(140, 245, 218, 0.3);
+        color: var(--text);
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .touch-button:active {
+        background: rgba(140, 245, 218, 0.16);
       }
 
       .info-panel {
@@ -382,6 +435,12 @@
         }
       }
 
+      @media (pointer: coarse), (max-width: 720px) {
+        .touch-controls {
+          display: grid;
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
@@ -410,7 +469,7 @@
         <a class="back-link" href="/games/">&#8592; Back to Games</a>
         <div class="title">
           <h1>Sky Hop</h1>
-          <p>Land clean, hit milestones, and ride the climb into higher air.</p>
+          <p>Ride cleaner landings, chain combo pressure, and climb through five higher sky zones.</p>
         </div>
         <div class="meta-pill">Keyboard, mouse, and touch</div>
       </div>
@@ -435,6 +494,10 @@
               <span class="hud-value hud-height" id="height-score">0m</span>
             </div>
             <div class="hud-item">
+              <span class="hud-label">Combo</span>
+              <span class="hud-value hud-combo" id="combo-value">1.0x</span>
+            </div>
+            <div class="hud-item">
               <span class="hud-label">Zone</span>
               <span class="hud-value hud-zone" id="zone-label">Low Clouds</span>
             </div>
@@ -442,8 +505,8 @@
 
           <div class="control-row">
             <div class="hint">
-              Move left and right, land while falling, and press <strong>P</strong> to
-              pause. Press <strong>Space</strong> or <strong>Enter</strong> to start or restart.
+              Move with Left and Right or A and D. Mouse and touch drag guide the line.
+              Press <strong>P</strong> to pause. Press <strong>Space</strong> or <strong>Enter</strong> to start or restart.
             </div>
             <button class="button button-secondary" id="pause-button" type="button">
               Pause
@@ -454,14 +517,22 @@
             <div class="status-pill">
               <span class="hud-label">Next Milestone</span>
               <span class="status-copy" id="milestone-text">
-                Reach 60m for the first height marker.
+                Reach 60m to lock in the first real climb target.
               </span>
             </div>
             <div class="status-pill">
-              <span class="hud-label">Landing Tip</span>
+              <span class="hud-label">Combo Window</span>
+              <span class="status-copy" id="combo-note">
+                Land before the bar drains to keep building multiplier.
+              </span>
+              <div class="combo-shell" aria-hidden="true">
+                <div class="combo-fill" id="combo-fill"></div>
+              </div>
+            </div>
+            <div class="status-pill">
+              <span class="hud-label">Landing Note</span>
               <span class="status-copy" id="landing-note">
-                Pads catch slightly wider than they look, so guide the fall instead of
-                snapping late.
+                You get a little extra catch width while falling, so line up early and let the bounce work.
               </span>
             </div>
           </div>
@@ -479,8 +550,7 @@
                 <p class="overlay-kicker" id="overlay-kicker">Sky Platformer</p>
                 <h2 id="overlay-title">Sky Hop</h2>
                 <p id="overlay-text">
-                  Drift into the next landing, ride the climb upward, and keep pushing
-                  toward the next height milestone.
+                  Chain smooth landings, keep the combo alive, and climb far enough to hit the aurora bands.
                 </p>
                 <div class="overlay-summary" id="overlay-summary" hidden>
                   <div class="summary-item">
@@ -508,9 +578,13 @@
             </div>
           </div>
 
+          <div class="touch-controls" aria-label="Touch controls">
+            <button class="touch-button" id="touch-left" type="button">Hold Left</button>
+            <button class="touch-button" id="touch-right" type="button">Hold Right</button>
+          </div>
+
           <div class="canvas-note" id="canvas-note">
-            Clean landings keep the climb readable. Boost pads launch higher, crumble
-            pads break away after one use, and tiny pads ask for tighter lines.
+            Spring and boost pads cash in big height, crumble pads punish late lines, and the combo bar only stays alive if the next landing comes quickly.
           </div>
         </div>
 
@@ -518,9 +592,7 @@
           <section class="info-block">
             <h2>How to play</h2>
             <p>
-              Sky Hop is a climber with gentle landing forgiveness. Your job is to guide
-              the fall, catch the next platform while descending, and stay ahead of the
-              screen as the climb rolls into new altitude zones.
+              Sky Hop is a vertical climber with gentler catches and sharper score pressure. The jump arc now rises longer than it falls, landings forgive more near the edges, and later climbs mix seven pad types while the sky changes color around you.
             </p>
           </section>
 
@@ -528,8 +600,8 @@
             <h3>Controls</h3>
             <ul class="tips">
               <li>Keyboard: Left and Right arrows or A and D</li>
-              <li>Mouse: move across the canvas to pull the hop line sideways</li>
-              <li>Touch: drag left and right on the canvas</li>
+              <li>Mouse: move across the canvas to steer the hop line</li>
+              <li>Touch: drag on the canvas or hold the mobile D-pad buttons</li>
               <li>Pause: press P or tap the pause button</li>
               <li>Start or restart: press Space, Enter, tap the overlay, or tap the canvas</li>
             </ul>
@@ -538,24 +610,21 @@
           <div class="status-note">
             <strong>Platform mix</strong>
             <p>
-              The climb starts readable, then adds drift pads, boost pads, tiny pads,
-              and crumble pads. Each one changes how early you need to line up.
+              Normal, drift, boost, tiny, crumble, spring, and vertical pads all ask for different setup timing. Above 200m, even the safe pads start shrinking.
             </p>
           </div>
 
           <div class="callout">
-            <strong>Progression hook</strong>
+            <strong>Combo pressure</strong>
             <p>
-              Height milestones give each run a concrete target. Your best height is
-              saved locally, and the page always tells you which marker is next.
+              The multiplier only holds while the combo bar is alive. Clean landings in quick succession now matter as much as raw height.
             </p>
           </div>
 
           <div class="callout">
             <strong>Sky Hop tip</strong>
             <p>
-              Start correcting before the peak. The improved air control is smoother, but
-              the best runs still come from shaping the next landing early.
+              Save hard corrections for the way down. The lighter rise and heavier fall make early shaping stronger than late steering, especially on vertical pads.
             </p>
           </div>
         </aside>
@@ -564,26 +633,23 @@
       <section class="content-strip" aria-label="Game summary">
         <article class="content-card">
           <p class="mini-label">What It Is</p>
-          <h2>Vertical platform climbing.</h2>
+          <h2>Combo-driven vertical climbing.</h2>
           <p>
-            Sky Hop is a browser climber about guiding each fall, reading the next cloud,
-            and riding cleaner landings into a longer height run.
+            Sky Hop is a browser climber about reading the next landing, chaining pads fast enough to keep multiplier alive, and surviving into the harsher upper zones.
           </p>
         </article>
         <article class="content-card">
           <p class="mini-label">Controls</p>
           <h2>Keyboard, mouse, and touch.</h2>
           <p>
-            Move with Left and Right or A and D, pull the line with the mouse, or drag on
-            touch. Press P to pause and Space or Enter to start again quickly.
+            Use left and right or A and D, guide the line with mouse or touch drag, and use the mobile D-pad when you need steadier holds on a narrow platform.
           </p>
         </article>
         <article class="content-card">
           <p class="mini-label">Tip Or Challenge</p>
-          <h2>Reach the 120m marker cleanly.</h2>
+          <h2>Carry a combo past 200m.</h2>
           <p>
-            Try to hit the next platform before the bounce peak, especially when tiny or
-            crumble pads appear. Earlier setup usually beats harder last-second steering.
+            Try to keep the bar alive once platforms start shrinking. Spring pads can rescue a climb, but crumble and vertical pads punish hesitation fast.
           </p>
         </article>
       </section>
@@ -624,46 +690,105 @@
       const bestScoreElement = document.getElementById("best-score");
       const hopsElement = document.getElementById("hops");
       const heightElement = document.getElementById("height-score");
+      const comboElement = document.getElementById("combo-value");
       const zoneElement = document.getElementById("zone-label");
+      const comboFillElement = document.getElementById("combo-fill");
+      const comboNoteElement = document.getElementById("combo-note");
       const milestoneElement = document.getElementById("milestone-text");
       const landingNoteElement = document.getElementById("landing-note");
       const canvasNoteElement = document.getElementById("canvas-note");
+      const touchLeftButton = document.getElementById("touch-left");
+      const touchRightButton = document.getElementById("touch-right");
 
       const width = canvas.width;
       const height = canvas.height;
       const bestScoreKey = "zingcade-sky-hop-best";
       const bestHeightKey = "zingcade-sky-hop-best-height";
-      const milestones = [60, 120, 190, 280, 380];
 
-      const input = {
-        left: false,
-        right: false,
-        pointerActive: false,
-        targetX: width / 2
-      };
+      const ZONES = [
+        {
+          name: "Low Clouds",
+          start: 0,
+          colors: ["#1b4a70", "#0a1420"],
+          accent: "#8cf5da",
+          note: "Low Clouds are forgiving. Use them to build an early combo before the platform mix widens."
+        },
+        {
+          name: "Sunwash",
+          start: 80,
+          colors: ["#2a567a", "#13243a"],
+          accent: "#ffc672",
+          note: "Sunwash opens the sky and adds more spring and drift pads into the route."
+        },
+        {
+          name: "Violet Drift",
+          start: 160,
+          colors: ["#50386f", "#15172c"],
+          accent: "#c8a7ff",
+          note: "Violet Drift starts asking for cleaner timing on crumble and vertical pads."
+        },
+        {
+          name: "Aurora Rise",
+          start: 260,
+          colors: ["#15435e", "#08101c"],
+          accent: "#8cf5da",
+          note: "Aurora Rise adds color noise and thinner catches. This is where combo control matters."
+        },
+        {
+          name: "Starglass",
+          start: 360,
+          colors: ["#0c1726", "#03070d"],
+          accent: "#ff7d6c",
+          note: "Starglass is the late climb. Platforms are smaller, the sky is darker, and mistakes cost more height."
+        }
+      ];
+
+      const MILESTONES = [60, 120, 180, 260, 340, 420, 520];
 
       const game = {
-        running: false,
-        paused: false,
-        gameOver: false,
+        mode: "start",
         score: 0,
-        displayedScore: 0,
         best: loadBestScore(),
-        climb: 0,
         bestHeight: loadBestHeight(),
+        travel: 0,
+        zoneIndex: 0,
         hops: 0,
-        zoneLabel: "Low Clouds",
-        milestoneIndex: 0,
-        lastFrame: 0,
-        player: null,
-        stars: [],
-        clouds: [],
+        comboChain: 0,
+        comboFill: 0,
+        comboMultiplier: 1,
+        nextMilestone: MILESTONES[0],
+        shake: 0,
         platforms: [],
         particles: [],
         floatingTexts: [],
-        announcement: null,
-        landingNote: ""
+        stars: [],
+        clouds: [],
+        aurora: [],
+        pointerX: width / 2,
+        pointerActive: false,
+        pointerType: "mouse",
+        input: {
+          left: false,
+          right: false
+        },
+        player: {
+          x: width / 2,
+          y: 620,
+          radius: 17,
+          vx: 0,
+          vy: 0,
+          alpha: 1,
+          rotation: 0,
+          spinSpeed: 0,
+          deathTimer: 0
+        },
+        stageFlash: 0,
+        stageText: "Low Clouds",
+        stageColor: "#8cf5da"
       };
+
+      let lastTimestamp = 0;
+      let audioContext = null;
 
       function loadBestScore() {
         try {
@@ -697,292 +822,355 @@
         }
       }
 
-      function createStars() {
-        game.stars = Array.from({ length: 36 }, () => ({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          radius: Math.random() * 2 + 0.6,
-          speed: Math.random() * 18 + 8,
-          alpha: Math.random() * 0.45 + 0.2
-        }));
-      }
-
-      function createClouds() {
-        game.clouds = Array.from({ length: 7 }, () => ({
-          x: random(-20, width - 80),
-          y: random(0, height),
-          width: random(72, 132),
-          alpha: random(0.05, 0.12),
-          speed: random(8, 18)
-        }));
-      }
-
-      function createPlayer() {
-        return {
-          x: width / 2,
-          y: height - 160,
-          radius: 16,
-          vx: 0,
-          vy: -700,
-          maxSpeed: 420,
-          stretch: 0,
-          tilt: 0
-        };
-      }
-
-      function buildPlatform(y, forceSafe) {
-        const meters = getHeightMeters();
-        const roll = Math.random();
-        let kind = "steady";
-
-        if (!forceSafe) {
-          if (meters > 120 && roll > 0.84) {
-            kind = "crumbly";
-          } else if (meters > 70 && roll > 0.66) {
-            kind = "boost";
-          } else if (meters > 90 && roll > 0.48) {
-            kind = "tiny";
-          } else if (meters > 30 && roll > 0.28) {
-            kind = "drift";
-          }
+      function unlockAudio() {
+        if (!window.AudioContext && !window.webkitAudioContext) {
+          return null;
         }
 
-        let platformWidth = random(86, 122);
+        if (!audioContext) {
+          const AudioCtor = window.AudioContext || window.webkitAudioContext;
+          audioContext = new AudioCtor();
+        }
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch(() => {});
+        }
+
+        return audioContext;
+      }
+
+      function tone({
+        frequency = 440,
+        endFrequency = frequency,
+        duration = 0.12,
+        type = "sine",
+        gain = 0.04
+      }) {
+        const audio = unlockAudio();
+        if (!audio) {
+          return;
+        }
+
+        const now = audio.currentTime;
+        const oscillator = audio.createOscillator();
+        const envelope = audio.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          Math.max(50, endFrequency),
+          now + duration
+        );
+
+        envelope.gain.setValueAtTime(0.0001, now);
+        envelope.gain.exponentialRampToValueAtTime(gain, now + 0.02);
+        envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        oscillator.connect(envelope);
+        envelope.connect(audio.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.03);
+      }
+
+      function playPlatformSound(kind) {
+        if (kind === "steady") {
+          tone({ frequency: 410, endFrequency: 500, duration: 0.08, type: "triangle", gain: 0.03 });
+          return;
+        }
+        if (kind === "drift") {
+          tone({ frequency: 460, endFrequency: 620, duration: 0.1, type: "sine", gain: 0.03 });
+          return;
+        }
+        if (kind === "boost") {
+          tone({ frequency: 380, endFrequency: 760, duration: 0.14, type: "sawtooth", gain: 0.038 });
+          return;
+        }
         if (kind === "tiny") {
-          platformWidth = random(62, 84);
+          tone({ frequency: 610, endFrequency: 760, duration: 0.06, type: "square", gain: 0.024 });
+          return;
         }
-
-        return {
-          x: random(18, width - platformWidth - 18),
-          y,
-          width: platformWidth,
-          height: 16,
-          kind,
-          drift:
-            kind === "drift" || (kind === "boost" && Math.random() > 0.65)
-              ? random(28, 56) * (Math.random() > 0.5 ? 1 : -1)
-              : 0,
-          bounce:
-            kind === "boost" ? -840 : kind === "tiny" ? -680 : kind === "crumbly" ? -710 : -740,
-          crumbling: false,
-          broken: false,
-          breakTimer: 0,
-          vy: 0,
-          flash: 0
-        };
-      }
-
-      function resetPlatforms() {
-        game.platforms = [];
-        let y = height - 84;
-
-        for (let index = 0; index < 11; index += 1) {
-          const platform = buildPlatform(y, index < 3);
-          if (index === 0) {
-            platform.x = width / 2 - platform.width / 2;
-            platform.kind = "steady";
-            platform.drift = 0;
-            platform.bounce = -740;
-          }
-          game.platforms.push(platform);
-          y -= random(66, 98);
+        if (kind === "crumble") {
+          tone({ frequency: 350, endFrequency: 180, duration: 0.12, type: "sawtooth", gain: 0.032 });
+          return;
+        }
+        if (kind === "spring") {
+          tone({ frequency: 440, endFrequency: 900, duration: 0.16, type: "triangle", gain: 0.042 });
+          return;
+        }
+        if (kind === "vertical") {
+          tone({ frequency: 500, endFrequency: 420, duration: 0.12, type: "triangle", gain: 0.032 });
         }
       }
 
-      function resetGame() {
-        game.running = false;
-        game.paused = false;
-        game.gameOver = false;
+      function playSound(kind) {
+        if (kind === "start") {
+          tone({ frequency: 290, endFrequency: 430, duration: 0.16, type: "triangle", gain: 0.05 });
+          return;
+        }
+        if (kind === "zone") {
+          tone({ frequency: 320, endFrequency: 520, duration: 0.18, type: "triangle", gain: 0.04 });
+          return;
+        }
+        if (kind === "death") {
+          tone({ frequency: 240, endFrequency: 80, duration: 0.28, type: "sawtooth", gain: 0.055 });
+        }
+      }
+
+      function createSky() {
+        game.stars = Array.from({ length: 46 }, () => ({
+          x: random(0, width),
+          y: random(0, height),
+          size: random(1, 2.8),
+          speed: random(4, 16),
+          alpha: random(0.18, 0.65)
+        }));
+
+        game.clouds = Array.from({ length: 8 }, () => ({
+          x: random(-40, width + 40),
+          y: random(40, height - 70),
+          width: random(74, 132),
+          height: random(22, 40),
+          speed: random(8, 18),
+          alpha: random(0.08, 0.18)
+        }));
+      }
+
+      function resetRun() {
+        game.mode = "playing";
         game.score = 0;
-        game.displayedScore = 0;
-        game.climb = 0;
+        game.travel = 0;
+        game.zoneIndex = 0;
         game.hops = 0;
-        game.zoneLabel = "Low Clouds";
-        game.milestoneIndex = 0;
-        game.lastFrame = 0;
-        game.player = createPlayer();
+        game.comboChain = 0;
+        game.comboFill = 0;
+        game.comboMultiplier = 1;
+        game.nextMilestone = MILESTONES[0];
+        game.shake = 0;
+        game.platforms = [];
         game.particles = [];
         game.floatingTexts = [];
-        game.announcement = null;
-        game.landingNote =
-          "Pads catch slightly wider than they look, so guide the fall instead of snapping late.";
-        resetPlatforms();
-        updateHud();
+        game.aurora = [];
+        game.pointerX = width / 2;
+        game.pointerActive = false;
+        game.player.x = width / 2;
+        game.player.y = 620;
+        game.player.vx = 0;
+        game.player.vy = -860;
+        game.player.alpha = 1;
+        game.player.rotation = 0;
+        game.player.spinSpeed = 0;
+        game.player.deathTimer = 0;
+        game.stageFlash = 1.25;
+        game.stageText = ZONES[0].name;
+        game.stageColor = ZONES[0].accent;
 
-        const next = getNextMilestoneFrom(game.bestHeight);
-        showOverlay(
-          "Sky Hop",
-          next
-            ? "Your next saved height milestone is " + next + "m. Clean landings get you there faster."
-            : "You have cleared every milestone marker. Push for a sharper score and smoother run.",
-          "Start Hop",
-          false,
-          false,
-          "Sky Platformer"
-        );
+        const basePlatform = createPlatform(652, true);
+        basePlatform.x = width / 2 - basePlatform.width / 2;
+        basePlatform.kind = "steady";
+        basePlatform.drift = 0;
+        basePlatform.range = 0;
+        basePlatform.baseY = basePlatform.y;
+        game.platforms.push(basePlatform);
 
-        pauseButton.textContent = "Pause";
-      }
-
-      function startGame() {
-        if (game.running) {
-          return;
+        let highestY = 590;
+        for (let index = 0; index < 11; index += 1) {
+          highestY -= random(62, 96);
+          game.platforms.push(createPlatform(highestY, index < 2));
         }
 
-        if (!game.player) {
-          resetGame();
-        }
-
-        game.running = true;
-        game.paused = false;
-        game.gameOver = false;
-        game.lastFrame = 0;
         hideOverlay();
-        pauseButton.textContent = "Pause";
-        requestAnimationFrame(loop);
-      }
-
-      function pauseGame() {
-        if (!game.running || game.gameOver) {
-          return;
-        }
-
-        game.running = false;
-        game.paused = true;
-        pauseButton.textContent = "Resume";
-        showOverlay(
-          "Paused",
-          "You can resume from the same climb. Press P, tap Resume, or tap the playfield when ready.",
-          "Resume",
-          false,
-          false,
-          "Run Paused"
-        );
-      }
-
-      function resumeGame() {
-        if (!game.paused || game.gameOver) {
-          return;
-        }
-
-        startGame();
-      }
-
-      function endGame() {
-        game.running = false;
-        game.paused = false;
-        game.gameOver = true;
-
-        const runHeight = getHeightMeters();
-
-        if (game.score > game.best) {
-          game.best = Math.floor(game.score);
-          saveBestScore();
-        }
-
-        if (runHeight > game.bestHeight) {
-          game.bestHeight = runHeight;
-          saveBestHeight();
-        }
-
         updateHud();
-        pauseButton.textContent = "Pause";
-
-        const nextMilestone = getNextMilestoneFrom(runHeight);
-        const message = nextMilestone
-          ? "You reached " + runHeight + "m. Restart and push for " + nextMilestone + "m."
-          : "You cleared the current milestone ladder. Restart and sharpen the score."
-        ;
-
-        showOverlay(
-          "Run Over",
-          message,
-          "Restart Run",
-          true,
-          true,
-          runHeight >= game.bestHeight ? "New Height Record" : "Height Lost"
-        );
       }
 
-      function updateHud() {
-        const currentHeight = getHeightMeters();
-        const milestoneCount = milestones.filter((value) => currentHeight >= value).length;
-        game.score = Math.floor(game.climb / 6) + game.hops * 5 + milestoneCount * 18;
-        game.displayedScore +=
-          (game.score - game.displayedScore) * 0.22;
-
-        scoreElement.textContent = String(Math.floor(game.displayedScore));
-        bestScoreElement.textContent = String(Math.floor(game.best));
-        hopsElement.textContent = String(game.hops);
-        heightElement.textContent = currentHeight + "m";
-        zoneElement.textContent = game.zoneLabel;
-
-        const nextMilestone = getNextMilestoneFrom(currentHeight);
-        milestoneElement.textContent = nextMilestone
-          ? nextMilestone +
-            "m next. " +
-            Math.max(0, nextMilestone - currentHeight) +
-            "m to go."
-          : "All current milestones cleared. Chase a cleaner score route.";
-
-        landingNoteElement.textContent = game.landingNote;
-        canvasNoteElement.textContent =
-          "Boost pads launch higher, crumble pads break after one use, and tiny pads ask for earlier setup.";
+      function startRun() {
+        unlockAudio();
+        resetRun();
+        playSound("start");
       }
 
-      function showOverlay(title, text, actionLabel, showGamesLink, showSummary, kicker) {
+      function endRun() {
+        game.mode = "gameover";
+        const reachedHeight = getHeightMeters();
+        const wasRecord = reachedHeight > game.bestHeight;
+        game.best = Math.max(game.best, Math.floor(game.score));
+        game.bestHeight = Math.max(game.bestHeight, reachedHeight);
+        saveBestScore();
+        saveBestHeight();
+
+        showOverlay({
+          kicker: wasRecord ? "New Height Record" : "Fall Complete",
+          title: "Sky Hop",
+          text: wasRecord
+            ? "You pushed the climb higher than before. Restart while the route memory is still clear."
+            : "Keep the combo alive longer and use spring pads to rescue late routes.",
+          actionLabel: "Restart Hop",
+          showSummary: true,
+          showGames: true
+        });
+      }
+
+      function showOverlay({ kicker, title, text, actionLabel, showSummary, showGames }) {
         overlayKicker.textContent = kicker;
         overlayTitle.textContent = title;
         overlayText.textContent = text;
         actionButton.textContent = actionLabel;
-        gamesLink.hidden = !showGamesLink;
         overlaySummary.hidden = !showSummary;
         overlayScore.textContent = String(Math.floor(game.score));
         overlayHeight.textContent = getHeightMeters() + "m";
         overlayBestHeight.textContent = Math.floor(game.bestHeight) + "m";
+        gamesLink.hidden = !showGames;
         overlay.hidden = false;
       }
 
       function hideOverlay() {
         overlay.hidden = true;
+        gamesLink.hidden = true;
+      }
+
+      function activatePrimaryAction() {
+        if (game.mode === "start" || game.mode === "gameover") {
+          startRun();
+          return;
+        }
+
+        if (game.mode === "paused") {
+          game.mode = "playing";
+          hideOverlay();
+        }
+      }
+
+      function togglePause(forcePause = false) {
+        if (game.mode === "playing") {
+          game.mode = "paused";
+          showOverlay({
+            kicker: "Paused",
+            title: "Hold The Climb",
+            text: "Resume when you are ready. The combo bar and platform motion are frozen.",
+            actionLabel: "Resume Hop",
+            showSummary: false,
+            showGames: true
+          });
+          return;
+        }
+
+        if (game.mode === "paused" && !forcePause) {
+          game.mode = "playing";
+          hideOverlay();
+        }
+      }
+
+      function setKeyState(code, pressed) {
+        if (code === "ArrowLeft" || code === "KeyA") {
+          game.input.left = pressed;
+        }
+        if (code === "ArrowRight" || code === "KeyD") {
+          game.input.right = pressed;
+        }
       }
 
       function getHeightMeters() {
-        return Math.floor(game.climb / 10);
+        return Math.floor(game.travel / 6);
       }
 
-      function getZoneLabel(meters) {
-        if (meters < 60) {
-          return "Low Clouds";
-        }
-
-        if (meters < 140) {
-          return "Jetstream";
-        }
-
-        if (meters < 250) {
-          return "Night Air";
-        }
-
-        return "Starline";
+      function getZone() {
+        return ZONES[game.zoneIndex];
       }
 
-      function getNextMilestoneFrom(heightMeters) {
-        return milestones.find((value) => value > heightMeters) || null;
+      function maybeAdvanceZone() {
+        const heightMeters = getHeightMeters();
+        let nextZoneIndex = 0;
+        for (let index = ZONES.length - 1; index >= 0; index -= 1) {
+          if (heightMeters >= ZONES[index].start) {
+            nextZoneIndex = index;
+            break;
+          }
+        }
+
+        if (nextZoneIndex !== game.zoneIndex) {
+          game.zoneIndex = nextZoneIndex;
+          game.stageFlash = 1.35;
+          game.stageText = ZONES[nextZoneIndex].name;
+          game.stageColor = ZONES[nextZoneIndex].accent;
+          createBurst(width / 2, 188, ZONES[nextZoneIndex].accent, 24, 30, 150);
+          playSound("zone");
+        }
       }
 
-      function createBurst(x, y, color, amount) {
-        for (let index = 0; index < amount; index += 1) {
-          game.particles.push({
-            x,
-            y,
-            vx: random(-120, 120),
-            vy: random(-180, 20),
-            radius: random(1.8, 4),
-            life: random(0.22, 0.5),
-            maxLife: 0.5,
-            color
-          });
+      function choosePlatformKind(forceSteady) {
+        if (forceSteady) {
+          return "steady";
+        }
+
+        const heightMeters = getHeightMeters();
+        const pool = [
+          { kind: "steady", weight: heightMeters < 80 ? 24 : 14 },
+          { kind: "drift", weight: 16 },
+          { kind: "boost", weight: 12 },
+          { kind: "tiny", weight: heightMeters < 120 ? 10 : 14 },
+          { kind: "crumble", weight: heightMeters < 100 ? 12 : 16 },
+          { kind: "spring", weight: heightMeters < 140 ? 10 : 14 },
+          { kind: "vertical", weight: heightMeters < 120 ? 8 : 16 }
+        ];
+
+        const totalWeight = pool.reduce((sum, entry) => sum + entry.weight, 0);
+        let roll = Math.random() * totalWeight;
+        for (const entry of pool) {
+          roll -= entry.weight;
+          if (roll <= 0) {
+            return entry.kind;
+          }
+        }
+        return "steady";
+      }
+
+      function createPlatform(y, forceSteady) {
+        const kind = choosePlatformKind(forceSteady);
+        const heightMeters = getHeightMeters();
+        let platformWidth = random(88, 128);
+        if (heightMeters > 200) {
+          platformWidth *= 1 - clamp((heightMeters - 200) / 280, 0, 0.28);
+        }
+
+        if (kind === "tiny") {
+          platformWidth *= 0.68;
+        } else if (kind === "boost") {
+          platformWidth *= 0.88;
+        } else if (kind === "spring") {
+          platformWidth *= 0.82;
+        } else if (kind === "vertical") {
+          platformWidth *= 0.84;
+        } else if (kind === "drift") {
+          platformWidth *= 0.94;
+        }
+
+        platformWidth = clamp(platformWidth, 52, 136);
+
+        return {
+          kind,
+          x: random(18, width - platformWidth - 18),
+          y,
+          baseY: y,
+          width: platformWidth,
+          height: 16,
+          drift: kind === "drift" ? random(-86, 86) : 0,
+          range: kind === "vertical" ? random(20, 46) : 0,
+          phase: random(0, Math.PI * 2),
+          state: "ready",
+          timer: 0,
+          vy: 0,
+          flash: 0,
+          spring: 0
+        };
+      }
+
+      function fillPlatformQueue() {
+        let highest =
+          game.platforms.length > 0
+            ? Math.min(...game.platforms.map((platform) => platform.baseY))
+            : height - 80;
+        while (highest > -90 || game.platforms.length < 13) {
+          highest -= random(66, 98);
+          game.platforms.push(createPlatform(highest, false));
         }
       }
 
@@ -992,113 +1180,59 @@
           y,
           text,
           color,
-          life: 0.9,
-          maxLife: 0.9
+          life: 1
         });
       }
 
-      function announce(text, color) {
-        game.announcement = {
-          text,
-          color,
-          life: 1.35,
-          maxLife: 1.35
-        };
+      function createBurst(x, y, color, count, speedMin, speedMax) {
+        for (let index = 0; index < count; index += 1) {
+          const angle = random(0, Math.PI * 2);
+          const speed = random(speedMin, speedMax);
+          game.particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: random(2, 5),
+            life: random(0.35, 0.9),
+            color
+          });
+        }
       }
 
-      function recyclePlatforms() {
-        let minY = Math.min(...game.platforms.map((platform) => platform.y));
+      function updatePlayer(dt) {
+        const axis = (game.input.right ? 1 : 0) - (game.input.left ? 1 : 0);
+        const player = game.player;
 
+        if (game.pointerActive) {
+          const diff = game.pointerX - player.x;
+          player.vx += clamp(diff * 6.2, -820, 820) * dt;
+        } else if (axis !== 0) {
+          player.vx += axis * 1620 * dt;
+        }
+
+        if (!game.pointerActive && axis === 0) {
+          player.vx *= Math.exp(-5.2 * dt);
+        }
+
+        player.vx = clamp(player.vx, -270, 270);
+        player.x += player.vx * dt;
+        player.x = clamp(player.x, 16, width - 16);
+
+        const gravity = player.vy < 0 ? 1160 : 1850;
+        const previousY = player.y;
+        player.vy += gravity * dt;
+        player.y += player.vy * dt;
+        player.rotation = clamp(player.vx / 340, -0.42, 0.42);
+
+        return previousY;
+      }
+
+      function updatePlatforms(dt) {
         for (let index = game.platforms.length - 1; index >= 0; index -= 1) {
           const platform = game.platforms[index];
-          if (platform.broken && platform.y > height + 60) {
-            game.platforms.splice(index, 1);
-            continue;
-          }
 
-          if (!platform.broken && platform.y > height + 40) {
-            game.platforms.splice(index, 1);
-          }
-        }
-
-        while (game.platforms.length < 11) {
-          minY -= random(70, 104);
-          game.platforms.push(buildPlatform(minY, false));
-        }
-      }
-
-      function registerLanding(platform) {
-        game.hops += 1;
-        game.player.vy = platform.bounce;
-        game.player.y = platform.y - game.player.radius;
-        game.player.stretch = 1;
-        platform.flash = 0.18;
-
-        if (platform.kind === "boost") {
-          createBurst(game.player.x, platform.y, "255, 198, 114", 14);
-          spawnFloatingText(game.player.x, platform.y - 18, "Boost", "255, 198, 114");
-          game.landingNote = "Boost pad caught. Ride the extra height and look two pads ahead.";
-        } else if (platform.kind === "crumbly") {
-          createBurst(game.player.x, platform.y, "255, 125, 108", 12);
-          spawnFloatingText(game.player.x, platform.y - 18, "Breakaway", "255, 125, 108");
-          platform.crumbling = true;
-          platform.breakTimer = 0.18;
-          game.landingNote = "Crumble pad used. Commit to the next landing early.";
-        } else if (platform.kind === "tiny") {
-          createBurst(game.player.x, platform.y, "140, 245, 218", 10);
-          spawnFloatingText(game.player.x, platform.y - 18, "Clean", "140, 245, 218");
-          game.landingNote = "Tiny pad landed. Keep the next correction just as precise.";
-        } else {
-          createBurst(game.player.x, platform.y, "140, 245, 218", 10);
-          game.landingNote = "Clean landing. Start shaping the next pad before the apex.";
-        }
-      }
-
-      function update(dt) {
-        const previousY = game.player.y;
-        const previousBottom = previousY + game.player.radius;
-        const keyboardX = (input.right ? 1 : 0) - (input.left ? 1 : 0);
-
-        let desiredVx = keyboardX * game.player.maxSpeed;
-        if (input.pointerActive) {
-          desiredVx += clamp((input.targetX - game.player.x) * 4.6, -game.player.maxSpeed, game.player.maxSpeed);
-        }
-
-        game.player.vx += (desiredVx - game.player.vx) * Math.min(1, dt * 8);
-        game.player.x += game.player.vx * dt;
-
-        const gravity = game.player.vy < 0 ? 1180 : 1560;
-        game.player.vy += gravity * dt;
-        game.player.y += game.player.vy * dt;
-        game.player.tilt += (clamp(game.player.vx / 260, -0.32, 0.32) - game.player.tilt) * Math.min(1, dt * 7);
-        game.player.stretch += (0 - game.player.stretch) * Math.min(1, dt * 8);
-
-        if (game.player.x < -game.player.radius) {
-          game.player.x = width + game.player.radius;
-        }
-
-        if (game.player.x > width + game.player.radius) {
-          game.player.x = -game.player.radius;
-        }
-
-        for (const star of game.stars) {
-          star.y += star.speed * dt;
-          if (star.y > height + 4) {
-            star.y = -4;
-            star.x = Math.random() * width;
-          }
-        }
-
-        for (const cloud of game.clouds) {
-          cloud.y += cloud.speed * dt * 0.5;
-          if (cloud.y > height + 36) {
-            cloud.y = -36;
-            cloud.x = random(-30, width - 80);
-          }
-        }
-
-        for (const platform of game.platforms) {
-          if (platform.drift !== 0 && !platform.broken) {
+          if (platform.kind === "drift" && platform.state !== "falling") {
             platform.x += platform.drift * dt;
             if (platform.x <= 10 || platform.x + platform.width >= width - 10) {
               platform.drift *= -1;
@@ -1106,429 +1240,620 @@
             platform.x = clamp(platform.x, 10, width - platform.width - 10);
           }
 
-          if (platform.crumbling) {
-            platform.breakTimer -= dt;
-            if (platform.breakTimer <= 0) {
-              platform.crumbling = false;
-              platform.broken = true;
-              platform.vy = 120;
+          if (platform.kind === "vertical" && platform.state !== "falling") {
+            platform.phase += dt * 1.6;
+            platform.y = platform.baseY + Math.sin(platform.phase) * platform.range;
+          } else {
+            platform.y = platform.baseY;
+          }
+
+          if (platform.state === "cracking") {
+            platform.timer -= dt;
+            if (platform.timer <= 0) {
+              platform.state = "falling";
+              platform.vy = 90;
             }
           }
 
-          if (platform.broken) {
-            platform.vy += 300 * dt;
-            platform.y += platform.vy * dt;
+          if (platform.state === "falling") {
+            platform.vy += 460 * dt;
+            platform.baseY += platform.vy * dt;
+            platform.y = platform.baseY;
           }
 
           if (platform.flash > 0) {
-            platform.flash -= dt;
+            platform.flash = Math.max(0, platform.flash - dt * 2.6);
+          }
+
+          if (platform.spring > 0) {
+            platform.spring = Math.max(0, platform.spring - dt * 4.5);
+          }
+
+          if (platform.y > height + 120) {
+            game.platforms.splice(index, 1);
           }
         }
 
+        fillPlatformQueue();
+      }
+
+      function getBounceFor(kind) {
+        if (kind === "boost") {
+          return -1040;
+        }
+        if (kind === "spring") {
+          return -1180;
+        }
+        if (kind === "vertical") {
+          return -950;
+        }
+        return -860;
+      }
+
+      function registerLanding(platform) {
+        const player = game.player;
+        player.y = platform.y - player.radius - 1;
+        player.vy = getBounceFor(platform.kind);
+
+        if (platform.kind === "boost") {
+          player.vy -= 40;
+        }
+        if (platform.kind === "spring") {
+          platform.spring = 1;
+        }
+
+        game.hops += 1;
+        game.comboChain = game.comboFill > 0.08 ? game.comboChain + 1 : 1;
+        game.comboFill = Math.min(1, game.comboFill + 0.42);
+        game.comboMultiplier = Math.min(4, 1 + (game.comboChain - 1) * 0.25);
+
+        const scoreGain = Math.round((14 + getHeightMeters() * 0.15) * game.comboMultiplier);
+        game.score += scoreGain;
+        game.best = Math.max(game.best, Math.floor(game.score));
+
+        platform.flash = 0.28;
+        playPlatformSound(platform.kind);
+
+        let label = "+" + scoreGain;
+        let color = "#8cf5da";
+
+        if (platform.kind === "boost") {
+          label = "Boost";
+          color = "#ffc672";
+        } else if (platform.kind === "crumble") {
+          platform.state = "cracking";
+          platform.timer = 0.24;
+          label = "Crack";
+          color = "#ff7d6c";
+        } else if (platform.kind === "spring") {
+          label = "Spring";
+          color = "#ffc672";
+        } else if (platform.kind === "vertical") {
+          label = "Lift";
+          color = "#c8a7ff";
+        } else if (platform.kind === "drift") {
+          label = "Flow";
+          color = "#8cf5da";
+        } else if (platform.kind === "tiny") {
+          label = "Tight";
+          color = "#8cf5da";
+        }
+
+        if (game.comboMultiplier > 1.25) {
+          spawnFloatingText(player.x, platform.y - 20, "x" + game.comboMultiplier.toFixed(1), "#ffc672");
+        }
+        spawnFloatingText(player.x, platform.y - 40, label, color);
+        createBurst(player.x, platform.y, color, platform.kind === "spring" ? 18 : 12, 24, 120);
+      }
+
+      function handleLandings(previousY) {
+        const player = game.player;
+        if (player.vy <= 0) {
+          return;
+        }
+
+        const previousBottom = previousY + player.radius;
+        const currentBottom = player.y + player.radius;
+
         for (const platform of game.platforms) {
-          if (platform.broken || platform.crumbling) {
+          if (platform.state === "falling" || platform.state === "cracking") {
             continue;
           }
 
-          const falling = game.player.vy > 70;
-          const currentBottom = game.player.y + game.player.radius;
-          const verticalCatch =
-            previousBottom <= platform.y + 12 && currentBottom >= platform.y - 6;
-          const horizontalPadding = platform.kind === "tiny" ? 10 : 16;
-          const withinPad =
-            game.player.x >= platform.x - horizontalPadding &&
-            game.player.x <= platform.x + platform.width + horizontalPadding;
+          const top = platform.y;
+          const padding =
+            platform.kind === "tiny"
+              ? 10
+              : platform.kind === "vertical"
+                ? 16
+                : 20;
+          const landingWindowTop = top - 12;
+          const landingWindowBottom = top + 16;
+          const withinVerticalWindow =
+            previousBottom <= landingWindowBottom && currentBottom >= landingWindowTop;
+          const withinHorizontalWindow =
+            player.x >= platform.x - padding && player.x <= platform.x + platform.width + padding;
 
-          if (falling && verticalCatch && withinPad) {
+          if (withinVerticalWindow && withinHorizontalWindow) {
             registerLanding(platform);
-            break;
+            return;
           }
         }
+      }
 
-        const cameraLine = height * 0.38;
-        if (game.player.y < cameraLine && game.player.vy < 0) {
-          const shift = cameraLine - game.player.y;
-          game.player.y = cameraLine;
-          game.climb += shift;
-
+      function scrollWorld() {
+        const player = game.player;
+        const liftThreshold = height * 0.36;
+        if (player.y < liftThreshold) {
+          const shift = liftThreshold - player.y;
+          player.y = liftThreshold;
+          game.travel += shift;
           for (const platform of game.platforms) {
+            platform.baseY += shift;
             platform.y += shift;
           }
-
           for (const particle of game.particles) {
-            particle.y += shift;
-          }
-
-          for (const text of game.floatingTexts) {
-            text.y += shift;
-          }
-
-          for (const cloud of game.clouds) {
-            cloud.y += shift * 0.15;
+            particle.y += shift * 0.25;
           }
         }
+      }
 
-        const currentHeight = getHeightMeters();
-        const nextZone = getZoneLabel(currentHeight);
-        if (nextZone !== game.zoneLabel) {
-          game.zoneLabel = nextZone;
-          announce(nextZone, "140, 245, 218");
+      function maybeUpdateMilestone() {
+        const heightMeters = getHeightMeters();
+        const next = MILESTONES.find((value) => value > heightMeters) || (Math.ceil(heightMeters / 100) + 1) * 100;
+        game.nextMilestone = next;
+      }
+
+      function spawnAurora(dt) {
+        if (getHeightMeters() < 260 || game.mode !== "playing") {
+          return;
         }
 
-        while (
-          game.milestoneIndex < milestones.length &&
-          currentHeight >= milestones[game.milestoneIndex]
-        ) {
-          announce(milestones[game.milestoneIndex] + "m", "255, 198, 114");
-          createBurst(game.player.x, cameraLine + 30, "255, 198, 114", 18);
-          spawnFloatingText(width / 2, cameraLine + 20, "Milestone", "255, 198, 114");
-          game.milestoneIndex += 1;
+        if (Math.random() < dt * 12) {
+          game.aurora.push({
+            x: random(0, width),
+            y: random(40, 220),
+            vx: random(-18, 18),
+            vy: random(-6, 8),
+            size: random(10, 24),
+            life: random(0.6, 1.4),
+            color: Math.random() < 0.5 ? "rgba(140,245,218,0.22)" : "rgba(200,167,255,0.18)"
+          });
         }
+      }
 
-        recyclePlatforms();
-
-        for (let index = game.particles.length - 1; index >= 0; index -= 1) {
-          const particle = game.particles[index];
-          particle.life -= dt;
+      function updateAurora(dt) {
+        spawnAurora(dt);
+        for (let index = game.aurora.length - 1; index >= 0; index -= 1) {
+          const particle = game.aurora[index];
           particle.x += particle.vx * dt;
           particle.y += particle.vy * dt;
-          particle.vx *= 0.985;
-          particle.vy += 180 * dt;
+          particle.life -= dt;
+          if (particle.life <= 0) {
+            game.aurora.splice(index, 1);
+          }
+        }
+      }
 
+      function beginDeath() {
+        game.mode = "dying";
+        game.player.deathTimer = 1.05;
+        game.player.spinSpeed = random(-8, 8);
+        game.shake = 16;
+        createBurst(game.player.x, game.player.y, "#ff7d6c", 26, 30, 180);
+        playSound("death");
+      }
+
+      function updateDeath(dt) {
+        const player = game.player;
+        player.deathTimer -= dt;
+        player.vy += 1550 * dt;
+        player.y += player.vy * dt;
+        player.rotation += player.spinSpeed * dt;
+        player.alpha = Math.max(0, player.alpha - dt * 1.2);
+
+        if (player.deathTimer <= 0) {
+          endRun();
+        }
+      }
+
+      function updateCombo(dt) {
+        if (game.comboChain > 0) {
+          game.comboFill = Math.max(0, game.comboFill - dt * (0.18 + game.comboChain * 0.012));
+          if (game.comboFill === 0) {
+            game.comboChain = 0;
+            game.comboMultiplier = 1;
+          }
+        }
+      }
+
+      function updateParticles(dt) {
+        for (let index = game.particles.length - 1; index >= 0; index -= 1) {
+          const particle = game.particles[index];
+          particle.x += particle.vx * dt;
+          particle.y += particle.vy * dt;
+          particle.vx *= 0.986;
+          particle.vy *= 0.986;
+          particle.life -= dt;
           if (particle.life <= 0) {
             game.particles.splice(index, 1);
           }
         }
 
         for (let index = game.floatingTexts.length - 1; index >= 0; index -= 1) {
-          const text = game.floatingTexts[index];
-          text.life -= dt;
-          text.y -= 28 * dt;
-          if (text.life <= 0) {
+          const label = game.floatingTexts[index];
+          label.y -= 28 * dt;
+          label.life -= dt;
+          if (label.life <= 0) {
             game.floatingTexts.splice(index, 1);
           }
         }
 
-        if (game.announcement) {
-          game.announcement.life -= dt;
-          if (game.announcement.life <= 0) {
-            game.announcement = null;
+        if (game.mode === "playing") {
+          game.particles.push({
+            x: game.player.x + random(-5, 5),
+            y: game.player.y + game.player.radius + 2,
+            vx: random(-22, 22),
+            vy: random(26, 80),
+            size: random(1.6, 4.2),
+            life: random(0.18, 0.38),
+            color: "#8cf5da"
+          });
+        }
+
+        if (game.stageFlash > 0) {
+          game.stageFlash = Math.max(0, game.stageFlash - dt);
+        }
+        if (game.shake > 0) {
+          game.shake = Math.max(0, game.shake - dt * 24);
+        }
+      }
+
+      function updateHud() {
+        const heightMeters = getHeightMeters();
+        game.best = Math.max(game.best, Math.floor(game.score));
+        game.bestHeight = Math.max(game.bestHeight, heightMeters);
+
+        scoreElement.textContent = String(Math.floor(game.score));
+        bestScoreElement.textContent = String(Math.floor(game.best));
+        hopsElement.textContent = String(game.hops);
+        heightElement.textContent = heightMeters + "m";
+        comboElement.textContent = game.comboMultiplier.toFixed(1) + "x";
+        zoneElement.textContent = getZone().name;
+        comboFillElement.style.width = Math.round(game.comboFill * 100) + "%";
+        comboNoteElement.textContent =
+          game.comboChain > 0
+            ? "Chain " + game.comboChain + " is live. Land again before the bar runs dry."
+            : "Land before the bar drains to keep building multiplier.";
+        milestoneElement.textContent =
+          "Reach " + game.nextMilestone + "m. Current height: " + heightMeters + "m.";
+        landingNoteElement.textContent = getZone().note;
+        canvasNoteElement.textContent =
+          heightMeters >= 260
+            ? "Aurora air means thinner pads and stronger combo pressure. Spring and boost pads are your bailout tools."
+            : heightMeters >= 200
+              ? "Platforms are shrinking now. Set your line earlier and let the heavier fall finish the catch."
+              : "Spring and boost pads cash in big height, crumble pads punish late lines, and the combo bar only stays alive if the next landing comes quickly.";
+
+        overlayScore.textContent = String(Math.floor(game.score));
+        overlayHeight.textContent = heightMeters + "m";
+        overlayBestHeight.textContent = Math.floor(game.bestHeight) + "m";
+      }
+
+      function update(dt) {
+        updateParticles(dt);
+        updateAurora(dt);
+
+        if (game.mode === "playing") {
+          const previousY = updatePlayer(dt);
+          updatePlatforms(dt);
+          handleLandings(previousY);
+          scrollWorld();
+          updateCombo(dt);
+          maybeAdvanceZone();
+          maybeUpdateMilestone();
+
+          if (game.player.y - game.player.radius > height + 60) {
+            beginDeath();
           }
+        } else if (game.mode === "dying") {
+          updatePlatforms(dt);
+          updateDeath(dt);
         }
 
         updateHud();
-
-        if (game.player.y - game.player.radius > height + 40) {
-          endGame();
-        }
-      }
-
-      function draw() {
-        context.clearRect(0, 0, width, height);
-        drawBackground();
-        drawClouds();
-        drawStars();
-        drawAltitudeGuide();
-        drawPlatforms();
-        drawParticles();
-        drawPlayer();
-        drawFloatingTexts();
-        drawAnnouncement();
-        drawVignette();
       }
 
       function drawBackground() {
-        const fill = context.createLinearGradient(0, 0, 0, height);
-        fill.addColorStop(0, "#1b3048");
-        fill.addColorStop(0.45, "#0f1f31");
-        fill.addColorStop(1, "#07111a");
-        context.fillStyle = fill;
+        const zone = getZone();
+        const gradient = context.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, zone.colors[0]);
+        gradient.addColorStop(1, zone.colors[1]);
+        context.fillStyle = gradient;
         context.fillRect(0, 0, width, height);
 
-        const glow = context.createRadialGradient(
-          width / 2,
-          height * 0.24,
-          10,
-          width / 2,
-          height * 0.24,
-          240
-        );
-        glow.addColorStop(0, "rgba(255, 255, 255, 0.16)");
-        glow.addColorStop(1, "rgba(255, 255, 255, 0)");
-        context.fillStyle = glow;
-        context.fillRect(0, 0, width, height);
-      }
-
-      function drawClouds() {
-        context.save();
-        for (const cloud of game.clouds) {
-          context.fillStyle = "rgba(255, 255, 255, " + cloud.alpha.toFixed(2) + ")";
-          roundRect(context, cloud.x, cloud.y, cloud.width, 22, 14);
-          context.fill();
-        }
-        context.restore();
-      }
-
-      function drawStars() {
-        context.save();
         for (const star of game.stars) {
-          context.fillStyle = "rgba(243, 246, 239, " + star.alpha + ")";
+          const y = (star.y + game.travel * 0.02 + performance.now() * 0.002 * star.speed) % height;
+          context.globalAlpha = star.alpha;
+          context.fillStyle = "#f2fbff";
+          context.fillRect(star.x, y, star.size, star.size);
+        }
+        context.globalAlpha = 1;
+
+        for (const cloud of game.clouds) {
+          const x = ((cloud.x + performance.now() * 0.001 * cloud.speed) % (width + 140)) - 70;
+          context.globalAlpha = cloud.alpha;
+          context.fillStyle = "rgba(255,255,255,0.28)";
           context.beginPath();
-          context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+          context.ellipse(x, cloud.y, cloud.width * 0.35, cloud.height * 0.5, 0, 0, Math.PI * 2);
+          context.ellipse(x + cloud.width * 0.16, cloud.y - 4, cloud.width * 0.25, cloud.height * 0.36, 0, 0, Math.PI * 2);
           context.fill();
         }
-        context.restore();
-      }
+        context.globalAlpha = 1;
 
-      function drawAltitudeGuide() {
-        const currentHeight = getHeightMeters();
-        const nextMilestone = getNextMilestoneFrom(currentHeight);
-
-        context.save();
-        context.fillStyle = "rgba(255, 255, 255, 0.08)";
-        roundRect(context, width - 86, 18, 60, 118, 18);
-        context.fill();
-
-        context.fillStyle = "rgba(255, 255, 255, 0.82)";
-        context.font = "700 14px Trebuchet MS";
-        context.textAlign = "center";
-        context.fillText(currentHeight + "m", width - 56, 48);
-
-        context.fillStyle = "rgba(182, 194, 191, 0.95)";
-        context.font = "600 11px Trebuchet MS";
-        context.fillText(game.zoneLabel, width - 56, 68);
-
-        context.strokeStyle = "rgba(140, 245, 218, 0.18)";
-        context.lineWidth = 4;
-        context.beginPath();
-        context.moveTo(width - 56, 84);
-        context.lineTo(width - 56, 116);
-        context.stroke();
-
-        if (nextMilestone) {
-          const progress = clamp(currentHeight / nextMilestone, 0, 1);
-          context.strokeStyle = "rgba(255, 198, 114, 0.72)";
-          context.beginPath();
-          context.moveTo(width - 56, 116);
-          context.lineTo(width - 56, 116 - progress * 32);
-          context.stroke();
-          context.fillStyle = "rgba(255, 198, 114, 0.95)";
-          context.fillText(nextMilestone + "m", width - 56, 132);
-        } else {
-          context.fillStyle = "rgba(255, 198, 114, 0.95)";
-          context.fillText("Cleared", width - 56, 132);
+        if (getHeightMeters() >= 260) {
+          context.lineWidth = 2;
+          for (let band = 0; band < 3; band += 1) {
+            context.beginPath();
+            context.strokeStyle =
+              band % 2 === 0 ? "rgba(140,245,218,0.16)" : "rgba(200,167,255,0.14)";
+            for (let x = 0; x <= width; x += 12) {
+              const y = 120 + band * 30 + Math.sin(x * 0.025 + performance.now() * 0.0015 + band) * 12;
+              if (x === 0) {
+                context.moveTo(x, y);
+              } else {
+                context.lineTo(x, y);
+              }
+            }
+            context.stroke();
+          }
         }
 
-        context.restore();
+        for (const particle of game.aurora) {
+          context.globalAlpha = Math.max(0, particle.life * 0.6);
+          context.fillStyle = particle.color;
+          context.beginPath();
+          context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.globalAlpha = 1;
       }
 
       function drawPlatforms() {
         for (const platform of game.platforms) {
-          const fill = context.createLinearGradient(
+          context.save();
+          context.globalAlpha = platform.state === "falling" ? 0.45 : 1;
+          context.shadowBlur = 12;
+
+          let colorA = "#b9fcf2";
+          let colorB = "#52ceb5";
+          if (platform.kind === "boost") {
+            colorA = "#ffe4a1";
+            colorB = "#ffc672";
+          } else if (platform.kind === "crumble") {
+            colorA = "#ffb2a4";
+            colorB = "#ff7d6c";
+          } else if (platform.kind === "spring") {
+            colorA = "#ffe5ab";
+            colorB = "#ffd45d";
+          } else if (platform.kind === "vertical") {
+            colorA = "#e0cfff";
+            colorB = "#b88cff";
+          }
+
+          context.shadowColor = colorB;
+          const gradient = context.createLinearGradient(
             platform.x,
             platform.y,
             platform.x,
             platform.y + platform.height
           );
+          gradient.addColorStop(0, colorA);
+          gradient.addColorStop(1, colorB);
+          context.fillStyle = gradient;
 
-          if (platform.kind === "boost") {
-            fill.addColorStop(0, "#ffe2a8");
-            fill.addColorStop(1, "#ffb86a");
-          } else if (platform.kind === "crumbly") {
-            fill.addColorStop(0, "#ffd0c4");
-            fill.addColorStop(1, "#f0847c");
-          } else if (platform.kind === "tiny") {
-            fill.addColorStop(0, "#d8fff7");
-            fill.addColorStop(1, "#82daca");
-          } else {
-            fill.addColorStop(0, "#f6fbff");
-            fill.addColorStop(1, "#a8c8ef");
-          }
-
-          const alpha = platform.broken ? 0.38 : 1;
-          context.save();
-          context.globalAlpha = alpha;
-          context.fillStyle = fill;
-          roundRect(context, platform.x, platform.y, platform.width, platform.height, 10);
+          const springOffset = platform.kind === "spring" ? platform.spring * 6 : 0;
+          roundRect(
+            context,
+            platform.x,
+            platform.y + springOffset,
+            platform.width,
+            platform.height - springOffset,
+            10
+          );
           context.fill();
 
-          context.strokeStyle =
-            platform.kind === "boost"
-              ? "rgba(255, 198, 114, 0.42)"
-              : platform.kind === "crumbly"
-                ? "rgba(255, 125, 108, 0.34)"
-                : "rgba(255, 255, 255, 0.22)";
+          context.strokeStyle = "rgba(255,255,255,0.18)";
           context.lineWidth = 2 + platform.flash * 8;
           context.stroke();
 
-          if (platform.kind === "crumbly" && !platform.broken) {
-            context.strokeStyle = "rgba(255, 255, 255, 0.2)";
-            context.lineWidth = 1.2;
+          if (platform.kind === "boost") {
+            context.fillStyle = "rgba(255,255,255,0.32)";
+            context.fillRect(platform.x + 10, platform.y + 4, platform.width - 20, 4);
+          }
+
+          if (platform.kind === "drift") {
+            context.strokeStyle = "rgba(255,255,255,0.24)";
             context.beginPath();
-            context.moveTo(platform.x + 14, platform.y + 4);
-            context.lineTo(platform.x + platform.width - 16, platform.y + 12);
-            context.moveTo(platform.x + 22, platform.y + 12);
+            context.moveTo(platform.x + 14, platform.y + 8);
+            context.lineTo(platform.x + platform.width - 14, platform.y + 8);
+            context.stroke();
+          }
+
+          if (platform.kind === "crumble") {
+            context.strokeStyle = "rgba(44,0,0,0.25)";
+            context.beginPath();
+            context.moveTo(platform.x + 14, platform.y + 3);
+            context.lineTo(platform.x + platform.width - 18, platform.y + 12);
+            context.moveTo(platform.x + 22, platform.y + 13);
             context.lineTo(platform.x + platform.width - 26, platform.y + 4);
             context.stroke();
           }
 
-          if (platform.kind === "boost") {
-            context.fillStyle = "rgba(255, 255, 255, 0.22)";
-            context.fillRect(platform.x + 10, platform.y + 4, platform.width - 20, 4);
+          if (platform.kind === "spring") {
+            context.strokeStyle = "rgba(80,50,0,0.45)";
+            context.lineWidth = 2;
+            context.beginPath();
+            for (let x = 12; x <= platform.width - 12; x += 8) {
+              const px = platform.x + x;
+              const py = platform.y + platform.height - 2 + Math.sin((x / 8) * Math.PI) * 4;
+              if (x === 12) {
+                context.moveTo(px, py);
+              } else {
+                context.lineTo(px, py);
+              }
+            }
+            context.stroke();
+          }
+
+          if (platform.kind === "vertical") {
+            context.strokeStyle = "rgba(255,255,255,0.22)";
+            context.beginPath();
+            context.moveTo(platform.x + 10, platform.y + 2);
+            context.lineTo(platform.x + 10, platform.y + platform.height - 2);
+            context.moveTo(platform.x + platform.width - 10, platform.y + 2);
+            context.lineTo(platform.x + platform.width - 10, platform.y + platform.height - 2);
+            context.stroke();
           }
 
           context.restore();
         }
       }
 
-      function drawParticles() {
+      function drawPlayer() {
+        const player = game.player;
         context.save();
+        context.translate(player.x, player.y);
+        context.rotate(player.rotation);
+        context.globalAlpha = player.alpha;
+        context.shadowBlur = 20;
+        context.shadowColor = "rgba(140,245,218,0.85)";
+        const gradient = context.createRadialGradient(-4, -6, 4, 0, 0, player.radius + 6);
+        gradient.addColorStop(0, "#ffffff");
+        gradient.addColorStop(0.24, "#dffdf7");
+        gradient.addColorStop(0.68, "#8cf5da");
+        gradient.addColorStop(1, "rgba(140,245,218,0.08)");
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(0, 0, player.radius, 0, Math.PI * 2);
+        context.fill();
+
+        context.strokeStyle = "rgba(255,255,255,0.3)";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(0, 0, player.radius - 2, 0, Math.PI * 2);
+        context.stroke();
+        context.restore();
+      }
+
+      function drawParticles() {
         for (const particle of game.particles) {
-          const alpha = Math.max(0, particle.life / particle.maxLife);
-          context.fillStyle = "rgba(" + particle.color + ", " + alpha.toFixed(2) + ")";
+          context.globalAlpha = Math.max(0, particle.life * 1.2);
+          context.fillStyle = particle.color;
           context.beginPath();
-          context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+          context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
           context.fill();
         }
-        context.restore();
-      }
+        context.globalAlpha = 1;
 
-      function drawPlayer() {
-        const stretchY = 1 + game.player.stretch * 0.18;
-        const stretchX = 1 - game.player.stretch * 0.12;
-
-        context.save();
-        context.translate(game.player.x, game.player.y);
-        context.rotate(game.player.tilt);
-        context.scale(stretchX, stretchY);
-
-        const glow = context.createRadialGradient(-5, -6, 4, 0, 0, 26);
-        glow.addColorStop(0, "#ffffff");
-        glow.addColorStop(0.48, "#8cf5da");
-        glow.addColorStop(1, "#12806c");
-
-        context.shadowColor = "rgba(140, 245, 218, 0.4)";
-        context.shadowBlur = 24;
-        context.fillStyle = glow;
-        context.beginPath();
-        context.arc(0, 0, game.player.radius, 0, Math.PI * 2);
-        context.fill();
-
-        context.shadowBlur = 0;
-        context.fillStyle = "rgba(255, 255, 255, 0.22)";
-        context.beginPath();
-        context.arc(-5, -6, game.player.radius * 0.3, 0, Math.PI * 2);
-        context.fill();
-        context.restore();
-      }
-
-      function drawFloatingTexts() {
-        context.save();
+        context.font = '700 16px "Orbitron", sans-serif';
         context.textAlign = "center";
-        context.font = "700 18px Trebuchet MS";
-        for (const text of game.floatingTexts) {
-          const alpha = Math.max(0, text.life / text.maxLife);
-          context.fillStyle = "rgba(" + text.color + ", " + alpha.toFixed(2) + ")";
-          context.fillText(text.text, text.x, text.y);
+        for (const label of game.floatingTexts) {
+          context.globalAlpha = Math.max(0, label.life);
+          context.fillStyle = label.color;
+          context.fillText(label.text, label.x, label.y);
         }
-        context.restore();
+        context.globalAlpha = 1;
       }
 
-      function drawAnnouncement() {
-        if (!game.announcement) {
+      function drawStageFlash() {
+        if (game.stageFlash <= 0) {
           return;
         }
 
-        const alpha = Math.max(0, game.announcement.life / game.announcement.maxLife);
         context.save();
+        context.globalAlpha = Math.min(1, game.stageFlash) * 0.95;
+        context.fillStyle = game.stageColor;
+        context.font = '900 32px "Orbitron", sans-serif';
         context.textAlign = "center";
-        context.font = "800 28px Trebuchet MS";
-        context.fillStyle = "rgba(" + game.announcement.color + ", " + alpha.toFixed(2) + ")";
-        context.fillText(game.announcement.text, width / 2, 86);
+        context.shadowBlur = 24;
+        context.shadowColor = game.stageColor;
+        context.fillText(game.stageText, width / 2, 180);
         context.restore();
       }
 
-      function drawVignette() {
-        const vignette = context.createRadialGradient(
-          width / 2,
-          height / 2,
-          160,
-          width / 2,
-          height / 2,
-          520
-        );
-        vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
-        vignette.addColorStop(1, "rgba(0, 0, 0, 0.32)");
-        context.fillStyle = vignette;
-        context.fillRect(0, 0, width, height);
+      function draw() {
+        context.clearRect(0, 0, width, height);
+        context.save();
+        if (game.shake > 0) {
+          context.translate(random(-game.shake, game.shake), random(-game.shake, game.shake));
+        }
+
+        drawBackground();
+        drawPlatforms();
+        drawParticles();
+        drawPlayer();
+        drawStageFlash();
+
+        context.restore();
       }
 
       function loop(timestamp) {
-        if (!game.running) {
-          draw();
-          return;
-        }
-
-        if (!game.lastFrame) {
-          game.lastFrame = timestamp;
-        }
-
-        const dt = Math.min(0.033, (timestamp - game.lastFrame) / 1000);
-        game.lastFrame = timestamp;
-
+        const dt = Math.min(0.033, (timestamp - lastTimestamp) / 1000 || 0);
+        lastTimestamp = timestamp;
         update(dt);
         draw();
-
-        if (game.running) {
-          requestAnimationFrame(loop);
-        }
+        window.requestAnimationFrame(loop);
       }
 
-      function activatePrimaryAction() {
-        if (game.gameOver) {
-          resetGame();
-          startGame();
-          return;
-        }
-
-        if (game.paused) {
-          resumeGame();
-          return;
-        }
-
-        if (!game.running) {
-          startGame();
-        }
+      function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + rectWidth, y, x + rectWidth, y + rectHeight, radius);
+        ctx.arcTo(x + rectWidth, y + rectHeight, x, y + rectHeight, radius);
+        ctx.arcTo(x, y + rectHeight, x, y, radius);
+        ctx.arcTo(x, y, x + rectWidth, y, radius);
+        ctx.closePath();
       }
 
-      function togglePause() {
-        if (game.gameOver) {
-          return;
-        }
-
-        if (game.running) {
-          pauseGame();
-          return;
-        }
-
-        if (game.paused) {
-          resumeGame();
-        }
-      }
-
-      function syncPointer(event) {
+      function syncPointer(event, forceActive) {
         const rect = canvas.getBoundingClientRect();
         const scaleX = width / rect.width;
-        input.targetX = clamp((event.clientX - rect.left) * scaleX, 0, width);
+        game.pointerX = (event.clientX - rect.left) * scaleX;
+        game.pointerType = event.pointerType || "mouse";
+        if (typeof forceActive === "boolean") {
+          game.pointerActive = forceActive;
+        } else if (game.pointerType === "mouse") {
+          game.pointerActive = true;
+        }
+      }
+
+      function bindTouchButton(button, stateKey) {
+        const setState = (value) => {
+          game.input[stateKey] = value;
+          if (value) {
+            unlockAudio();
+          }
+        };
+
+        button.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          setState(true);
+        });
+        button.addEventListener("pointerup", () => setState(false));
+        button.addEventListener("pointercancel", () => setState(false));
+        button.addEventListener("pointerleave", () => setState(false));
       }
 
       document.addEventListener("keydown", (event) => {
-        if (event.code === "ArrowLeft" || event.code === "KeyA") {
-          input.left = true;
+        if (event.repeat && (event.code === "Space" || event.code === "Enter")) {
+          return;
         }
 
-        if (event.code === "ArrowRight" || event.code === "KeyD") {
-          input.right = true;
+        if (event.code === "Space" || event.code === "Enter") {
+          event.preventDefault();
+          activatePrimaryAction();
+          return;
         }
 
         if (event.code === "KeyP") {
@@ -1537,105 +1862,90 @@
           return;
         }
 
-        if (event.code === "Space" || event.code === "Enter") {
-          event.preventDefault();
-          activatePrimaryAction();
-        }
+        setKeyState(event.code, true);
       });
 
       document.addEventListener("keyup", (event) => {
-        if (event.code === "ArrowLeft" || event.code === "KeyA") {
-          input.left = false;
-        }
-
-        if (event.code === "ArrowRight" || event.code === "KeyD") {
-          input.right = false;
-        }
-      });
-
-      window.addEventListener("blur", () => {
-        if (game.running) {
-          pauseGame();
-        }
+        setKeyState(event.code, false);
       });
 
       canvas.addEventListener("pointerdown", (event) => {
-        input.pointerActive = true;
-        syncPointer(event);
-        if (!game.running) {
+        unlockAudio();
+        if (game.mode !== "playing") {
           activatePrimaryAction();
+          return;
         }
+        syncPointer(event, true);
       });
 
       canvas.addEventListener("pointermove", (event) => {
-        syncPointer(event);
-        if (event.pointerType === "mouse") {
-          input.pointerActive = true;
+        if (game.mode !== "playing" && event.pointerType !== "mouse") {
+          return;
+        }
+        if (event.pointerType === "mouse" || game.pointerActive) {
+          syncPointer(event);
         }
       });
 
       canvas.addEventListener("pointerup", () => {
-        input.pointerActive = false;
+        if (game.pointerType !== "mouse") {
+          game.pointerActive = false;
+        }
       });
 
       canvas.addEventListener("pointercancel", () => {
-        input.pointerActive = false;
+        if (game.pointerType !== "mouse") {
+          game.pointerActive = false;
+        }
       });
 
-      canvas.addEventListener("pointerleave", () => {
-        input.pointerActive = false;
+      overlay.addEventListener("click", (event) => {
+        event.preventDefault();
+        activatePrimaryAction();
       });
 
-      actionButton.addEventListener("click", () => {
+      actionButton.addEventListener("click", (event) => {
+        event.preventDefault();
         activatePrimaryAction();
       });
 
       pauseButton.addEventListener("click", () => {
+        if (game.mode === "start" || game.mode === "gameover") {
+          return;
+        }
         togglePause();
       });
 
-      overlay.addEventListener("click", (event) => {
-        if (event.target.tagName === "BUTTON" || event.target.tagName === "A") {
-          return;
-        }
+      bindTouchButton(touchLeftButton, "left");
+      bindTouchButton(touchRightButton, "right");
 
-        if (!game.running) {
-          activatePrimaryAction();
+      window.addEventListener("blur", () => {
+        if (game.mode === "playing") {
+          togglePause(true);
         }
       });
 
       function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
+        return Math.min(max, Math.max(min, value));
       }
 
       function random(min, max) {
         return Math.random() * (max - min) + min;
       }
 
-      function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + rectWidth - radius, y);
-        ctx.quadraticCurveTo(x + rectWidth, y, x + rectWidth, y + radius);
-        ctx.lineTo(x + rectWidth, y + rectHeight - radius);
-        ctx.quadraticCurveTo(
-          x + rectWidth,
-          y + rectHeight,
-          x + rectWidth - radius,
-          y + rectHeight
-        );
-        ctx.lineTo(x + radius, y + rectHeight);
-        ctx.quadraticCurveTo(x, y + rectHeight, x, y + rectHeight - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-      }
-
-      createStars();
-      createClouds();
-      resetGame();
       bestScoreElement.textContent = String(game.best);
+      createSky();
+      updateHud();
+      showOverlay({
+        kicker: "Sky Platformer",
+        title: "Sky Hop",
+        text: "Seven platform types, a draining combo bar, and five sky zones make cleaner landings matter more than ever.",
+        actionLabel: "Start Hop",
+        showSummary: false,
+        showGames: false
+      });
       draw();
+      window.requestAnimationFrame(loop);
     </script>
   </body>
 </html>
