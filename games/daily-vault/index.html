@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Daily Vault | Zingcade</title>
+    <meta
+      name="description"
+      content="Crack the daily code. A futuristic puzzle vault game with streaks, 6 attempts, and daily challenges."
+    />
+    <link rel="canonical" href="https://zingcade.com/games/daily-vault/" />
+    <link rel="stylesheet" href="/css/styles.css" />
+
+    <style>
+      /* DAILY VAULT SPECIFIC STYLES */
+      :root {
+        --vault-bg: #040914;
+        --vault-panel: #0a1324;
+        --vault-border: #1a2a44;
+        
+        --sym-1: #c8a7ff; /* Purple */
+        --sym-2: #8cf5da; /* Cyan */
+        --sym-3: #ff7d6c; /* Orange */
+        --sym-4: #ffc672; /* Yellow */
+        --sym-5: #4b9eff; /* Blue */
+        --sym-6: #ff61a6; /* Pink */
+
+        --feed-exact: #8cf5da;
+        --feed-partial: #ffc672;
+        --feed-miss: #2a3a54;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--vault-bg);
+        color: #fff;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .game-shell {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: env(safe-area-inset-top) 8px env(safe-area-inset-bottom) 8px;
+        box-sizing: border-box;
+      }
+
+      .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 12px 0;
+        border-bottom: 2px solid var(--vault-border);
+        margin-bottom: 12px;
+        flex-shrink: 0;
+      }
+
+      .brand-lockup {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .title {
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: 1.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0;
+        background: linear-gradient(to right, #fff, #a0b4d8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      .mode-badge {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--sym-2);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      
+      .mode-badge.practice {
+        color: var(--sym-4);
+      }
+
+      .hud-stats {
+        display: flex;
+        gap: 16px;
+      }
+
+      .hud-box {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+
+      .hud-label {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.65rem;
+        color: #7b94b5;
+        text-transform: uppercase;
+      }
+
+      .hud-value {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .vault-grid-container {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 0;
+      }
+
+      .vault-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .vault-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .vault-slots {
+        display: flex;
+        flex: 1;
+        gap: 8px;
+      }
+
+      .vault-slot {
+        flex: 1;
+        aspect-ratio: 1;
+        background: var(--vault-panel);
+        border: 2px solid var(--vault-border);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      
+      .vault-slot.active {
+        border-color: #4b9eff;
+        box-shadow: inset 0 0 10px rgba(75, 158, 255, 0.15);
+      }
+      
+      .vault-slot.filled {
+        transform: scale(1.05);
+      }
+
+      .slot-svg {
+        width: 60%;
+        height: 60%;
+        filter: drop-shadow(0 0 6px currentColor);
+      }
+
+      .vault-feedback {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 4px;
+        width: 40px;
+        height: 40px;
+        padding: 4px;
+        background: rgba(10, 20, 35, 0.5);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .feed-pip {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        transition: background 0.4s ease;
+      }
+      
+      /* Filled states for row */
+      .vault-row.submitted .vault-slot {
+        border-color: var(--vault-border);
+      }
+
+      .feed-pip.exact {
+        background: var(--feed-exact);
+        box-shadow: 0 0 8px var(--feed-exact);
+      }
+
+      .feed-pip.partial {
+        background: var(--feed-partial);
+      }
+      
+      .feed-pip.miss {
+        background: var(--feed-miss);
+      }
+
+      .input-tray {
+        width: 100%;
+        max-width: 480px;
+        padding: 16px 8px;
+        background: rgba(4, 9, 20, 0.9);
+        border-top: 2px solid var(--vault-border);
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex-shrink: 0;
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+      }
+
+      .symbol-row {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .action-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .tray-btn {
+        background: var(--vault-panel);
+        border: 2px solid var(--vault-border);
+        border-radius: 10px;
+        color: #fff;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
+        user-select: none;
+        transition: all 0.1s ease;
+      }
+      
+      .tray-btn:active {
+        transform: scale(0.92);
+        background: #15223a;
+      }
+
+      .sym-btn {
+        flex: 1;
+        aspect-ratio: 1;
+        max-width: 60px;
+      }
+      
+      .sym-btn svg {
+        width: 50%;
+        height: 50%;
+        pointer-events: none;
+      }
+
+      .sys-btn {
+        flex: 2;
+        padding: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      
+      .sys-btn#btn-submit {
+        background: rgba(140, 245, 218, 0.1);
+        border-color: rgba(140, 245, 218, 0.4);
+        color: var(--sym-2);
+        opacity: 0.4;
+        pointer-events: none;
+      }
+      
+      .sys-btn#btn-submit.ready {
+        opacity: 1;
+        pointer-events: auto;
+        background: rgba(140, 245, 218, 0.2);
+        border-color: var(--sym-2);
+        box-shadow: 0 0 15px rgba(140, 245, 218, 0.2);
+      }
+
+      /* Shape Colors */
+      .sym-1 { color: var(--sym-1); }
+      .sym-2 { color: var(--sym-2); }
+      .sym-3 { color: var(--sym-3); }
+      .sym-4 { color: var(--sym-4); }
+      .sym-5 { color: var(--sym-5); }
+      .sym-6 { color: var(--sym-6); }
+
+      /* Overlays */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 100;
+      }
+
+      .overlay[hidden] {
+        display: none !important;
+      }
+
+      .overlay-card {
+        background: var(--vault-panel);
+        border: 2px solid var(--vault-border);
+        border-radius: 16px;
+        padding: 32px 24px;
+        max-width: 360px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+
+      .overlay-kicker {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.8rem;
+        color: var(--sym-2);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin: 0 0 8px 0;
+      }
+      
+      .overlay-kicker.failed {
+        color: var(--sym-3);
+      }
+
+      .overlay-title {
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: 2rem;
+        margin: 0 0 16px 0;
+        color: #fff;
+      }
+
+      .overlay-text {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.15rem;
+        color: #a0b4d8;
+        line-height: 1.4;
+        margin: 0 0 24px 0;
+      }
+      
+      .solution-reveal {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: rgba(0,0,0,0.4);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+      }
+      
+      .solution-reveal svg {
+        width: 32px;
+        height: 32px;
+        filter: drop-shadow(0 0 8px currentColor);
+      }
+
+      .overlay-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 32px;
+      }
+
+      .stat-panel {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 16px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stat-panel-label {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.65rem;
+        color: #7b94b5;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .stat-panel-val {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .action-button {
+        width: 100%;
+        margin-bottom: 12px;
+        animation: uiPulse 2.5s infinite;
+      }
+      
+      .action-button.secondary {
+        animation: none;
+        background: transparent;
+        border: 2px solid rgba(255,255,255,0.1);
+        color: #a0b4d8;
+      }
+
+      @keyframes uiPulse {
+        0% { box-shadow: 0 0 0 0 rgba(140, 245, 218, 0.4); }
+        70% { box-shadow: 0 0 0 12px rgba(140, 245, 218, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(140, 245, 218, 0); }
+      }
+      
+      /* Confetti / Burst Canvas */
+      #fx-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 50;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="game-shell">
+      <header class="game-header">
+        <div class="brand-lockup">
+          <h1 class="title">Daily Vault</h1>
+          <span class="mode-badge" id="mode-badge">Daily Mode</span>
+        </div>
+        <div class="hud-stats">
+          <div class="hud-box">
+            <span class="hud-label">Streak</span>
+            <span class="hud-value" id="hud-streak">0</span>
+          </div>
+          <div class="hud-box">
+            <span class="hud-label">Attempts</span>
+            <span class="hud-value"><span id="hud-attempt">1</span>/6</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="vault-grid-container">
+        <div class="vault-grid" id="vault-grid">
+          <!-- Rows injected via JS -->
+        </div>
+      </div>
+
+      <div class="input-tray">
+        <div class="symbol-row" id="tray-symbols">
+          <!-- Populated by JS -->
+        </div>
+        <div class="action-row">
+          <button class="tray-btn sys-btn" id="btn-del">Delete</button>
+          <button class="tray-btn sys-btn" id="btn-submit">Decode</button>
+        </div>
+      </div>
+    </div>
+    
+    <canvas id="fx-canvas"></canvas>
+
+    <div class="overlay" id="overlay" hidden>
+      <div class="overlay-card">
+        <p class="overlay-kicker" id="overlay-kicker">Vault Unlocked</p>
+        <h2 class="overlay-title" id="overlay-title">Success</h2>
+        
+        <div class="solution-reveal" id="solution-reveal" hidden>
+          <!-- Filled if failed -->
+        </div>
+        
+        <p class="overlay-text" id="overlay-text">
+          You cracked the code in 4 attempts.
+        </p>
+
+        <div class="overlay-stats">
+          <div class="stat-panel">
+            <span class="stat-panel-label">Streak</span>
+            <span class="stat-panel-val" id="over-streak">5</span>
+          </div>
+          <div class="stat-panel">
+            <span class="stat-panel-label">Best</span>
+            <span class="stat-panel-val" id="over-best">12</span>
+          </div>
+        </div>
+
+        <button class="button button-primary action-button" id="btn-primary">
+          Play Practice Mode
+        </button>
+        <button class="button button-primary action-button secondary" id="btn-hub" onclick="window.location.href='/games/'">
+          Back to Hub
+        </button>
+      </div>
+    </div>
+
+    <!-- AUDIO CONTEXT -->
+    <script>
+      let audioCtx;
+      function unlockAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+      }
+
+      function tone({ frequency, endFrequency, duration, type, gain }) {
+        if (!audioCtx) return;
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        if (endFrequency) {
+          oscillator.frequency.exponentialRampToValueAtTime(endFrequency, audioCtx.currentTime + duration);
+        }
+        gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + duration);
+      }
+
+      function playSound(kind) {
+        unlockAudio();
+        if (kind === "tap") {
+          tone({ frequency: 800, duration: 0.05, type: "sine", gain: 0.03 });
+        } else if (kind === "del") {
+          tone({ frequency: 300, duration: 0.05, type: "triangle", gain: 0.03 });
+        } else if (kind === "submit") {
+          tone({ frequency: 600, endFrequency: 900, duration: 0.15, type: "square", gain: 0.02 });
+        } else if (kind === "reveal-exact") {
+          tone({ frequency: 1200, duration: 0.1, type: "sine", gain: 0.04 });
+        } else if (kind === "reveal-partial") {
+          tone({ frequency: 600, duration: 0.1, type: "triangle", gain: 0.03 });
+        } else if (kind === "reveal-miss") {
+          tone({ frequency: 200, duration: 0.1, type: "square", gain: 0.02 });
+        } else if (kind === "win") {
+          tone({ frequency: 440, endFrequency: 880, duration: 0.3, type: "sawtooth", gain: 0.04 });
+          setTimeout(() => tone({ frequency: 880, endFrequency: 1760, duration: 0.4, type: "sawtooth", gain: 0.04 }), 150);
+        } else if (kind === "lose") {
+          tone({ frequency: 300, endFrequency: 100, duration: 0.5, type: "sawtooth", gain: 0.05 });
+        }
+      }
+    </script>
+
+    <!-- GAME ENGINE LOGIC -->
+    <script>
+      // The 6 SVG symbols (Geometric Cyberpunk Runes)
+      const SHAPES = [
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12l10 10 10-10L12 2z"/></svg>', // 1: Diamond
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 22h20L12 2z"/></svg>', // 2: Triangle
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7z"/></svg>', // 3: Hexagon
+        '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>', // 4: Circle
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3z"/></svg>', // 5: Square
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>' // 6: Star
+      ];
+
+      const COLS = 4;
+      const ROWS = 6;
+      
+      const vaultGrid = document.getElementById("vault-grid");
+      const traySymbols = document.getElementById("tray-symbols");
+      const btnDel = document.getElementById("btn-del");
+      const btnSubmit = document.getElementById("btn-submit");
+      
+      const hudStreak = document.getElementById("hud-streak");
+      const hudAttempt = document.getElementById("hud-attempt");
+      const modeBadge = document.getElementById("mode-badge");
+      
+      const overlay = document.getElementById("overlay");
+      const overlayKicker = document.getElementById("overlay-kicker");
+      const overlayTitle = document.getElementById("overlay-title");
+      const overlayText = document.getElementById("overlay-text");
+      const overStreak = document.getElementById("over-streak");
+      const overBest = document.getElementById("over-best");
+      const btnPrimary = document.getElementById("btn-primary");
+      const solutionReveal = document.getElementById("solution-reveal");
+
+      let mode = "daily"; // or "practice"
+      let secretCode = [];
+      let currentRow = 0;
+      let currentGuess = []; // array of indices 0-5
+      
+      // Streak Data
+      let currentStreak = parseInt(localStorage.getItem("zingcade-vault-streak")) || 0;
+      let bestStreak = parseInt(localStorage.getItem("zingcade-vault-best")) || 0;
+      let lastPlayedDate = localStorage.getItem("zingcade-vault-last-played") || "";
+
+      // Simple seeded random to get same code per date string
+      function getDailyCode(dateStr) {
+        let hash = 0;
+        for (let i = 0; i < dateStr.length; i++) {
+          hash = Math.imul(31, hash) + dateStr.charCodeAt(i) | 0;
+        }
+        
+        let seed = hash ^ 0xDEADBEEF;
+        const nextRand = () => {
+          seed = Math.imul(1597334677, seed) + 1 | 0;
+          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+
+        const code = [];
+        for (let i = 0; i < COLS; i++) {
+          code.push(Math.floor(nextRand() * SHAPES.length));
+        }
+        return code;
+      }
+      
+      function getTodayStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+
+      function initGame() {
+        // Validate Streak Continuity
+        const today = getTodayStr();
+        if (mode === "daily") {
+          modeBadge.textContent = "Daily Mode";
+          modeBadge.className = "mode-badge";
+          
+          if (lastPlayedDate) {
+            const lastD = new Date(lastPlayedDate);
+            const curD = new Date(today);
+            const diffTime = Math.abs(curD - lastD);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 1) {
+              currentStreak = 0;
+              saveData();
+            }
+          }
+          
+          secretCode = getDailyCode(today);
+          
+          // Check if already completed today
+          const dailyState = localStorage.getItem(`zingcade-vault-state-${today}`);
+          if (dailyState === "completed") {
+            showOverlayCompletedDaily();
+            return;
+          }
+        } else {
+          modeBadge.textContent = "Practice";
+          modeBadge.className = "mode-badge practice";
+          secretCode = Array.from({length: COLS}, () => Math.floor(Math.random() * SHAPES.length));
+        }
+
+        currentRow = 0;
+        currentGuess = [];
+        hudStreak.textContent = currentStreak;
+        updateAttemptHud();
+
+        // Build UI
+        buildGrid();
+        buildTray();
+        hideOverlay();
+      }
+
+      function buildGrid() {
+        vaultGrid.innerHTML = "";
+        for (let r = 0; r < ROWS; r++) {
+          const rowEl = document.createElement("div");
+          rowEl.className = "vault-row";
+          rowEl.id = `row-${r}`;
+          
+          const slotsWrapper = document.createElement("div");
+          slotsWrapper.className = "vault-slots";
+          
+          for (let c = 0; c < COLS; c++) {
+            const slotEl = document.createElement("div");
+            slotEl.className = "vault-slot";
+            slotEl.id = `slot-${r}-${c}`;
+            if (r === 0) slotEl.classList.add("active");
+            slotsWrapper.appendChild(slotEl);
+          }
+          
+          const feedWrapper = document.createElement("div");
+          feedWrapper.className = "vault-feedback";
+          feedWrapper.id = `feed-${r}`;
+          
+          for (let c = 0; c < COLS; c++) {
+            const pipEl = document.createElement("div");
+            pipEl.className = "feed-pip";
+            feedWrapper.appendChild(pipEl);
+          }
+          
+          rowEl.appendChild(slotsWrapper);
+          rowEl.appendChild(feedWrapper);
+          vaultGrid.appendChild(rowEl);
+        }
+      }
+
+      function buildTray() {
+        traySymbols.innerHTML = "";
+        SHAPES.forEach((svg, index) => {
+          const btn = document.createElement("button");
+          btn.className = `tray-btn sym-btn sym-${index + 1}`;
+          btn.innerHTML = svg;
+          btn.onclick = () => handleInput(index);
+          traySymbols.appendChild(btn);
+        });
+      }
+
+      function handleInput(index) {
+        if (currentRow >= ROWS) return;
+        if (currentGuess.length < COLS) {
+          playSound("tap");
+          currentGuess.push(index);
+          renderCurrentRow();
+        }
+      }
+
+      function handleDelete() {
+        if (currentRow >= ROWS) return;
+        if (currentGuess.length > 0) {
+          playSound("del");
+          currentGuess.pop();
+          renderCurrentRow();
+        }
+      }
+
+      function renderCurrentRow() {
+        for (let c = 0; c < COLS; c++) {
+          const slot = document.getElementById(`slot-${currentRow}-${c}`);
+          if (c < currentGuess.length) {
+            const symId = currentGuess[c];
+            slot.innerHTML = `<div class="slot-svg sym-${symId + 1}">${SHAPES[symId]}</div>`;
+            slot.classList.add("filled");
+          } else {
+            slot.innerHTML = "";
+            slot.classList.remove("filled");
+          }
+        }
+        
+        if (currentGuess.length === COLS) {
+          btnSubmit.classList.add("ready");
+        } else {
+          btnSubmit.classList.remove("ready");
+        }
+      }
+      
+      function updateAttemptHud() {
+        hudAttempt.textContent = Math.min(currentRow + 1, ROWS);
+      }
+
+      function submitGuess() {
+        if (currentGuess.length !== COLS) return;
+        playSound("submit");
+        btnSubmit.classList.remove("ready");
+        
+        // Disable row UI logic
+        document.getElementById(`row-${currentRow}`).classList.add("submitted");
+        for (let c = 0; c < COLS; c++) {
+          document.getElementById(`slot-${currentRow}-${c}`).classList.remove("active");
+        }
+
+        const guessCopy = [...currentGuess];
+        const secretCopy = [...secretCode];
+        const feedback = []; // 2 = exact, 1 = partial, 0 = miss
+
+        // 1. Pass: Exact Matches
+        for (let i = 0; i < COLS; i++) {
+          if (guessCopy[i] === secretCopy[i]) {
+            feedback.push(2);
+            guessCopy[i] = -1;
+            secretCopy[i] = -2;
+          }
+        }
+        // 2. Pass: Partial Matches
+        for (let i = 0; i < COLS; i++) {
+          if (guessCopy[i] !== -1) {
+            const matchIdx = secretCopy.indexOf(guessCopy[i]);
+            if (matchIdx !== -1) {
+              feedback.push(1);
+              secretCopy[matchIdx] = -2;
+            } else {
+              feedback.push(0);
+            }
+          }
+        }
+        
+        // Sort feedback: pips always show exacts first, then partials
+        feedback.sort((a,b) => b - a);
+
+        animateFeedback(feedback, 0, () => {
+          const isWin = feedback.every(f => f === 2) && feedback.length === COLS;
+          
+          if (isWin) {
+            handleWin();
+          } else if (currentRow === ROWS - 1) {
+            handleLose();
+          } else {
+            currentRow++;
+            currentGuess = [];
+            
+            // Activate next row
+            for (let c = 0; c < COLS; c++) {
+              document.getElementById(`slot-${currentRow}-${c}`).classList.add("active");
+            }
+            updateAttemptHud();
+          }
+        });
+      }
+
+      function animateFeedback(feedback, idx, onComplete) {
+        if (idx >= COLS) {
+          setTimeout(onComplete, 300);
+          return;
+        }
+
+        const feedWrapper = document.getElementById(`feed-${currentRow}`);
+        const pip = feedWrapper.children[idx];
+        
+        const f = feedback[idx];
+        if (f === 2) {
+          pip.classList.add("exact");
+          playSound("reveal-exact");
+        } else if (f === 1) {
+          pip.classList.add("partial");
+          playSound("reveal-partial");
+        } else {
+          pip.classList.add("miss");
+          playSound("reveal-miss");
+        }
+
+        setTimeout(() => animateFeedback(feedback, idx + 1, onComplete), 200);
+      }
+
+      function saveData() {
+        bestStreak = Math.max(bestStreak, currentStreak);
+        localStorage.setItem("zingcade-vault-streak", currentStreak);
+        localStorage.setItem("zingcade-vault-best", bestStreak);
+        localStorage.setItem("zingcade-vault-last-played", getTodayStr());
+      }
+      
+      function markDailyComplete() {
+        if (mode === "daily") {
+          localStorage.setItem(`zingcade-vault-state-${getTodayStr()}`, "completed");
+        }
+      }
+
+      function handleWin() {
+        createConfetti();
+        playSound("win");
+        if (mode === "daily") {
+          currentStreak++;
+          saveData();
+          markDailyComplete();
+        }
+        
+        setTimeout(() => {
+          showOverlay({
+            kicker: "Vault Unlocked",
+            kickerClass: "success",
+            title: mode === "daily" ? "Daily Solved" : "Code Cracked",
+            text: `You broke into the vault in ${currentRow + 1} attempt${currentRow === 0 ? '' : 's'}.`,
+            showSolution: false
+          });
+        }, 800);
+      }
+
+      function handleLose() {
+        playSound("lose");
+        if (mode === "daily") {
+          currentStreak = 0;
+          saveData();
+          markDailyComplete();
+        }
+        
+        setTimeout(() => {
+          showOverlay({
+            kicker: "Access Denied",
+            kickerClass: "failed",
+            title: "Vault Locked",
+            text: mode === "daily" ? "The daily sequence was lost." : "The sequence was lost.",
+            showSolution: true
+          });
+        }, 800);
+      }
+
+      function showOverlay({ kicker, kickerClass, title, text, showSolution }) {
+        overlayKicker.textContent = kicker;
+        overlayKicker.className = `overlay-kicker ${kickerClass}`;
+        overlayTitle.textContent = title;
+        overlayText.textContent = text;
+        overStreak.textContent = currentStreak;
+        overBest.textContent = bestStreak;
+        
+        if (showSolution) {
+          solutionReveal.hidden = false;
+          solutionReveal.innerHTML = secretCode.map(symId => 
+            `<div class="sym-${symId + 1}">${SHAPES[symId]}</div>`
+          ).join("");
+        } else {
+          solutionReveal.hidden = true;
+        }
+
+        if (mode === "daily") {
+          btnPrimary.textContent = "Play Practice Mode";
+          btnPrimary.onclick = () => {
+            mode = "practice";
+            initGame();
+          };
+        } else {
+          btnPrimary.textContent = "Practice Again";
+          btnPrimary.onclick = () => {
+            initGame();
+          };
+        }
+
+        overlay.hidden = false;
+      }
+      
+      function showOverlayCompletedDaily() {
+        overlayKicker.textContent = "Cooldown Active";
+        overlayKicker.className = "overlay-kicker";
+        overlayTitle.textContent = "Come Back Tomorrow";
+        overlayText.textContent = "You have already completed today's vault payload. Protect your streak tomorrow.";
+        solutionReveal.hidden = true;
+        overStreak.textContent = currentStreak;
+        overBest.textContent = bestStreak;
+        
+        btnPrimary.textContent = "Play Practice Mode";
+        btnPrimary.onclick = () => {
+          mode = "practice";
+          initGame();
+        };
+        overlay.hidden = false;
+      }
+
+      function hideOverlay() {
+        overlay.hidden = true;
+      }
+
+      // Input Bindings
+      btnDel.addEventListener("click", handleDelete);
+      btnSubmit.addEventListener("click", submitGuess);
+      
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace") {
+          handleDelete();
+        } else if (e.key === "Enter") {
+          submitGuess();
+        }
+      });
+
+      // Simple Confetti FX
+      const fxCanvas = document.getElementById("fx-canvas");
+      const ctx = fxCanvas.getContext("2d");
+      let particles = [];
+      
+      function resizeFx() {
+        fxCanvas.width = window.innerWidth;
+        fxCanvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeFx);
+      resizeFx();
+
+      function createConfetti() {
+        particles = [];
+        const colors = ["#8cf5da", "#c8a7ff", "#ffc672", "#4b9eff", "#fff"];
+        const xCenter = fxCanvas.width / 2;
+        const yTop = fxCanvas.height * 0.3;
+        
+        for (let i = 0; i < 60; i++) {
+          particles.push({
+            x: xCenter,
+            y: yTop,
+            vx: (Math.random() - 0.5) * 20,
+            vy: (Math.random() - 0.5) * 20 - 5,
+            size: Math.random() * 6 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            life: 1,
+            decay: Math.random() * 0.015 + 0.005
+          });
+        }
+        requestAnimationFrame(renderFx);
+      }
+
+      function renderFx() {
+        ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+        let active = false;
+        
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          if (p.life <= 0) continue;
+          active = true;
+          
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.5; // gravity
+          p.life -= p.decay;
+          
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        if (active) requestAnimationFrame(renderFx);
+        else ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+      }
+
+      // Boot
+      document.addEventListener("click", unlockAudio, { once: true });
+      initGame();
+    </script>
+  </body>
+</html>
