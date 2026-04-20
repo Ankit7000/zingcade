@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Arcade Tycoon Clicker | Zingcade</title>
+    <meta
+      name="description"
+      content="Build your Zingcade arcade empire. Tap for tokens, unlock machines, rank up, and earn while you are away."
+    />
+    <link rel="canonical" href="https://zingcade.com/games/arcade-tycoon/" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+      :root {
+        --tycoon-bg: #03060c;
+        --tycoon-panel: #0a1120;
+        --tycoon-border: #15223a;
+        --tycoon-accent: #ffb84d; /* Golden */
+        --tycoon-green: #8cf5da;
+        --tycoon-red: #ff7d6c;
+        
+        --rank-bronze: #cd7f32;
+        --rank-silver: #c0c0c0;
+        --rank-gold: #ffd700;
+        --rank-platinum: #e5e4e2;
+        --rank-diamond: #b9f2ff;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--tycoon-bg);
+        color: #fff;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: rgba(4, 9, 20, 0.95);
+        border-bottom: 2px solid var(--tycoon-border);
+        flex-shrink: 0;
+      }
+      
+      .brand-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        margin: 0;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+
+      .btn-hub {
+        font-family: "Rajdhani", sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #a0b4d8;
+        background: transparent;
+        border: 1px solid var(--tycoon-border);
+        padding: 4px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .tycoon-shell {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        overflow: hidden;
+      }
+
+      @media (min-width: 768px) {
+        .tycoon-shell {
+          flex-direction: row;
+        }
+      }
+
+      /* CLICK AREA (Left side on Desktop, Top on Mobile) */
+      .click-zone {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        position: relative;
+        min-height: 280px;
+      }
+      
+      @media (min-width: 768px) {
+        .click-zone { flex: 1.2; }
+      }
+
+      .metric-hud {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .total-val {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--tycoon-accent);
+        text-shadow: 0 0 20px rgba(255, 184, 77, 0.4);
+        margin: 0;
+      }
+
+      .tps-val {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.8rem;
+        color: var(--tycoon-green);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+
+      .coin-target {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ffd085, #d98d1a);
+        border: 8px solid #b36e00;
+        box-shadow: 
+          inset -8px -8px 16px rgba(0,0,0,0.5),
+          inset 8px 8px 16px rgba(255,255,255,0.4),
+          0 0 30px rgba(255, 184, 77, 0.3),
+          0 10px 20px rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+        touch-action: manipulation;
+        transition: transform 0.05s ease;
+        position: relative;
+        z-index: 10;
+      }
+
+      .coin-target:active {
+        transform: scale(0.95);
+        box-shadow: 
+          inset -4px -4px 10px rgba(0,0,0,0.5),
+          inset 4px 4px 10px rgba(255,255,255,0.4),
+          0 0 15px rgba(255, 184, 77, 0.2);
+      }
+      
+      .coin-inner {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        border: 4px dashed rgba(179, 110, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: 48px;
+        color: #b36e00;
+      }
+
+      /* Floating Text */
+      .pop-text {
+        position: absolute;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        pointer-events: none;
+        user-select: none;
+        animation: floatUp 0.8s ease-out forwards;
+        z-index: 20;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      }
+
+      @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+      }
+
+      /* SHOP AREA (Right side on Desktop, Bottom on Mobile) */
+      .shop-zone {
+        flex: 1.5;
+        background: var(--tycoon-panel);
+        border-top: 2px solid var(--tycoon-border);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      
+      @media (min-width: 768px) {
+        .shop-zone {
+          border-top: none;
+          border-left: 2px solid var(--tycoon-border);
+        }
+      }
+
+      /* Tabs */
+      .shop-tabs {
+        display: flex;
+        border-bottom: 2px solid var(--tycoon-border);
+        background: rgba(0,0,0,0.4);
+        flex-shrink: 0;
+      }
+
+      .tab-btn {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 14px 0;
+        color: #7b94b5;
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      
+      .tab-btn.active {
+        color: #fff;
+        background: var(--tycoon-border);
+        border-bottom: 2px solid var(--tycoon-accent);
+      }
+
+      /* Panels */
+      .shop-panel {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: none;
+      }
+      
+      .shop-panel.active {
+        display: block;
+      }
+      
+      /* Machines Items */
+      .shop-item {
+        display: flex;
+        background: #0f182b;
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+        align-items: center;
+        justify-content: space-between;
+        user-select: none;
+        cursor: pointer;
+        transition: background 0.1s;
+      }
+      
+      .shop-item:hover {
+        background: #142036;
+      }
+      
+      .shop-item.disabled {
+        opacity: 0.5;
+        filter: grayscale(1);
+        cursor: not-allowed;
+      }
+
+      .item-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .item-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 6px;
+        background: var(--tycoon-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: 1.2rem;
+        color: #4b9eff;
+        border: 2px solid rgba(75, 158, 255, 0.3);
+      }
+
+      .item-meta h4 {
+        margin: 0 0 2px 0;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.1rem;
+        color: #fff;
+      }
+
+      .item-cost {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.7rem;
+        color: var(--tycoon-red);
+      }
+      
+      .item-cost.affordable {
+        color: var(--tycoon-green);
+      }
+
+      .item-yield {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.65rem;
+        color: #7b94b5;
+        margin-top: 2px;
+      }
+
+      .item-owned {
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: rgba(255,255,255,0.2);
+      }
+
+      /* Rank Frame */
+      .rank-bar-wrap {
+        width: 100%;
+        background: #0f182b;
+        border-bottom: 2px solid var(--tycoon-border);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        box-sizing: border-box;
+      }
+      
+      .rank-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      
+      .rank-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.7rem;
+        color: #7b94b5;
+        text-transform: uppercase;
+      }
+      
+      .rank-current {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px currentColor;
+      }
+
+      .prog-track {
+        height: 6px;
+        background: #0a1120;
+        border-radius: 3px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      
+      .prog-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--tycoon-green);
+        transition: width 0.3s ease;
+      }
+
+      /* Prestige Area */
+      .prestige-box {
+        text-align: center;
+        padding: 24px 16px;
+      }
+
+      .prestige-box h3 {
+        font-family: "Orbitron", sans-serif;
+        color: var(--tycoon-accent);
+        margin: 0 0 8px 0;
+      }
+      
+      .prestige-box p {
+        font-family: "Rajdhani", sans-serif;
+        color: #a0b4d8;
+        font-size: 1.1rem;
+        margin: 0 0 24px 0;
+        line-height: 1.4;
+      }
+
+      .button-prestige {
+        width: 100%;
+        background: transparent;
+        border: 2px solid var(--tycoon-accent);
+        color: var(--tycoon-accent);
+        padding: 16px;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.1s;
+      }
+      
+      .button-prestige:hover:not(:disabled) {
+        background: rgba(255, 184, 77, 0.15);
+      }
+
+      .button-prestige:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      /* Overlays */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 100;
+      }
+      .overlay[hidden] {
+        display: none !important;
+      }
+      .overlay-card {
+        background: var(--tycoon-panel);
+        border: 2px solid var(--tycoon-border);
+        border-radius: 16px;
+        padding: 32px 24px;
+        max-width: 360px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+      .overlay-title {
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: 1.8rem;
+        margin: 0 0 16px 0;
+        color: var(--tycoon-green);
+      }
+      .overlay-text {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.15rem;
+        color: #a0b4d8;
+        margin: 0 0 24px 0;
+      }
+      .offline-yield {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--tycoon-accent);
+        margin: 0 0 24px 0;
+      }
+      .btn-primary {
+        background: var(--tycoon-green);
+        color: #03060c;
+        border: none;
+        padding: 14px 24px;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        text-transform: uppercase;
+        width: 100%;
+      }
+
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 class="brand-title">Arcade Tycoon</h1>
+      <a href="/games/" class="btn-hub">Hub</a>
+    </header>
+
+    <div class="tycoon-shell">
+      <section class="click-zone" id="click-zone">
+        <div class="metric-hud">
+          <p class="total-val" id="hud-tokens">0</p>
+          <p class="tps-val"><span id="hud-tps">0</span> TPS</p>
+        </div>
+        
+        <div class="coin-target" id="coin-target">
+          <div class="coin-inner">Z</div>
+        </div>
+      </section>
+
+      <section class="shop-zone">
+        <div class="rank-bar-wrap">
+          <div class="rank-header">
+            <span class="rank-title">Corporate Rank</span>
+            <span class="rank-current" id="hud-rank">Bronze</span>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill" id="hud-prog"></div>
+          </div>
+        </div>
+
+        <div class="shop-tabs">
+          <button class="tab-btn active" onclick="switchTab('machines')">Machines</button>
+          <button class="tab-btn" onclick="switchTab('prestige')">Prestige</button>
+        </div>
+
+        <div class="shop-panel active" id="tab-machines">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="shop-panel" id="tab-prestige">
+          <div class="prestige-box">
+            <h3>Franchise Reboot</h3>
+            <p>Sell your current arcade empire to corporate. Keep your golden tickets to permanently boost future token yield.</p>
+            
+            <div style="margin-bottom: 24px; text-align: left; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span class="rank-title">Current Tickets</span>
+                <strong style="color:var(--tycoon-accent); font-family:Orbitron"><span id="disp-tickets">0</span></strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span class="rank-title">Global Multiplier</span>
+                <strong style="color:var(--tycoon-green); font-family:Orbitron">+<span id="disp-mult">0</span>%</strong>
+              </div>
+            </div>
+
+            <button class="button-prestige" id="btn-prestige" disabled>
+              Prestige (Needs 1M)
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Offline Overlay -->
+    <div class="overlay" id="offline-overlay" hidden>
+      <div class="overlay-card">
+        <h2 class="overlay-title">Welcome Back</h2>
+        <p class="overlay-text">Your arcade continued running while you were offline. You earned:</p>
+        <p class="offline-yield" id="offline-qty">+0</p>
+        <button class="btn-primary" onclick="closeOffline()">Collect Tokens</button>
+      </div>
+    </div>
+
+    <!-- AUDIO CONTEXT -->
+    <script>
+      let audioCtx;
+      function unlockAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+      }
+
+      function tone({ frequency, duration, type, gain }) {
+        if (!audioCtx) return;
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        g.gain.setValueAtTime(gain, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.start();
+        o.stop(audioCtx.currentTime + duration);
+      }
+
+      function playSound(k) {
+        unlockAudio();
+        if (k === "click") tone({ frequency: 800, duration: 0.05, type: "sine", gain: 0.02 });
+        else if (k === "buy") tone({ frequency: 600, duration: 0.1, type: "square", gain: 0.03 });
+        else if (k === "deny") tone({ frequency: 200, duration: 0.1, type: "sawtooth", gain: 0.03 });
+        else if (k === "prestige") tone({ frequency: 440, duration: 0.5, type: "square", gain: 0.05 });
+      }
+    </script>
+
+    <!-- TYCOON ENGINE -->
+    <script>
+      // Architecture
+      const RANKS = [
+        { name: "Bronze", cap: 100000, color: "var(--rank-bronze)" },
+        { name: "Silver", cap: 5000000, color: "var(--rank-silver)" },
+        { name: "Gold", cap: 1000000000, color: "var(--rank-gold)" },
+        { name: "Platinum", cap: 500000000000, color: "var(--rank-platinum)" },
+        { name: "Diamond", cap: Infinity, color: "var(--rank-diamond)" }
+      ];
+
+      const MACHINES = [
+        { id: "m0", name: "Reflex Cabinet", baseCost: 15, baseTps: 1, icon: "👾" },
+        { id: "m1", name: "Neon Machine", baseCost: 100, baseTps: 8, icon: "🕹️" },
+        { id: "m2", name: "Rhythm Booth", baseCost: 1100, baseTps: 45, icon: "🎧" },
+        { id: "m3", name: "Claw Machine", baseCost: 12000, baseTps: 300, icon: "🧸" },
+        { id: "m4", name: "Racing Pod", baseCost: 130000, baseTps: 2800, icon: "🏎️" },
+        { id: "m5", name: "Puzzle Terminal", baseCost: 1400000, baseTps: 22000, icon: "🧠" },
+        { id: "m6", name: "VR Chamber", baseCost: 15000000, baseTps: 350000, icon: "🥽" }
+      ];
+
+      // State Memory
+      let state = {
+        tokens: 0,
+        lifetime: 0,
+        tickets: 0,
+        inventory: {}, 
+        lastSave: Date.now()
+      };
+      
+      // Init missing configs
+      MACHINES.forEach(m => {
+        if (state.inventory[m.id] === undefined) state.inventory[m.id] = 0;
+      });
+
+      // DOM
+      const dTokens = document.getElementById("hud-tokens");
+      const dTps = document.getElementById("hud-tps");
+      const dRank = document.getElementById("hud-rank");
+      const dProg = document.getElementById("hud-prog");
+      const clickZone = document.getElementById("click-zone");
+      const coinTarget = document.getElementById("coin-target");
+      const tabMachines = document.getElementById("tab-machines");
+      
+      // Math Helpers
+      function formatNum(n) {
+        if (n < 1000) return Math.floor(n);
+        if (n < 1000000) return (n / 1000).toFixed(n < 10000 ? 1 : 0) + "k";
+        if (n < 1000000000) return (n / 1000000).toFixed(n < 10000000 ? 2 : 1) + "M";
+        return (n / 1000000000).toFixed(2) + "B";
+      }
+
+      function getMachineCost(id) {
+        const m = MACHINES.find(x => x.id === id);
+        const count = state.inventory[id];
+        return Math.floor(m.baseCost * Math.pow(1.15, count));
+      }
+
+      function getGlobalMultiplier() {
+        return 1 + (state.tickets * 0.25);
+      }
+
+      function getTps() {
+        let rawTps = 0;
+        MACHINES.forEach(m => {
+          rawTps += m.baseTps * state.inventory[m.id];
+        });
+        return rawTps * getGlobalMultiplier();
+      }
+
+      function getTapValue() {
+        // Base tap is 1, plus 1% of passive TPS, affected by global Multiplier
+        const rawTps = getTps() / getGlobalMultiplier();
+        const baseClick = 1 + (rawTps * 0.01);
+        return Math.max(1, baseClick * getGlobalMultiplier());
+      }
+      
+      // Actions
+      function addTokens(amt) {
+        state.tokens += amt;
+        state.lifetime += amt;
+      }
+      
+      function tapCoin(e) {
+        e.preventDefault();
+        playSound("click");
+        const val = getTapValue();
+        addTokens(val);
+        
+        // Float text
+        const pt = document.createElement("div");
+        pt.className = "pop-text";
+        pt.textContent = "+" + formatNum(val);
+        
+        // Random cluster position
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * 40;
+        pt.style.left = `calc(50% + ${Math.cos(angle) * radius}px)`;
+        pt.style.top = `calc(50% + ${Math.sin(angle) * radius - 40}px)`;
+        
+        clickZone.appendChild(pt);
+        setTimeout(() => pt.remove(), 800);
+        
+        renderHud();
+        renderShop();
+      }
+      
+      function buyMachine(id) {
+        const cost = getMachineCost(id);
+        if (state.tokens >= cost) {
+          state.tokens -= cost;
+          state.inventory[id]++;
+          playSound("buy");
+          renderHud();
+          renderShop();
+          saveGame();
+        } else {
+          playSound("deny");
+        }
+      }
+
+      // Render loops
+      function buildShop() {
+        tabMachines.innerHTML = "";
+        MACHINES.forEach(m => {
+          const el = document.createElement("div");
+          el.className = "shop-item";
+          el.id = `shop-ui-${m.id}`;
+          el.onclick = () => buyMachine(m.id);
+          
+          el.innerHTML = `
+            <div class="item-info">
+              <div class="item-icon">${m.icon}</div>
+              <div class="item-meta">
+                <h4>${m.name}</h4>
+                <div class="item-cost" id="cost-ui-${m.id}">Cost: 0</div>
+                <div class="item-yield">Yield: ${formatNum(m.baseTps * getGlobalMultiplier())}/sec</div>
+              </div>
+            </div>
+            <div class="item-owned" id="own-ui-${m.id}">0</div>
+          `;
+          tabMachines.appendChild(el);
+        });
+      }
+
+      function renderShop() {
+        MACHINES.forEach(m => {
+          const cost = getMachineCost(m.id);
+          const elBtn = document.getElementById(`shop-ui-${m.id}`);
+          const elCost = document.getElementById(`cost-ui-${m.id}`);
+          const elOwn = document.getElementById(`own-ui-${m.id}`);
+          
+          elCost.textContent = `${formatNum(cost)} Tokens`;
+          elOwn.textContent = state.inventory[m.id];
+          
+          if (state.tokens >= cost) {
+            elBtn.classList.remove("disabled");
+            elCost.classList.add("affordable");
+          } else {
+            elBtn.classList.add("disabled");
+            elCost.classList.remove("affordable");
+          }
+        });
+      }
+
+      function renderHud() {
+        dTokens.textContent = formatNum(state.tokens);
+        dTps.textContent = formatNum(getTps());
+        
+        // Rank logic
+        let curRank = RANKS[0];
+        let prevCap = 0;
+        for (let i=0; i<RANKS.length; i++) {
+          if (state.lifetime < RANKS[i].cap) {
+            curRank = RANKS[i];
+            if (i > 0) prevCap = RANKS[i-1].cap;
+            break;
+          }
+        }
+        
+        dRank.textContent = curRank.name;
+        dRank.style.color = curRank.color;
+        
+        const progRange = curRank.cap - prevCap;
+        const progVal = state.lifetime - prevCap;
+        const pct = Math.min(100, Math.max(0, (progVal / progRange) * 100));
+        dProg.style.width = `${pct}%`;
+        
+        // Prestige updates
+        document.getElementById("disp-tickets").textContent = state.tickets;
+        document.getElementById("disp-mult").textContent = (state.tickets * 25);
+        
+        // Calculate possible prestige
+        const presBtn = document.getElementById("btn-prestige");
+        if (state.lifetime >= 1000000) {
+          const possible = Math.floor(Math.cbrt(state.lifetime / 1000000));
+          presBtn.disabled = false;
+          presBtn.textContent = `Prestige for +${possible} Tickets`;
+          presBtn.onclick = () => doPrestige(possible);
+        } else {
+          presBtn.disabled = true;
+          presBtn.textContent = "Prestige (Needs 1M Lifetime)";
+        }
+      }
+      
+      function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.shop-panel').forEach(p => p.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+      }
+
+      // Core loops
+      let lastTick = performance.now();
+      function gameLoop(now) {
+        const delta = (now - lastTick) / 1000;
+        lastTick = now;
+        
+        const tps = getTps();
+        if (tps > 0) {
+          addTokens(tps * delta);
+          renderHud();
+          renderShop();
+        }
+        requestAnimationFrame(gameLoop);
+      }
+
+      // IO
+      function loadGame() {
+        const saved = localStorage.getItem("zingcade-tycoon-save");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state = { ...state, ...parsed }; // merge keys safely
+        }
+        
+        // Calculate offline time
+        const now = Date.now();
+        const diffSecs = (now - state.lastSave) / 1000;
+        if (diffSecs > 60) {
+          const tps = getTps();
+          if (tps > 0) {
+            const gain = tps * diffSecs;
+            addTokens(gain);
+            document.getElementById("offline-qty").textContent = "+" + formatNum(gain);
+            document.getElementById("offline-overlay").hidden = false;
+          }
+        }
+        state.lastSave = now;
+      }
+
+      function saveGame() {
+        state.lastSave = Date.now();
+        localStorage.setItem("zingcade-tycoon-save", JSON.stringify(state));
+      }
+      
+      setInterval(saveGame, 5000); // Save every 5s
+
+      function closeOffline() {
+        playSound("buy");
+        document.getElementById("offline-overlay").hidden = true;
+      }
+      
+      function doPrestige(ticketsToGain) {
+        if (!confirm("Are you sure? This resets all tokens and machines, but permanent multipliers stay forever.")) return;
+        playSound("prestige");
+        
+        state.tickets += ticketsToGain;
+        state.tokens = 0;
+        state.lifetime = 0;
+        for (let m in state.inventory) {
+          state.inventory[m] = 0;
+        }
+        
+        saveGame();
+        renderHud();
+        renderShop();
+        switchTab("machines");
+      }
+
+      // Bindings
+      coinTarget.addEventListener("mousedown", tapCoin);
+      coinTarget.addEventListener("touchstart", tapCoin, {passive: false});
+
+      // Boot
+      document.addEventListener("click", unlockAudio, { once: true });
+      loadGame();
+      buildShop();
+      renderHud();
+      renderShop();
+      requestAnimationFrame(gameLoop);
+      
+    </script>
+  </body>
+</html>
