@@ -6,7 +6,7 @@
     <title>Sky Hop | Zingcade</title>
     <meta
       name="description"
-      content="Play Sky Hop, a lightweight browser platform climber where you bounce between cloud pads and chase a higher score."
+      content="Play Sky Hop, a polished browser platform climber with smoother air control, forgiving landings, varied cloud pads, and milestone-driven replays."
     />
     <link rel="stylesheet" href="/css/styles.css" />
     <style>
@@ -86,13 +86,15 @@
 
       .hud {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
         gap: 0.75rem;
         margin-bottom: 0.9rem;
       }
 
       .hud-item,
       .control-row,
+      .status-strip,
+      .status-pill,
       .status-note,
       .callout {
         background: rgba(255, 255, 255, 0.04);
@@ -118,7 +120,8 @@
         font-weight: 800;
       }
 
-      .hud-height {
+      .hud-height,
+      .hud-zone {
         color: var(--accent);
       }
 
@@ -129,12 +132,34 @@
         align-items: center;
         padding: 0.8rem 0.95rem;
         border-radius: 18px;
-        margin-bottom: 0.9rem;
+        margin-bottom: 0.75rem;
       }
 
       .hint {
         color: var(--muted);
         line-height: 1.5;
+      }
+
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 18px;
+        margin-bottom: 0.9rem;
+      }
+
+      .status-pill {
+        padding: 0.8rem 0.85rem;
+        border-radius: 16px;
+      }
+
+      .status-copy {
+        display: block;
+        margin-top: 0.35rem;
+        color: var(--text);
+        line-height: 1.5;
+        font-weight: 700;
       }
 
       .canvas-wrap {
@@ -171,7 +196,7 @@
       }
 
       .overlay-card {
-        max-width: 28rem;
+        max-width: 29rem;
       }
 
       .overlay-kicker {
@@ -311,8 +336,9 @@
           padding-top: 1rem;
         }
 
-        .hud {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+        .status-strip,
+        .overlay-summary {
+          grid-template-columns: 1fr;
         }
 
         .control-row,
@@ -322,15 +348,9 @@
         }
 
         .actions button,
-        .actions a {
+        .actions a,
+        .control-row button {
           width: 100%;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .hud,
-        .overlay-summary {
-          grid-template-columns: 1fr;
         }
       }
 
@@ -360,7 +380,7 @@
         <a class="back-link" href="/games/">&#8592; Back to Games</a>
         <div class="title">
           <h1>Sky Hop</h1>
-          <p>Bounce on cloud pads, climb higher, and keep the run alive.</p>
+          <p>Land clean, hit milestones, and ride the climb into higher air.</p>
         </div>
         <div class="meta-pill">Keyboard, mouse, and touch</div>
       </div>
@@ -384,14 +404,36 @@
               <span class="hud-label">Height</span>
               <span class="hud-value hud-height" id="height-score">0m</span>
             </div>
+            <div class="hud-item">
+              <span class="hud-label">Zone</span>
+              <span class="hud-value hud-zone" id="zone-label">Low Clouds</span>
+            </div>
           </div>
 
           <div class="control-row">
             <div class="hint">
-              Move left and right, land while falling, and keep chaining jumps
-              before you slip below the screen.
+              Move left and right, land while falling, and press <strong>P</strong> to
+              pause. Press <strong>Space</strong> or <strong>Enter</strong> to start or restart.
             </div>
-            <a class="button button-secondary" href="/games/">Games Hub</a>
+            <button class="button button-secondary" id="pause-button" type="button">
+              Pause
+            </button>
+          </div>
+
+          <div class="status-strip" aria-label="Run status">
+            <div class="status-pill">
+              <span class="hud-label">Next Milestone</span>
+              <span class="status-copy" id="milestone-text">
+                Reach 60m for the first height marker.
+              </span>
+            </div>
+            <div class="status-pill">
+              <span class="hud-label">Landing Tip</span>
+              <span class="status-copy" id="landing-note">
+                Pads catch slightly wider than they look, so guide the fall instead of
+                snapping late.
+              </span>
+            </div>
           </div>
 
           <div class="canvas-wrap">
@@ -407,8 +449,8 @@
                 <p class="overlay-kicker" id="overlay-kicker">Sky Platformer</p>
                 <h2 id="overlay-title">Sky Hop</h2>
                 <p id="overlay-text">
-                  Slide left and right, land on cloud pads, and keep climbing.
-                  The higher you push, the more score you pull out of each run.
+                  Drift into the next landing, ride the climb upward, and keep pushing
+                  toward the next height milestone.
                 </p>
                 <div class="overlay-summary" id="overlay-summary" hidden>
                   <div class="summary-item">
@@ -416,12 +458,12 @@
                     <span class="summary-value" id="overlay-score">0</span>
                   </div>
                   <div class="summary-item">
-                    <span class="summary-label">Best</span>
-                    <span class="summary-value" id="overlay-best">0</span>
+                    <span class="summary-label">Height</span>
+                    <span class="summary-value" id="overlay-height">0m</span>
                   </div>
                   <div class="summary-item">
-                    <span class="summary-label">Hops</span>
-                    <span class="summary-value" id="overlay-hops">0</span>
+                    <span class="summary-label">Best Height</span>
+                    <span class="summary-value" id="overlay-best-height">0m</span>
                   </div>
                 </div>
                 <div class="actions">
@@ -436,9 +478,9 @@
             </div>
           </div>
 
-          <div class="canvas-note">
-            Use smaller corrections than you think. Clean landings on the next
-            platform beat wide panic swings at the last second.
+          <div class="canvas-note" id="canvas-note">
+            Clean landings keep the climb readable. Boost pads launch higher, crumble
+            pads break away after one use, and tiny pads ask for tighter lines.
           </div>
         </div>
 
@@ -446,9 +488,9 @@
           <section class="info-block">
             <h2>How to play</h2>
             <p>
-              Sky Hop is a climber. Your character bounces automatically when
-              it lands on a cloud pad, so the goal is to guide each landing and
-              keep the camera moving upward.
+              Sky Hop is a climber with gentle landing forgiveness. Your job is to guide
+              the fall, catch the next platform while descending, and stay ahead of the
+              screen as the climb rolls into new altitude zones.
             </p>
           </section>
 
@@ -456,25 +498,34 @@
             <h3>Controls</h3>
             <ul class="tips">
               <li>Keyboard: Left and Right arrows or A and D</li>
-              <li>Mouse: move across the canvas to guide the hop line</li>
+              <li>Mouse: move across the canvas to pull the hop line sideways</li>
               <li>Touch: drag left and right on the canvas</li>
-              <li>Restart: press Space or Enter after a run ends</li>
+              <li>Pause: press P or tap the pause button</li>
+              <li>Start or restart: press Space, Enter, tap the overlay, or tap the canvas</li>
             </ul>
           </section>
 
           <div class="status-note">
-            <strong>Game loop</strong>
+            <strong>Platform mix</strong>
             <p>
-              Score comes from height and clean landings. Some cloud pads drift,
-              so the run stays readable but never fully static.
+              The climb starts readable, then adds drift pads, boost pads, tiny pads,
+              and crumble pads. Each one changes how early you need to line up.
+            </p>
+          </div>
+
+          <div class="callout">
+            <strong>Progression hook</strong>
+            <p>
+              Height milestones give each run a concrete target. Your best height is
+              saved locally, and the page always tells you which marker is next.
             </p>
           </div>
 
           <div class="callout">
             <strong>Sky Hop tip</strong>
             <p>
-              Watch the next pad early. The best runs come from lining up the
-              next bounce before the current jump peaks.
+              Start correcting before the peak. The improved air control is smoother, but
+              the best runs still come from shaping the next landing early.
             </p>
           </div>
         </aside>
@@ -491,19 +542,26 @@
       const overlayText = document.getElementById("overlay-text");
       const actionButton = document.getElementById("action-button");
       const gamesLink = document.getElementById("games-link");
+      const pauseButton = document.getElementById("pause-button");
       const overlaySummary = document.getElementById("overlay-summary");
       const overlayScore = document.getElementById("overlay-score");
-      const overlayBest = document.getElementById("overlay-best");
-      const overlayHops = document.getElementById("overlay-hops");
+      const overlayHeight = document.getElementById("overlay-height");
+      const overlayBestHeight = document.getElementById("overlay-best-height");
 
       const scoreElement = document.getElementById("score");
       const bestScoreElement = document.getElementById("best-score");
       const hopsElement = document.getElementById("hops");
       const heightElement = document.getElementById("height-score");
+      const zoneElement = document.getElementById("zone-label");
+      const milestoneElement = document.getElementById("milestone-text");
+      const landingNoteElement = document.getElementById("landing-note");
+      const canvasNoteElement = document.getElementById("canvas-note");
 
       const width = canvas.width;
       const height = canvas.height;
       const bestScoreKey = "zingcade-sky-hop-best";
+      const bestHeightKey = "zingcade-sky-hop-best-height";
+      const milestones = [60, 120, 190, 280, 380];
 
       const input = {
         left: false,
@@ -514,16 +572,25 @@
 
       const game = {
         running: false,
+        paused: false,
         gameOver: false,
         score: 0,
+        displayedScore: 0,
         best: loadBestScore(),
-        hops: 0,
         climb: 0,
+        bestHeight: loadBestHeight(),
+        hops: 0,
+        zoneLabel: "Low Clouds",
+        milestoneIndex: 0,
         lastFrame: 0,
         player: null,
         stars: [],
+        clouds: [],
         platforms: [],
-        particles: []
+        particles: [],
+        floatingTexts: [],
+        announcement: null,
+        landingNote: ""
       };
 
       function loadBestScore() {
@@ -536,19 +603,45 @@
 
       function saveBestScore() {
         try {
-          localStorage.setItem(bestScoreKey, String(game.best));
+          localStorage.setItem(bestScoreKey, String(Math.floor(game.best)));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function loadBestHeight() {
+        try {
+          return Number(localStorage.getItem(bestHeightKey) || 0);
+        } catch (error) {
+          return 0;
+        }
+      }
+
+      function saveBestHeight() {
+        try {
+          localStorage.setItem(bestHeightKey, String(Math.floor(game.bestHeight)));
         } catch (error) {
           return;
         }
       }
 
       function createStars() {
-        game.stars = Array.from({ length: 34 }, () => ({
+        game.stars = Array.from({ length: 36 }, () => ({
           x: Math.random() * width,
           y: Math.random() * height,
           radius: Math.random() * 2 + 0.6,
           speed: Math.random() * 18 + 8,
           alpha: Math.random() * 0.45 + 0.2
+        }));
+      }
+
+      function createClouds() {
+        game.clouds = Array.from({ length: 7 }, () => ({
+          x: random(-20, width - 80),
+          y: random(0, height),
+          width: random(72, 132),
+          alpha: random(0.05, 0.12),
+          speed: random(8, 18)
         }));
       }
 
@@ -558,57 +651,105 @@
           y: height - 160,
           radius: 16,
           vx: 0,
-          vy: -620,
-          speed: 285
+          vy: -700,
+          maxSpeed: 420,
+          stretch: 0,
+          tilt: 0
         };
       }
 
-      function buildPlatform(y) {
-        const platformWidth = random(74, 118);
+      function buildPlatform(y, forceSafe) {
+        const meters = getHeightMeters();
+        const roll = Math.random();
+        let kind = "steady";
+
+        if (!forceSafe) {
+          if (meters > 120 && roll > 0.84) {
+            kind = "crumbly";
+          } else if (meters > 70 && roll > 0.66) {
+            kind = "boost";
+          } else if (meters > 90 && roll > 0.48) {
+            kind = "tiny";
+          } else if (meters > 30 && roll > 0.28) {
+            kind = "drift";
+          }
+        }
+
+        let platformWidth = random(86, 122);
+        if (kind === "tiny") {
+          platformWidth = random(62, 84);
+        }
+
         return {
           x: random(18, width - platformWidth - 18),
           y,
           width: platformWidth,
           height: 16,
-          drift: Math.random() > 0.58 ? random(24, 52) * (Math.random() > 0.5 ? 1 : -1) : 0,
-          boost: Math.random() > 0.78
+          kind,
+          drift:
+            kind === "drift" || (kind === "boost" && Math.random() > 0.65)
+              ? random(28, 56) * (Math.random() > 0.5 ? 1 : -1)
+              : 0,
+          bounce:
+            kind === "boost" ? -840 : kind === "tiny" ? -680 : kind === "crumbly" ? -710 : -740,
+          crumbling: false,
+          broken: false,
+          breakTimer: 0,
+          vy: 0,
+          flash: 0
         };
       }
 
       function resetPlatforms() {
         game.platforms = [];
         let y = height - 84;
-        for (let index = 0; index < 10; index += 1) {
-          const platform = buildPlatform(y);
+
+        for (let index = 0; index < 11; index += 1) {
+          const platform = buildPlatform(y, index < 3);
           if (index === 0) {
             platform.x = width / 2 - platform.width / 2;
-            platform.boost = false;
+            platform.kind = "steady";
             platform.drift = 0;
+            platform.bounce = -740;
           }
           game.platforms.push(platform);
-          y -= random(68, 102);
+          y -= random(66, 98);
         }
       }
 
       function resetGame() {
         game.running = false;
+        game.paused = false;
         game.gameOver = false;
         game.score = 0;
-        game.hops = 0;
+        game.displayedScore = 0;
         game.climb = 0;
+        game.hops = 0;
+        game.zoneLabel = "Low Clouds";
+        game.milestoneIndex = 0;
         game.lastFrame = 0;
         game.player = createPlayer();
         game.particles = [];
+        game.floatingTexts = [];
+        game.announcement = null;
+        game.landingNote =
+          "Pads catch slightly wider than they look, so guide the fall instead of snapping late.";
         resetPlatforms();
         updateHud();
+
+        const next = getNextMilestoneFrom(game.bestHeight);
         showOverlay(
           "Sky Hop",
-          "Slide left and right, land on cloud pads, and keep climbing before you fall out of the sky.",
+          next
+            ? "Your next saved height milestone is " + next + "m. Clean landings get you there faster."
+            : "You have cleared every milestone marker. Push for a sharper score and smoother run.",
           "Start Hop",
           false,
           false,
           "Sky Platformer"
         );
+
+        pauseButton.textContent = "Pause";
       }
 
       function startGame() {
@@ -621,38 +762,100 @@
         }
 
         game.running = true;
+        game.paused = false;
         game.gameOver = false;
         game.lastFrame = 0;
         hideOverlay();
+        pauseButton.textContent = "Pause";
         requestAnimationFrame(loop);
+      }
+
+      function pauseGame() {
+        if (!game.running || game.gameOver) {
+          return;
+        }
+
+        game.running = false;
+        game.paused = true;
+        pauseButton.textContent = "Resume";
+        showOverlay(
+          "Paused",
+          "You can resume from the same climb. Press P, tap Resume, or tap the playfield when ready.",
+          "Resume",
+          false,
+          false,
+          "Run Paused"
+        );
+      }
+
+      function resumeGame() {
+        if (!game.paused || game.gameOver) {
+          return;
+        }
+
+        startGame();
       }
 
       function endGame() {
         game.running = false;
+        game.paused = false;
         game.gameOver = true;
 
+        const runHeight = getHeightMeters();
+
         if (game.score > game.best) {
-          game.best = game.score;
+          game.best = Math.floor(game.score);
           saveBestScore();
         }
 
+        if (runHeight > game.bestHeight) {
+          game.bestHeight = runHeight;
+          saveBestHeight();
+        }
+
         updateHud();
+        pauseButton.textContent = "Pause";
+
+        const nextMilestone = getNextMilestoneFrom(runHeight);
+        const message = nextMilestone
+          ? "You reached " + runHeight + "m. Restart and push for " + nextMilestone + "m."
+          : "You cleared the current milestone ladder. Restart and sharpen the score."
+        ;
+
         showOverlay(
           "Run Over",
-          "You climbed " + formatHeight(game.climb) + ". Restart and try to chain cleaner landings.",
+          message,
           "Restart Run",
           true,
           true,
-          "Height Lost"
+          runHeight >= game.bestHeight ? "New Height Record" : "Height Lost"
         );
       }
 
       function updateHud() {
-        game.score = Math.floor(game.climb / 7) + game.hops * 4;
-        scoreElement.textContent = String(game.score);
-        bestScoreElement.textContent = String(game.best);
+        const currentHeight = getHeightMeters();
+        const milestoneCount = milestones.filter((value) => currentHeight >= value).length;
+        game.score = Math.floor(game.climb / 6) + game.hops * 5 + milestoneCount * 18;
+        game.displayedScore +=
+          (game.score - game.displayedScore) * 0.22;
+
+        scoreElement.textContent = String(Math.floor(game.displayedScore));
+        bestScoreElement.textContent = String(Math.floor(game.best));
         hopsElement.textContent = String(game.hops);
-        heightElement.textContent = formatHeight(game.climb);
+        heightElement.textContent = currentHeight + "m";
+        zoneElement.textContent = game.zoneLabel;
+
+        const nextMilestone = getNextMilestoneFrom(currentHeight);
+        milestoneElement.textContent = nextMilestone
+          ? nextMilestone +
+            "m next. " +
+            Math.max(0, nextMilestone - currentHeight) +
+            "m to go."
+          : "All current milestones cleared. Chase a cleaner score route.";
+
+        landingNoteElement.textContent = game.landingNote;
+        canvasNoteElement.textContent =
+          "Boost pads launch higher, crumble pads break after one use, and tiny pads ask for earlier setup.";
       }
 
       function showOverlay(title, text, actionLabel, showGamesLink, showSummary, kicker) {
@@ -662,9 +865,9 @@
         actionButton.textContent = actionLabel;
         gamesLink.hidden = !showGamesLink;
         overlaySummary.hidden = !showSummary;
-        overlayScore.textContent = String(game.score);
-        overlayBest.textContent = String(game.best);
-        overlayHops.textContent = String(game.hops);
+        overlayScore.textContent = String(Math.floor(game.score));
+        overlayHeight.textContent = getHeightMeters() + "m";
+        overlayBestHeight.textContent = Math.floor(game.bestHeight) + "m";
         overlay.hidden = false;
       }
 
@@ -672,13 +875,37 @@
         overlay.hidden = true;
       }
 
-      function createBurst(x, y, color) {
-        for (let index = 0; index < 10; index += 1) {
+      function getHeightMeters() {
+        return Math.floor(game.climb / 10);
+      }
+
+      function getZoneLabel(meters) {
+        if (meters < 60) {
+          return "Low Clouds";
+        }
+
+        if (meters < 140) {
+          return "Jetstream";
+        }
+
+        if (meters < 250) {
+          return "Night Air";
+        }
+
+        return "Starline";
+      }
+
+      function getNextMilestoneFrom(heightMeters) {
+        return milestones.find((value) => value > heightMeters) || null;
+      }
+
+      function createBurst(x, y, color, amount) {
+        for (let index = 0; index < amount; index += 1) {
           game.particles.push({
             x,
             y,
             vx: random(-120, 120),
-            vy: random(-160, 40),
+            vy: random(-180, 20),
             radius: random(1.8, 4),
             life: random(0.22, 0.5),
             maxLife: 0.5,
@@ -687,34 +914,92 @@
         }
       }
 
+      function spawnFloatingText(x, y, text, color) {
+        game.floatingTexts.push({
+          x,
+          y,
+          text,
+          color,
+          life: 0.9,
+          maxLife: 0.9
+        });
+      }
+
+      function announce(text, color) {
+        game.announcement = {
+          text,
+          color,
+          life: 1.35,
+          maxLife: 1.35
+        };
+      }
+
       function recyclePlatforms() {
         let minY = Math.min(...game.platforms.map((platform) => platform.y));
 
         for (let index = game.platforms.length - 1; index >= 0; index -= 1) {
-          if (game.platforms[index].y > height + 40) {
+          const platform = game.platforms[index];
+          if (platform.broken && platform.y > height + 60) {
+            game.platforms.splice(index, 1);
+            continue;
+          }
+
+          if (!platform.broken && platform.y > height + 40) {
             game.platforms.splice(index, 1);
           }
         }
 
-        while (game.platforms.length < 10) {
-          minY -= random(74, 108);
-          game.platforms.push(buildPlatform(minY));
+        while (game.platforms.length < 11) {
+          minY -= random(70, 104);
+          game.platforms.push(buildPlatform(minY, false));
+        }
+      }
+
+      function registerLanding(platform) {
+        game.hops += 1;
+        game.player.vy = platform.bounce;
+        game.player.y = platform.y - game.player.radius;
+        game.player.stretch = 1;
+        platform.flash = 0.18;
+
+        if (platform.kind === "boost") {
+          createBurst(game.player.x, platform.y, "255, 198, 114", 14);
+          spawnFloatingText(game.player.x, platform.y - 18, "Boost", "255, 198, 114");
+          game.landingNote = "Boost pad caught. Ride the extra height and look two pads ahead.";
+        } else if (platform.kind === "crumbly") {
+          createBurst(game.player.x, platform.y, "255, 125, 108", 12);
+          spawnFloatingText(game.player.x, platform.y - 18, "Breakaway", "255, 125, 108");
+          platform.crumbling = true;
+          platform.breakTimer = 0.18;
+          game.landingNote = "Crumble pad used. Commit to the next landing early.";
+        } else if (platform.kind === "tiny") {
+          createBurst(game.player.x, platform.y, "140, 245, 218", 10);
+          spawnFloatingText(game.player.x, platform.y - 18, "Clean", "140, 245, 218");
+          game.landingNote = "Tiny pad landed. Keep the next correction just as precise.";
+        } else {
+          createBurst(game.player.x, platform.y, "140, 245, 218", 10);
+          game.landingNote = "Clean landing. Start shaping the next pad before the apex.";
         }
       }
 
       function update(dt) {
         const previousY = game.player.y;
+        const previousBottom = previousY + game.player.radius;
         const keyboardX = (input.right ? 1 : 0) - (input.left ? 1 : 0);
 
-        game.player.x += keyboardX * game.player.speed * dt;
-
+        let desiredVx = keyboardX * game.player.maxSpeed;
         if (input.pointerActive) {
-          const pull = Math.min(1, dt * 8);
-          game.player.x += (input.targetX - game.player.x) * pull;
+          desiredVx += clamp((input.targetX - game.player.x) * 4.6, -game.player.maxSpeed, game.player.maxSpeed);
         }
 
-        game.player.vy += 1360 * dt;
+        game.player.vx += (desiredVx - game.player.vx) * Math.min(1, dt * 8);
+        game.player.x += game.player.vx * dt;
+
+        const gravity = game.player.vy < 0 ? 1180 : 1560;
+        game.player.vy += gravity * dt;
         game.player.y += game.player.vy * dt;
+        game.player.tilt += (clamp(game.player.vx / 260, -0.32, 0.32) - game.player.tilt) * Math.min(1, dt * 7);
+        game.player.stretch += (0 - game.player.stretch) * Math.min(1, dt * 8);
 
         if (game.player.x < -game.player.radius) {
           game.player.x = width + game.player.radius;
@@ -726,44 +1011,69 @@
 
         for (const star of game.stars) {
           star.y += star.speed * dt;
-
           if (star.y > height + 4) {
             star.y = -4;
             star.x = Math.random() * width;
           }
         }
 
-        for (const platform of game.platforms) {
-          platform.x += platform.drift * dt;
-
-          if (platform.x <= 10 || platform.x + platform.width >= width - 10) {
-            platform.drift *= -1;
+        for (const cloud of game.clouds) {
+          cloud.y += cloud.speed * dt * 0.5;
+          if (cloud.y > height + 36) {
+            cloud.y = -36;
+            cloud.x = random(-30, width - 80);
           }
         }
 
         for (const platform of game.platforms) {
-          const falling = game.player.vy > 0;
-          const crossedTop =
-            previousY + game.player.radius <= platform.y &&
-            game.player.y + game.player.radius >= platform.y;
-          const withinPad =
-            game.player.x >= platform.x - game.player.radius * 0.2 &&
-            game.player.x <= platform.x + platform.width + game.player.radius * 0.2;
+          if (platform.drift !== 0 && !platform.broken) {
+            platform.x += platform.drift * dt;
+            if (platform.x <= 10 || platform.x + platform.width >= width - 10) {
+              platform.drift *= -1;
+            }
+            platform.x = clamp(platform.x, 10, width - platform.width - 10);
+          }
 
-          if (falling && crossedTop && withinPad) {
-            game.player.y = platform.y - game.player.radius;
-            game.player.vy = platform.boost ? -760 : -620;
-            game.hops += 1;
-            createBurst(
-              game.player.x,
-              platform.y,
-              platform.boost ? "255, 198, 114" : "140, 245, 218"
-            );
+          if (platform.crumbling) {
+            platform.breakTimer -= dt;
+            if (platform.breakTimer <= 0) {
+              platform.crumbling = false;
+              platform.broken = true;
+              platform.vy = 120;
+            }
+          }
+
+          if (platform.broken) {
+            platform.vy += 300 * dt;
+            platform.y += platform.vy * dt;
+          }
+
+          if (platform.flash > 0) {
+            platform.flash -= dt;
+          }
+        }
+
+        for (const platform of game.platforms) {
+          if (platform.broken || platform.crumbling) {
+            continue;
+          }
+
+          const falling = game.player.vy > 70;
+          const currentBottom = game.player.y + game.player.radius;
+          const verticalCatch =
+            previousBottom <= platform.y + 12 && currentBottom >= platform.y - 6;
+          const horizontalPadding = platform.kind === "tiny" ? 10 : 16;
+          const withinPad =
+            game.player.x >= platform.x - horizontalPadding &&
+            game.player.x <= platform.x + platform.width + horizontalPadding;
+
+          if (falling && verticalCatch && withinPad) {
+            registerLanding(platform);
+            break;
           }
         }
 
         const cameraLine = height * 0.38;
-
         if (game.player.y < cameraLine && game.player.vy < 0) {
           const shift = cameraLine - game.player.y;
           game.player.y = cameraLine;
@@ -776,6 +1086,31 @@
           for (const particle of game.particles) {
             particle.y += shift;
           }
+
+          for (const text of game.floatingTexts) {
+            text.y += shift;
+          }
+
+          for (const cloud of game.clouds) {
+            cloud.y += shift * 0.15;
+          }
+        }
+
+        const currentHeight = getHeightMeters();
+        const nextZone = getZoneLabel(currentHeight);
+        if (nextZone !== game.zoneLabel) {
+          game.zoneLabel = nextZone;
+          announce(nextZone, "140, 245, 218");
+        }
+
+        while (
+          game.milestoneIndex < milestones.length &&
+          currentHeight >= milestones[game.milestoneIndex]
+        ) {
+          announce(milestones[game.milestoneIndex] + "m", "255, 198, 114");
+          createBurst(game.player.x, cameraLine + 30, "255, 198, 114", 18);
+          spawnFloatingText(width / 2, cameraLine + 20, "Milestone", "255, 198, 114");
+          game.milestoneIndex += 1;
         }
 
         recyclePlatforms();
@@ -793,6 +1128,22 @@
           }
         }
 
+        for (let index = game.floatingTexts.length - 1; index >= 0; index -= 1) {
+          const text = game.floatingTexts[index];
+          text.life -= dt;
+          text.y -= 28 * dt;
+          if (text.life <= 0) {
+            game.floatingTexts.splice(index, 1);
+          }
+        }
+
+        if (game.announcement) {
+          game.announcement.life -= dt;
+          if (game.announcement.life <= 0) {
+            game.announcement = null;
+          }
+        }
+
         updateHud();
 
         if (game.player.y - game.player.radius > height + 40) {
@@ -803,17 +1154,21 @@
       function draw() {
         context.clearRect(0, 0, width, height);
         drawBackground();
+        drawClouds();
         drawStars();
+        drawAltitudeGuide();
         drawPlatforms();
         drawParticles();
         drawPlayer();
+        drawFloatingTexts();
+        drawAnnouncement();
         drawVignette();
       }
 
       function drawBackground() {
         const fill = context.createLinearGradient(0, 0, 0, height);
         fill.addColorStop(0, "#1b3048");
-        fill.addColorStop(0.5, "#0f1f31");
+        fill.addColorStop(0.45, "#0f1f31");
         fill.addColorStop(1, "#07111a");
         context.fillStyle = fill;
         context.fillRect(0, 0, width, height);
@@ -832,6 +1187,16 @@
         context.fillRect(0, 0, width, height);
       }
 
+      function drawClouds() {
+        context.save();
+        for (const cloud of game.clouds) {
+          context.fillStyle = "rgba(255, 255, 255, " + cloud.alpha.toFixed(2) + ")";
+          roundRect(context, cloud.x, cloud.y, cloud.width, 22, 14);
+          context.fill();
+        }
+        context.restore();
+      }
+
       function drawStars() {
         context.save();
         for (const star of game.stars) {
@@ -843,6 +1208,48 @@
         context.restore();
       }
 
+      function drawAltitudeGuide() {
+        const currentHeight = getHeightMeters();
+        const nextMilestone = getNextMilestoneFrom(currentHeight);
+
+        context.save();
+        context.fillStyle = "rgba(255, 255, 255, 0.08)";
+        roundRect(context, width - 86, 18, 60, 118, 18);
+        context.fill();
+
+        context.fillStyle = "rgba(255, 255, 255, 0.82)";
+        context.font = "700 14px Trebuchet MS";
+        context.textAlign = "center";
+        context.fillText(currentHeight + "m", width - 56, 48);
+
+        context.fillStyle = "rgba(182, 194, 191, 0.95)";
+        context.font = "600 11px Trebuchet MS";
+        context.fillText(game.zoneLabel, width - 56, 68);
+
+        context.strokeStyle = "rgba(140, 245, 218, 0.18)";
+        context.lineWidth = 4;
+        context.beginPath();
+        context.moveTo(width - 56, 84);
+        context.lineTo(width - 56, 116);
+        context.stroke();
+
+        if (nextMilestone) {
+          const progress = clamp(currentHeight / nextMilestone, 0, 1);
+          context.strokeStyle = "rgba(255, 198, 114, 0.72)";
+          context.beginPath();
+          context.moveTo(width - 56, 116);
+          context.lineTo(width - 56, 116 - progress * 32);
+          context.stroke();
+          context.fillStyle = "rgba(255, 198, 114, 0.95)";
+          context.fillText(nextMilestone + "m", width - 56, 132);
+        } else {
+          context.fillStyle = "rgba(255, 198, 114, 0.95)";
+          context.fillText("Cleared", width - 56, 132);
+        }
+
+        context.restore();
+      }
+
       function drawPlatforms() {
         for (const platform of game.platforms) {
           const fill = context.createLinearGradient(
@@ -851,17 +1258,54 @@
             platform.x,
             platform.y + platform.height
           );
-          fill.addColorStop(0, platform.boost ? "#ffe2a8" : "#f6fbff");
-          fill.addColorStop(1, platform.boost ? "#ffb86a" : "#a8c8ef");
+
+          if (platform.kind === "boost") {
+            fill.addColorStop(0, "#ffe2a8");
+            fill.addColorStop(1, "#ffb86a");
+          } else if (platform.kind === "crumbly") {
+            fill.addColorStop(0, "#ffd0c4");
+            fill.addColorStop(1, "#f0847c");
+          } else if (platform.kind === "tiny") {
+            fill.addColorStop(0, "#d8fff7");
+            fill.addColorStop(1, "#82daca");
+          } else {
+            fill.addColorStop(0, "#f6fbff");
+            fill.addColorStop(1, "#a8c8ef");
+          }
+
+          const alpha = platform.broken ? 0.38 : 1;
+          context.save();
+          context.globalAlpha = alpha;
           context.fillStyle = fill;
           roundRect(context, platform.x, platform.y, platform.width, platform.height, 10);
           context.fill();
 
-          context.strokeStyle = platform.boost
-            ? "rgba(255, 198, 114, 0.42)"
-            : "rgba(255, 255, 255, 0.22)";
-          context.lineWidth = 2;
+          context.strokeStyle =
+            platform.kind === "boost"
+              ? "rgba(255, 198, 114, 0.42)"
+              : platform.kind === "crumbly"
+                ? "rgba(255, 125, 108, 0.34)"
+                : "rgba(255, 255, 255, 0.22)";
+          context.lineWidth = 2 + platform.flash * 8;
           context.stroke();
+
+          if (platform.kind === "crumbly" && !platform.broken) {
+            context.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            context.lineWidth = 1.2;
+            context.beginPath();
+            context.moveTo(platform.x + 14, platform.y + 4);
+            context.lineTo(platform.x + platform.width - 16, platform.y + 12);
+            context.moveTo(platform.x + 22, platform.y + 12);
+            context.lineTo(platform.x + platform.width - 26, platform.y + 4);
+            context.stroke();
+          }
+
+          if (platform.kind === "boost") {
+            context.fillStyle = "rgba(255, 255, 255, 0.22)";
+            context.fillRect(platform.x + 10, platform.y + 4, platform.width - 20, 4);
+          }
+
+          context.restore();
         }
       }
 
@@ -878,25 +1322,57 @@
       }
 
       function drawPlayer() {
-        const glow = context.createRadialGradient(
-          game.player.x - 5,
-          game.player.y - 6,
-          4,
-          game.player.x,
-          game.player.y,
-          26
-        );
+        const stretchY = 1 + game.player.stretch * 0.18;
+        const stretchX = 1 - game.player.stretch * 0.12;
+
+        context.save();
+        context.translate(game.player.x, game.player.y);
+        context.rotate(game.player.tilt);
+        context.scale(stretchX, stretchY);
+
+        const glow = context.createRadialGradient(-5, -6, 4, 0, 0, 26);
         glow.addColorStop(0, "#ffffff");
         glow.addColorStop(0.48, "#8cf5da");
         glow.addColorStop(1, "#12806c");
 
-        context.save();
         context.shadowColor = "rgba(140, 245, 218, 0.4)";
         context.shadowBlur = 24;
         context.fillStyle = glow;
         context.beginPath();
-        context.arc(game.player.x, game.player.y, game.player.radius, 0, Math.PI * 2);
+        context.arc(0, 0, game.player.radius, 0, Math.PI * 2);
         context.fill();
+
+        context.shadowBlur = 0;
+        context.fillStyle = "rgba(255, 255, 255, 0.22)";
+        context.beginPath();
+        context.arc(-5, -6, game.player.radius * 0.3, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+      }
+
+      function drawFloatingTexts() {
+        context.save();
+        context.textAlign = "center";
+        context.font = "700 18px Trebuchet MS";
+        for (const text of game.floatingTexts) {
+          const alpha = Math.max(0, text.life / text.maxLife);
+          context.fillStyle = "rgba(" + text.color + ", " + alpha.toFixed(2) + ")";
+          context.fillText(text.text, text.x, text.y);
+        }
+        context.restore();
+      }
+
+      function drawAnnouncement() {
+        if (!game.announcement) {
+          return;
+        }
+
+        const alpha = Math.max(0, game.announcement.life / game.announcement.maxLife);
+        context.save();
+        context.textAlign = "center";
+        context.font = "800 28px Trebuchet MS";
+        context.fillStyle = "rgba(" + game.announcement.color + ", " + alpha.toFixed(2) + ")";
+        context.fillText(game.announcement.text, width / 2, 86);
         context.restore();
       }
 
@@ -943,8 +1419,28 @@
           return;
         }
 
+        if (game.paused) {
+          resumeGame();
+          return;
+        }
+
         if (!game.running) {
           startGame();
+        }
+      }
+
+      function togglePause() {
+        if (game.gameOver) {
+          return;
+        }
+
+        if (game.running) {
+          pauseGame();
+          return;
+        }
+
+        if (game.paused) {
+          resumeGame();
         }
       }
 
@@ -963,6 +1459,12 @@
           input.right = true;
         }
 
+        if (event.code === "KeyP") {
+          event.preventDefault();
+          togglePause();
+          return;
+        }
+
         if (event.code === "Space" || event.code === "Enter") {
           event.preventDefault();
           activatePrimaryAction();
@@ -976,6 +1478,12 @@
 
         if (event.code === "ArrowRight" || event.code === "KeyD") {
           input.right = false;
+        }
+      });
+
+      window.addEventListener("blur", () => {
+        if (game.running) {
+          pauseGame();
         }
       });
 
@@ -998,12 +1506,20 @@
         input.pointerActive = false;
       });
 
+      canvas.addEventListener("pointercancel", () => {
+        input.pointerActive = false;
+      });
+
       canvas.addEventListener("pointerleave", () => {
         input.pointerActive = false;
       });
 
       actionButton.addEventListener("click", () => {
         activatePrimaryAction();
+      });
+
+      pauseButton.addEventListener("click", () => {
+        togglePause();
       });
 
       overlay.addEventListener("click", (event) => {
@@ -1022,10 +1538,6 @@
 
       function random(min, max) {
         return Math.random() * (max - min) + min;
-      }
-
-      function formatHeight(value) {
-        return Math.floor(value / 10) + "m";
       }
 
       function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
@@ -1048,6 +1560,7 @@
       }
 
       createStars();
+      createClouds();
       resetGame();
       bestScoreElement.textContent = String(game.best);
       draw();
