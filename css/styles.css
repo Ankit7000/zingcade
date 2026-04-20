@@ -1084,6 +1084,100 @@ code {
   width: 26%;
 }
 
+.mini-dash-runner,
+.mini-dash-lane,
+.mini-dash-barrier,
+.mini-dash-coin {
+  position: absolute;
+}
+
+.mini-dash-lane {
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: rgba(140, 245, 218, 0.22);
+  box-shadow: 0 0 10px rgba(140, 245, 218, 0.12);
+}
+
+.mini-dash-lane-one {
+  top: 28%;
+}
+
+.mini-dash-lane-two {
+  top: 52%;
+}
+
+.mini-dash-lane-three {
+  top: 76%;
+}
+
+.mini-dash-runner {
+  left: 24%;
+  top: 45%;
+  width: 22px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f2fff9 0%, var(--accent) 48%, #0f665e 100%);
+  box-shadow:
+    0 0 0 10px rgba(140, 245, 218, 0.08),
+    0 0 28px rgba(140, 245, 218, 0.28);
+}
+
+.mini-dash-runner::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -14px;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 50%;
+  background: #f5fff9;
+  box-shadow: 0 0 18px rgba(140, 245, 218, 0.24);
+}
+
+.mini-dash-barrier {
+  width: 28px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffb4a7 0%, #ff5e62 100%);
+  box-shadow: 0 0 18px rgba(255, 94, 98, 0.24);
+}
+
+.mini-dash-barrier-one {
+  right: 18%;
+  top: 17%;
+  height: 70px;
+}
+
+.mini-dash-barrier-two {
+  right: 28%;
+  top: 56%;
+  height: 44px;
+}
+
+.mini-dash-coin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff8dc 0%, #ffc672 52%, #b97a10 100%);
+  box-shadow: 0 0 14px rgba(255, 198, 114, 0.26);
+}
+
+.mini-dash-coin-one {
+  left: 54%;
+  top: 32%;
+}
+
+.mini-dash-coin-two {
+  left: 62%;
+  top: 32%;
+}
+
+.mini-dash-coin-three {
+  left: 70%;
+  top: 32%;
+}
+
 .hub-card-actions {
   margin-top: 0.15rem;
 }
