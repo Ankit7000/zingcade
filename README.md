@@ -58,6 +58,7 @@ git push -u origin main
 ## VPS Deployment To `/var/www/zingcade`
 
 This project is static, so deployment can stay simple.
+The production VPS should be a clean mirror of `origin/main`, not a place for manual edits.
 
 ### First-time clone on the VPS
 
@@ -71,7 +72,13 @@ cd /var/www/zingcade
 
 ```bash
 cd /var/www/zingcade
-git pull origin main
+git status --short || true
+git diff --stat || true
+git fetch --prune origin
+git reset --hard origin/main
+git clean -fd
 ```
+
+If you need server-local files, keep them outside `/var/www/zingcade` so deploys stay reproducible.
 
 Your web server can then point its document root at `/var/www/zingcade`.

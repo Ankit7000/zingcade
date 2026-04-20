@@ -515,6 +515,18 @@ code {
   color: var(--muted);
 }
 
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  color: #1a1208;
+  background: linear-gradient(135deg, #ffd88e, #fff1c8);
+  box-shadow: 0 14px 34px rgba(255, 216, 142, 0.14);
+  font-weight: 700;
+}
+
 .spotlight-points {
   display: grid;
   gap: 0.8rem;
@@ -931,7 +943,7 @@ code {
 }
 
 .hub-grid {
-  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(240px, 0.48fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
 }
 
@@ -942,6 +954,7 @@ code {
 
 .hub-card-featured {
   display: grid;
+  grid-column: 1 / -1;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 0.8fr);
   gap: 1.4rem;
 }
@@ -1028,6 +1041,87 @@ code {
   top: 66%;
   left: 20%;
   width: 48%;
+}
+
+.merge-preview-board {
+  position: relative;
+  min-height: 100%;
+}
+
+.merge-preview-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 216, 142, 0.16), transparent 26%),
+    radial-gradient(circle at 82% 12%, rgba(140, 245, 218, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 40%);
+}
+
+.merge-preview-tile {
+  position: absolute;
+  display: grid;
+  gap: 0.15rem;
+  justify-items: start;
+  align-content: space-between;
+  width: 30%;
+  min-height: 82px;
+  padding: 0.7rem;
+  border-radius: 20px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 16px 32px rgba(0, 0, 0, 0.2);
+}
+
+.merge-preview-mark {
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.merge-preview-name {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.merge-preview-power {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.merge-preview-tile-egg {
+  left: 9%;
+  top: 12%;
+  background: linear-gradient(135deg, #fff5dd, #f1cf89);
+  color: #2c2311;
+}
+
+.merge-preview-tile-slime {
+  right: 12%;
+  top: 26%;
+  background: linear-gradient(135deg, #dcffe0, #7de29a);
+  color: #112515;
+}
+
+.merge-preview-tile-goblin {
+  left: 18%;
+  bottom: 16%;
+  background: linear-gradient(135deg, #d9ffd9, #8fcf6d);
+  color: #142212;
+}
+
+.merge-preview-tile-dragon {
+  right: 10%;
+  bottom: 14%;
+  width: 34%;
+  background: linear-gradient(135deg, #ffe2ba, #ff8d71);
+  color: #35120b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 0 0 14px rgba(255, 141, 113, 0.08),
+    0 18px 36px rgba(0, 0, 0, 0.24);
 }
 
 .hub-mini-preview {

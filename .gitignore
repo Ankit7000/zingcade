@@ -8,3 +8,7 @@ Thumbs.db
 
 # Local test output
 *.log
+
+# Local planning notes
+ZINGCADE_BRIEFING.md
+zingcade_codex_memory.md

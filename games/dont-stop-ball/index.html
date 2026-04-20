@@ -17,6 +17,16 @@
     />
     <link rel="stylesheet" href="/css/styles.css" />
     <style>
+      html,
+      body {
+        overscroll-behavior: none;
+      }
+
+      body {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
       button {
         border: 0;
         font: inherit;
@@ -26,7 +36,12 @@
       .page {
         width: min(100% - 1.25rem, 1180px);
         margin: 0 auto;
-        padding: 1rem 0 2.75rem;
+        min-height: 100dvh;
+        padding:
+          calc(1rem + env(safe-area-inset-top))
+          env(safe-area-inset-right)
+          calc(2.75rem + env(safe-area-inset-bottom))
+          env(safe-area-inset-left);
       }
 
       .topbar {
@@ -88,6 +103,7 @@
       }
 
       .game-panel {
+        --canvas-max-width: min(100%, 430px);
         padding: 1rem 1rem 0.95rem;
       }
 
@@ -200,11 +216,15 @@
 
       .canvas-wrap {
         position: relative;
+        width: var(--canvas-max-width);
+        max-width: 100%;
+        margin: 0 auto;
       }
 
       canvas {
         display: block;
         width: 100%;
+        height: auto;
         aspect-ratio: 7 / 12;
         border-radius: 22px;
         background: linear-gradient(180deg, rgba(8, 20, 36, 0.95), rgba(4, 10, 18, 1));
@@ -312,6 +332,7 @@
         font-size: 0.95rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
+        touch-action: none;
       }
 
       .touch-button:active {
@@ -431,6 +452,21 @@
           padding-top: 1rem;
         }
 
+        .hud {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.65rem;
+        }
+
+        .hud-item,
+        .status-pill {
+          padding: 0.75rem;
+        }
+
+        .hud-value,
+        .summary-value {
+          font-size: 1.05rem;
+        }
+
         .content-strip,
         .status-strip,
         .overlay-summary {
@@ -447,6 +483,10 @@
         .actions a,
         .control-row button {
           width: 100%;
+        }
+
+        .touch-button {
+          min-height: 62px;
         }
       }
 
@@ -1930,6 +1970,14 @@
       canvas.addEventListener("pointerdown", (event) => {
         unlockAudio();
 
+        if (typeof canvas.setPointerCapture === "function") {
+          try {
+            canvas.setPointerCapture(event.pointerId);
+          } catch (error) {
+            // Ignore capture errors on browsers that reject non-active pointers.
+          }
+        }
+
         if (game.mode !== "playing") {
           activatePrimaryAction();
           return;
@@ -1948,13 +1996,21 @@
         }
       });
 
-      canvas.addEventListener("pointerup", () => {
+      canvas.addEventListener("pointerup", (event) => {
+        if (typeof canvas.hasPointerCapture === "function" && canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+
         if (game.pointerType !== "mouse") {
           game.pointerActive = false;
         }
       });
 
-      canvas.addEventListener("pointercancel", () => {
+      canvas.addEventListener("pointercancel", (event) => {
+        if (typeof canvas.hasPointerCapture === "function" && canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+
         if (game.pointerType !== "mouse") {
           game.pointerActive = false;
         }
@@ -1982,6 +2038,12 @@
 
       window.addEventListener("blur", () => {
         if (game.mode === "playing") {
+          togglePause(true);
+        }
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden && game.mode === "playing") {
           togglePause(true);
         }
       });

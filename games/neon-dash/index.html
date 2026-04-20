@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Neon Dash | Zingcade</title>
-  <meta name="description" content="Neon Dash — a perspective endless runner. Dodge neon obstacles, collect coins, and dash through the city. Three lanes, zero mercy."/>
+  <meta name="description" content="Neon Dash - a perspective endless runner. Dodge neon obstacles, collect coins, and dash through the city. Three lanes, zero mercy."/>
   <link rel="canonical" href="https://zingcade.com/games/neon-dash/"/>
   <meta name="theme-color" content="#040a12"/>
   <meta name="mobile-web-app-capable" content="yes"/>
@@ -25,7 +25,9 @@
                  radial-gradient(circle at 84% 8%,rgba(187,120,255,0.09),transparent 28%),
                  linear-gradient(180deg,#081119 0%,var(--nd-bg) 55%,#02060c 100%);}
     button{border:0;font:inherit;cursor:pointer}
-    .page{width:min(100% - 1.25rem,1180px);margin:0 auto;padding:1rem 0 2.75rem}
+    .page{width:min(100% - 1.25rem,1180px);min-height:100dvh;margin:0 auto;
+      padding:calc(1rem + env(safe-area-inset-top)) env(safe-area-inset-right)
+      calc(2.75rem + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
     .topbar{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;margin-bottom:1.1rem}
     .back-link{justify-self:start;color:var(--nd-muted)}
     .title h1,.title p{margin:0}
@@ -36,7 +38,7 @@
       background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--nd-muted)}
     .layout{display:grid;grid-template-columns:minmax(0,700px) minmax(240px,290px);justify-content:center;gap:1rem;align-items:start}
     .panel{background:var(--nd-panel);border:1px solid var(--nd-border);border-radius:28px;box-shadow:0 22px 70px rgba(0,0,0,.4)}
-    .game-panel{padding:1rem 1rem .95rem}
+    .game-panel{--canvas-max-width:min(100%,430px);padding:1rem 1rem .95rem}
     .hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.65rem;margin-bottom:.8rem}
     .hud-item{padding:.85rem;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)}
     .hud-label{display:block;margin-bottom:.3rem;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--nd-muted)}
@@ -52,8 +54,8 @@
     .ctrl-row{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.75rem .9rem;border-radius:16px;
       margin-bottom:.85rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)}
     .hint{color:var(--nd-muted);line-height:1.5;font-size:.95rem}
-    .canvas-wrap{position:relative}
-    canvas{display:block;width:100%;aspect-ratio:7/12;border-radius:22px;background:#040a12;
+    .canvas-wrap{position:relative;width:var(--canvas-max-width);max-width:100%;margin:0 auto}
+    canvas{display:block;width:100%;height:auto;aspect-ratio:7/12;border-radius:22px;background:#040a12;
       border:1px solid rgba(140,245,218,0.12);touch-action:none;image-rendering:pixelated}
     .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;
       border-radius:22px;background:rgba(4,10,18,0.68);backdrop-filter:blur(10px);text-align:center;transition:opacity .22s ease}
@@ -73,10 +75,10 @@
     .actions{display:flex;flex-wrap:wrap;justify-content:center;gap:.65rem;margin-top:1.1rem}
     .canvas-tip{margin-top:.75rem;padding:.8rem .9rem;border-radius:16px;background:rgba(255,255,255,0.04);
       border:1px solid rgba(255,255,255,0.06);color:var(--nd-muted);line-height:1.65;font-size:.94rem}
-    .mob-btns{display:none;gap:.65rem;margin-top:.75rem}
+    .mob-btns{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;margin-top:.75rem}
     .mob-btn{flex:1;min-height:54px;border-radius:16px;font-family:"Orbitron",sans-serif;font-size:.9rem;
       letter-spacing:.08em;color:#fff;background:rgba(140,245,218,0.08);border:1px solid rgba(140,245,218,0.22);
-      box-shadow:inset 0 0 18px rgba(140,245,218,0.08);touch-action:manipulation}
+      box-shadow:inset 0 0 18px rgba(140,245,218,0.08);touch-action:none}
     .info-panel{display:grid;gap:.65rem;padding:.95rem}
     .info-block{padding:.9rem;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05)}
     .info-block h2,.info-block h3{margin:0 0 .5rem;font-family:"Orbitron",sans-serif;font-size:1rem}
@@ -93,9 +95,11 @@
     .content-card p{color:var(--nd-muted);line-height:1.65}
     .mini-label{margin:0 0 .4rem;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--nd-accent);font-weight:600}
     @media(max-width:980px){.layout,.topbar{grid-template-columns:1fr}.meta-pill{justify-self:start}}
-    @media(max-width:720px){.content-strip,.overlay-summary{grid-template-columns:1fr}
+    @media(max-width:720px){.page{width:min(100% - 1rem,1160px);padding-top:1rem}
+      .hud{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}.hud-item{padding:.75rem}
+      .hud-value,.summary-value{font-size:1rem}.content-strip,.overlay-summary{grid-template-columns:1fr}
       .ctrl-row,.actions{flex-direction:column;align-items:stretch}.actions button,.actions a,.ctrl-row button{width:100%}}
-    @media(max-width:600px){.mob-btns{display:flex}}
+    @media(pointer:coarse), (max-width:720px){.mob-btns{display:grid}.mob-btn{min-height:60px}}
     @media(hover:hover) and (pointer:fine){.mob-btns{display:none!important}}
   </style>
 </head>
@@ -113,7 +117,7 @@
   <div class="topbar">
     <a class="back-link" href="/games/">&#8592; Games</a>
     <div class="title"><h1>Neon Dash</h1><p>Three lanes. Zero mercy. Dash through the city.</p></div>
-    <div class="meta-pill">Keyboard · Swipe · Touch</div>
+    <div class="meta-pill">Keyboard / Swipe / Touch</div>
   </div>
   <section class="layout">
     <div class="panel game-panel">
@@ -129,7 +133,7 @@
         <div class="power-bar"><span class="power-fill" id="pfill"></span></div>
       </div>
       <div class="ctrl-row">
-        <div class="hint">Swipe or use <strong>A/D</strong> to change lanes, <strong>W/↑</strong> to jump, <strong>S/↓</strong> to slide. Press <strong>P</strong> to pause.</div>
+        <div class="hint">Swipe or use <strong>A/D</strong> to change lanes, <strong>W/Up</strong> to jump, <strong>S/Down</strong> to slide. Press <strong>P</strong> to pause.</div>
         <button class="button button-secondary" id="pauseBtn" type="button">Pause</button>
       </div>
       <div class="canvas-wrap">
@@ -138,7 +142,7 @@
           <div class="overlay-card">
             <p class="overlay-kicker" id="okicker">PERSPECTIVE RUNNER</p>
             <h2 id="otitle">Neon Dash</h2>
-            <p id="otext">Three neon lanes. Dodge barriers, lasers and full blocks. Jump, slide, or shift — choose fast or die.</p>
+            <p id="otext">Three neon lanes. Dodge barriers, lasers and full blocks. Jump, slide, or shift - choose fast or die.</p>
             <div class="overlay-summary" id="osummary" hidden>
               <div class="summary-item"><span class="summary-label">Score</span><span class="summary-value" id="oscore">0</span></div>
               <div class="summary-item"><span class="summary-label">Best</span><span class="summary-value" id="obest">0</span></div>
@@ -153,42 +157,42 @@
           </div>
         </div>
       </div>
-      <div class="canvas-tip" id="tip">Read the lane ahead. The city gets faster — move early, react early.</div>
+      <div class="canvas-tip" id="tip">Read the lane ahead. The city gets faster - move early, react early.</div>
       <div class="mob-btns">
-        <button class="mob-btn" id="mobLeft" type="button">◀ LEFT</button>
-        <button class="mob-btn" id="mobUp" type="button">▲ JUMP</button>
-        <button class="mob-btn" id="mobDown" type="button">▼ SLIDE</button>
-        <button class="mob-btn" id="mobRight" type="button">RIGHT ▶</button>
+        <button class="mob-btn" id="mobLeft" type="button">&lt; LEFT</button>
+        <button class="mob-btn" id="mobUp" type="button">JUMP</button>
+        <button class="mob-btn" id="mobDown" type="button">SLIDE</button>
+        <button class="mob-btn" id="mobRight" type="button">RIGHT &gt;</button>
       </div>
     </div>
     <aside class="panel info-panel">
       <section class="info-block">
         <h2>How to Play</h2>
-        <p>You're in the center lane. Obstacles spawn at the horizon and rush toward you. Shift lanes, jump over barriers, slide under laser beams, and collect coins before the city overwhelms you.</p>
+        <p>You start in the center lane. Obstacles spawn at the horizon and rush toward you. Shift lanes, jump over barriers, slide under laser beams, and collect coins before the city overwhelms you.</p>
       </section>
       <section class="info-block">
         <h3>Controls</h3>
         <ul class="tips">
-          <li>A / Left arrow — shift left lane</li>
-          <li>D / Right arrow — shift right lane</li>
-          <li>W / Up arrow — jump over barriers</li>
-          <li>S / Down arrow — slide under beams</li>
-          <li>Swipe left/right/up/down on mobile</li>
-          <li>P — pause/resume</li>
-          <li>Space / Enter — start or restart</li>
+          <li>A / Left arrow - shift left lane</li>
+          <li>D / Right arrow - shift right lane</li>
+          <li>W / Up arrow - jump over barriers</li>
+          <li>S / Down arrow - slide under beams</li>
+          <li>Swipe left, right, up, or down on mobile</li>
+          <li>P - pause or resume</li>
+          <li>Space / Enter - start or restart</li>
         </ul>
       </section>
       <div class="callout">
         <strong>Obstacle Types</strong>
-        <p>🟥 Barrier — jump over it · 🟣 Laser Beam — slide under it · 🔴 Full Block — change lane · ⚠️ Double — two lanes blocked, go to the clear one.</p>
+        <p>Barrier - jump over it. Laser Beam - slide under it. Full Block - change lane. Double - two lanes are blocked, so find the clear one.</p>
       </div>
       <div class="callout">
         <strong>Power-Ups</strong>
-        <p>🔵 Shield — one free hit · 🟡 Magnet — pulls all coins · 🟣 Boost — speed burst + invincibility for 3s</p>
+        <p>Shield gives one free hit. Magnet pulls nearby coins. Boost gives a short speed burst with temporary invincibility.</p>
       </div>
       <div class="callout">
         <strong>Stage Flow</strong>
-        <p>City Night → Storm Grid → Neon Surge → Overdrive. Each stage raises speed, tightens spacing, and adds harder obstacle combos.</p>
+        <p>City Night, Storm Grid, Neon Surge, then Overdrive. Each stage raises speed, tightens spacing, and adds harder obstacle combos.</p>
       </div>
     </aside>
   </section>
@@ -196,12 +200,12 @@
     <article class="content-card">
       <p class="mini-label">What It Is</p>
       <h2>Perspective 3D endless runner.</h2>
-      <p>The track rushes toward you in full perspective — obstacles scale up from the horizon and demand instant decisions.</p>
+      <p>The track rushes toward you in full perspective, so obstacles scale up from the horizon and demand instant decisions.</p>
     </article>
     <article class="content-card">
       <p class="mini-label">Key Move</p>
       <h2>Lane shift beats everything.</h2>
-      <p>When in doubt, shift early. Jumping and sliding are counters — lane position is your safety net every single run.</p>
+      <p>When in doubt, shift early. Jumping and sliding are counters, but lane position is still your safety net every run.</p>
     </article>
     <article class="content-card">
       <p class="mini-label">Challenge</p>
@@ -220,7 +224,7 @@
 </footer>
 <script>
 // ============================================================
-// NEON DASH — SUBWAY SURFERS STYLE PERSPECTIVE RUNNER ENGINE
+// NEON DASH - SUBWAY SURFERS STYLE PERSPECTIVE RUNNER ENGINE
 // ============================================================
 'use strict';
 
@@ -306,7 +310,7 @@ function lsSet(k,v){ try{ localStorage.setItem(k,String(Math.floor(v))); }catch(
 const G = {
   state: 'idle',    // idle | running | paused | dead
   score: 0, dispScore: 0,
-  best: lsGet('nd_best'), coins: 0, bestCoins: lsGet('nd_bestcoins'),
+  best: lsGet('nd_best'), coinCount: 0, bestCoins: lsGet('nd_bestcoins'),
   dist: 0, time: 0, speed: CFG.baseSpeed,
   stageIdx: 0, stageFlashT: 0,
   // player
@@ -317,7 +321,7 @@ const G = {
   // powers
   shield: false, magnetT: 0, boostT: 0, invulnT: 0,
   // objects
-  obstacles: [], coins: [], powerups: [], particles: [],
+  obstacles: [], coinItems: [], powerups: [], particles: [],
   // parallax
   stars: [], farBuilds: [], midBuilds: [],
   speedLines: [],
@@ -460,7 +464,7 @@ function drawTrack(){
   ctx.beginPath(); ctx.moveTo(tl.x,tl.y); ctx.lineTo(tr.x,tr.y);
   ctx.lineTo(br.x,br.y); ctx.lineTo(bl.x,bl.y); ctx.closePath(); ctx.fill();
 
-  // Scrolling cross-ties (horizontal strips → speed feel)
+  // Scrolling cross-ties for extra speed feel
   const TIE_Z = 0.052;
   const scroll = (G.dist * 0.00195) % TIE_Z;
   for(let z=scroll+0.01; z<1.0; z+=TIE_Z){
@@ -752,10 +756,10 @@ function render(dt){
   drawSpeedLines(dt);
   drawTrack();
 
-  // Sort and draw all game objects far→near for depth correctness
+  // Sort and draw all game objects from far to near for depth correctness
   const allObjs = [
     ...G.obstacles.filter(o=>!o.hit),
-    ...G.coins.filter(c=>!c.collected),
+    ...G.coinItems.filter(c=>!c.collected),
     ...G.powerups.filter(p=>!p.collected)
   ].sort((a,b)=>a.z-b.z);
 
@@ -811,13 +815,13 @@ function spawnCoins(){
   const lane=randInt(0,2);
   const float=Math.random()<0.22?55:18;
   for(let i=0;i<5;i++){
-    G.coins.push({lane,z:CFG.spawnZStart+i*0.028,floatH:float,rot:0,collected:false});
+    G.coinItems.push({lane,z:CFG.spawnZStart+i*0.028,floatH:float,rot:0,collected:false});
   }
   // Occasional arc pattern
   if(Math.random()<0.3){
     for(let i=0;i<4;i++){
       const aLane=(lane+1+(i<2?0:1))%3;
-      G.coins.push({lane:aLane,z:CFG.spawnZStart+0.06+i*0.025,floatH:18,rot:0,collected:false});
+      G.coinItems.push({lane:aLane,z:CFG.spawnZStart+0.06+i*0.025,floatH:18,rot:0,collected:false});
     }
   }
 }
@@ -880,19 +884,19 @@ function checkCollisions(){
   });
 
   // Coins
-  G.coins.forEach(c=>{
+  G.coinItems.forEach(c=>{
     if(c.collected) return;
     const inRange = c.z>=PZ-0.06 && c.z<=PZ+0.05;
     if(!inRange) return;
     if(G.magnetT>0){
-      c.collected=true; G.coins++; updateHUD();
+      c.collected=true; G.coinCount += 1; updateHUD();
       const p=proj(LANE_REL[c.lane],c.z);
       spawnParticles(p.x,p.y-c.floatH*c.z,'#ffc672',5,2,0.7);
       return;
     }
     if(c.lane!==playerLane) return;
     if(c.floatH>40&&G.jumpOffset<28) return;
-    c.collected=true; G.coins++; updateHUD();
+    c.collected=true; G.coinCount += 1; updateHUD();
     const p=proj(LANE_REL[c.lane],c.z);
     spawnParticles(p.x,p.y-c.floatH*c.z,'#ffc672',5,2,0.7);
   });
@@ -938,11 +942,11 @@ function update(dt){
   // Move objects
   const zspd=zSpeed();
   G.obstacles.forEach(o=>{ o.z+=dt*zspd; });
-  G.coins.forEach(c=>{ c.z+=dt*zspd; c.rot+=dt*4.5; });
+  G.coinItems.forEach(c=>{ c.z+=dt*zspd; c.rot+=dt*4.5; });
   G.powerups.forEach(p=>{ p.z+=dt*zspd; });
   // Cleanup
   G.obstacles=G.obstacles.filter(o=>o.z<CFG.despawnZ&&!o.hit);
-  G.coins=G.coins.filter(c=>c.z<CFG.despawnZ&&!c.collected);
+  G.coinItems=G.coinItems.filter(c=>c.z<CFG.despawnZ&&!c.collected);
   G.powerups=G.powerups.filter(p=>p.z<CFG.despawnZ&&!p.collected);
 
   // Particles
@@ -980,7 +984,7 @@ function update(dt){
 function updateHUD(){
   elScore.textContent=G.score;
   elBest.textContent=G.best;
-  elCoins.textContent=G.coins;
+  elCoins.textContent=G.coinCount;
   elSpeed.textContent=Math.round(G.speed);
   // Power
   let pname='No Power', ptime='--', pfillW=0, pbg='linear-gradient(135deg,#8cf5da,#d3fff0)';
@@ -997,18 +1001,18 @@ function updateHUD(){
 function startGame(){
   // Reset
   G.state='running';
-  G.score=0; G.dispScore=0; G.coins=0; G.dist=0; G.time=0;
+  G.score=0; G.dispScore=0; G.coinCount=0; G.dist=0; G.time=0;
   G.speed=CFG.baseSpeed;
   G.stageIdx=0; G.stageFlashT=0;
   G.lane=1; G.targetLane=1; G.prevLane=1; G.laneT=1;
   G.jumpProg=0; G.jumpOffset=0; G.slideProg=0; G.runCycle=0;
   G.shield=false; G.magnetT=0; G.boostT=0; G.invulnT=0;
-  G.obstacles=[]; G.coins=[]; G.powerups=[]; G.particles=[];
+  G.obstacles=[]; G.coinItems=[]; G.powerups=[]; G.particles=[];
   G.obstTimer=1.8; G.coinTimer=1.2;
   G.shakeT=0; G.stageFlashT=0;
   G.continueUsed=false;
   elStage.textContent=STAGES[0].label;
-  elTip.textContent='Keep your eyes on the horizon — the faster you are, the earlier you must react.';
+  elTip.textContent='Keep your eyes on the horizon - the faster you are, the earlier you must react.';
   hideOverlay();
   pauseBtn.textContent='Pause';
   updateHUD();
@@ -1017,9 +1021,10 @@ function startGame(){
 function triggerGameOver(){
   G.state='dead';
   G.sessionOvers++;
-  if(G.coins>G.bestCoins){ G.bestCoins=G.coins; lsSet('nd_bestcoins',G.bestCoins); }
-  if(G.score>G.best){ G.best=G.score; lsSet('nd_best',G.best); }
-  showGameOver();
+  const isNewBest = G.score > G.best;
+  if(G.coinCount>G.bestCoins){ G.bestCoins=G.coinCount; lsSet('nd_bestcoins',G.bestCoins); }
+  if(isNewBest){ G.best=G.score; lsSet('nd_best',G.best); }
+  showGameOver(isNewBest);
 }
 
 function togglePause(){
@@ -1042,15 +1047,15 @@ function resumeGame(){
   hideOverlay();
 }
 
-function showGameOver(){
+function showGameOver(isNewBest=false){
   oscore.textContent=G.score;
   obest.textContent=G.best;
-  ocoins.textContent=G.coins;
+  ocoins.textContent=G.coinCount;
   osummary.hidden=false;
-  const newBest=G.score>=G.best;
   onote.hidden=false;
-  onote.textContent=newBest?'🏆 New best score! The city bows to you.':
-    `Stage reached: ${STAGES[G.stageIdx].label}. Keep pushing.`;
+  onote.textContent=isNewBest
+    ? 'New best score! The city bows to you.'
+    : `Stage reached: ${STAGES[G.stageIdx].label}. Keep one lane escape ready before every jump or slide.`;
   okicker.textContent='RUN ENDED';
   otitle.textContent='Game Over';
   otext.textContent='The city won this round. Hit restart to try again.';
@@ -1128,16 +1133,18 @@ let tx0=0,ty0=0,tt0=0;
 canvas.addEventListener('touchstart',e=>{ e.preventDefault();
   const t=e.changedTouches[0]; tx0=t.clientX; ty0=t.clientY; tt0=Date.now();
 },{passive:false});
+canvas.addEventListener('touchmove',e=>{ e.preventDefault(); },{passive:false});
 canvas.addEventListener('touchend',e=>{ e.preventDefault();
   const t=e.changedTouches[0];
   const dx=t.clientX-tx0, dy=t.clientY-ty0, elapsed=Date.now()-tt0;
   if(G.state==='idle'||G.state==='dead'){ startGame(); return; }
   if(G.state==='paused'){ resumeGame(); return; }
-  const minSwipe=22;
-  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>minSwipe){ doLane(dx>0?1:-1); }
-  else if(Math.abs(dy)>minSwipe){ if(dy<0) doJump(); else doSlide(); }
+  const minSwipe=Math.max(18,Math.min(34,Math.round(canvas.clientWidth*0.05)));
+  if(Math.abs(dx)>Math.abs(dy)*1.1&&Math.abs(dx)>minSwipe){ doLane(dx>0?1:-1); }
+  else if(Math.abs(dy)>Math.abs(dx)*1.1&&Math.abs(dy)>minSwipe){ if(dy<0) doJump(); else doSlide(); }
   else if(elapsed<200){ doJump(); }
 },{passive:false});
+canvas.addEventListener('touchcancel',()=>{ tx0=0; ty0=0; tt0=0; },{passive:false});
 
 // Overlay & button clicks
 actionBtn.addEventListener('click',()=>{
@@ -1149,11 +1156,27 @@ contBtn.addEventListener('click',()=>{
   else if(G.state==='paused') resumeGame();
 });
 pauseBtn.addEventListener('click',togglePause);
-// Mobile buttons
-document.getElementById('mobLeft').addEventListener('click',()=>doLane(-1));
-document.getElementById('mobRight').addEventListener('click',()=>doLane(1));
-document.getElementById('mobUp').addEventListener('click',doJump);
-document.getElementById('mobDown').addEventListener('click',doSlide);
+
+function bindMobileButton(id, handler){
+  const button=document.getElementById(id);
+  button.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    handler();
+  });
+}
+
+bindMobileButton('mobLeft',()=>doLane(-1));
+bindMobileButton('mobRight',()=>doLane(1));
+bindMobileButton('mobUp',doJump);
+bindMobileButton('mobDown',doSlide);
+
+window.addEventListener('blur',()=>{
+  if(G.state==='running') togglePause();
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&G.state==='running') togglePause();
+});
 
 // ---- GAME LOOP ----
 let lastTS=0;

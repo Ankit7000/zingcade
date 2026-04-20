@@ -6,7 +6,7 @@
     <title>Games | Zingcade</title>
     <meta
       name="description"
-      content="Browse Zingcade games including Dont Stop Ball, Sky Hop, and Neon Dash in a small growing browser arcade."
+      content="Browse Zingcade games including Merge Monster 2048, Dont Stop Ball, Sky Hop, and Neon Dash in a small growing browser arcade."
     />
     <link rel="canonical" href="https://zingcade.com/games/" />
     <link rel="stylesheet" href="/css/styles.css" />
@@ -21,7 +21,7 @@
           <a href="/about.html">About</a>
           <a href="/contact.html">Contact</a>
         </nav>
-        <a class="button button-primary nav-play" href="/games/dont-stop-ball/"
+        <a class="button button-primary nav-play" href="/games/merge-monster-2048/"
           >Play Now</a
         >
       </div>
@@ -39,14 +39,12 @@
               but it still reads honestly while the shelf is filling up.
             </p>
             <div class="hero-actions">
-              <a class="button button-primary" href="/games/dont-stop-ball/"
-                >Play Dont Stop Ball</a
-              >
+              <a class="button button-primary" href="/games/merge-monster-2048/">Play Merge Monster 2048</a>
               <a class="button button-secondary" href="/">Back Home</a>
             </div>
             <div class="hub-hero-stats" aria-label="Games hub overview">
               <article class="hub-stat">
-                <span class="hub-stat-value">03</span>
+                <span class="hub-stat-value">04</span>
                 <span class="hub-stat-label">Live games in the hub</span>
               </article>
               <article class="hub-stat">
@@ -62,16 +60,34 @@
 
           <div class="hub-side-card" aria-hidden="true">
             <p class="mini-label">Live Cabinet</p>
-            <h2>Dont Stop Ball</h2>
+            <h2>Merge Monster 2048</h2>
             <p>
-              Survival dodge game with smoother steering, mixed hazard patterns,
-              and score-chain pressure.
+              Creature-merging puzzle runs with local rank pressure, daily
+              targets, and a cleaner mobile-first board.
             </p>
             <div class="hub-preview">
-              <div class="hub-preview-beam"></div>
-              <div class="hub-preview-ball"></div>
-              <div class="hub-preview-bar hub-preview-bar-one"></div>
-              <div class="hub-preview-bar hub-preview-bar-two"></div>
+              <div class="merge-preview-board">
+                <article class="merge-preview-tile merge-preview-tile-egg">
+                  <span class="merge-preview-mark">EG</span>
+                  <strong class="merge-preview-name">Egg</strong>
+                  <span class="merge-preview-power">2</span>
+                </article>
+                <article class="merge-preview-tile merge-preview-tile-slime">
+                  <span class="merge-preview-mark">SL</span>
+                  <strong class="merge-preview-name">Slime</strong>
+                  <span class="merge-preview-power">4</span>
+                </article>
+                <article class="merge-preview-tile merge-preview-tile-goblin">
+                  <span class="merge-preview-mark">GB</span>
+                  <strong class="merge-preview-name">Goblin</strong>
+                  <span class="merge-preview-power">8</span>
+                </article>
+                <article class="merge-preview-tile merge-preview-tile-dragon">
+                  <span class="merge-preview-mark">DR</span>
+                  <strong class="merge-preview-name">Dragon</strong>
+                  <span class="merge-preview-power">128</span>
+                </article>
+              </div>
             </div>
           </div>
         </div>
@@ -95,36 +111,73 @@
               <div class="hub-card-copy">
                 <div class="hub-card-topline">
                   <span class="hub-status">Live</span>
-                  <span class="hub-meta">Arcade Survival</span>
+                  <span class="hub-meta">Puzzle Addiction</span>
                 </div>
-                <h3>Dont Stop Ball</h3>
+                <h3>Merge Monster 2048</h3>
                 <p>
-                  Read warning lanes, dodge mixed hazard patterns, and keep your
-                  run alive long enough to build a bigger score chain.
+                  Merge creatures up a polished 4x4 board, chase your next rank
+                  band, and keep the ladder stable long enough to reach Dragon,
+                  Mythic Beast, and Void Titan tiers.
                 </p>
                 <div class="detail-row">
-                  <div class="detail-chip">Keyboard, mouse, touch</div>
-                  <div class="detail-chip">Best score saved</div>
-                  <div class="detail-chip">Chain scoring + fast restarts</div>
+                  <div class="category-chip">Puzzle Addiction</div>
+                  <div class="detail-chip">Arrow keys, WASD, and swipe</div>
+                  <div class="detail-chip">Best score + best evolution saved</div>
+                  <div class="detail-chip">Daily target + local rank preview</div>
                 </div>
                 <ul class="spotlight-points">
-                  <li>Warning flashes and pattern variety keep the game readable under pressure.</li>
-                  <li>The scoring loop now rewards both survival and clean dodge chains.</li>
-                  <li>The page is built for quick retries across desktop and mobile.</li>
+                  <li>The board is creature-first, readable on mobile, and fast to restart after a dead run.</li>
+                  <li>Local rank progress and daily targets already prepare the game for future shared Zingcade progression.</li>
+                  <li>The merge engine stays faithful to the addictive structure without feeling like a cheap number reskin.</li>
                 </ul>
                 <div class="hero-actions">
-                  <a class="button button-primary" href="/games/dont-stop-ball/"
-                    >Play Now</a
-                  >
+                  <a class="button button-primary" href="/games/merge-monster-2048/">Play Now</a>
                   <a class="button button-secondary" href="/">Home</a>
                 </div>
               </div>
               <div class="hub-card-art" aria-hidden="true">
                 <div class="hub-art-grid"></div>
-                <div class="hub-art-ball"></div>
-                <div class="hub-art-bar hub-art-bar-one"></div>
-                <div class="hub-art-bar hub-art-bar-two"></div>
-                <div class="hub-art-bar hub-art-bar-three"></div>
+                <div class="merge-preview-board">
+                  <article class="merge-preview-tile merge-preview-tile-egg">
+                    <span class="merge-preview-mark">EG</span>
+                    <strong class="merge-preview-name">Egg</strong>
+                    <span class="merge-preview-power">2</span>
+                  </article>
+                  <article class="merge-preview-tile merge-preview-tile-slime">
+                    <span class="merge-preview-mark">SL</span>
+                    <strong class="merge-preview-name">Slime</strong>
+                    <span class="merge-preview-power">4</span>
+                  </article>
+                  <article class="merge-preview-tile merge-preview-tile-goblin">
+                    <span class="merge-preview-mark">GB</span>
+                    <strong class="merge-preview-name">Goblin</strong>
+                    <span class="merge-preview-power">8</span>
+                  </article>
+                  <article class="merge-preview-tile merge-preview-tile-dragon">
+                    <span class="merge-preview-mark">DR</span>
+                    <strong class="merge-preview-name">Dragon</strong>
+                    <span class="merge-preview-power">128</span>
+                  </article>
+                </div>
+              </div>
+            </article>
+
+            <article class="hub-card hub-card-secondary">
+              <div class="hub-card-topline">
+                <span class="hub-status">Live</span>
+                <span class="hub-meta">Arcade Survival</span>
+              </div>
+              <h3>Dont Stop Ball</h3>
+              <p>
+                Read warning lanes, dodge mixed hazard patterns, and keep the
+                score chain alive long enough to push into the hotter stages.
+              </p>
+              <div class="detail-row">
+                <div class="detail-chip">Keyboard, mouse, touch</div>
+                <div class="detail-chip">Lives, streaks, saved best</div>
+              </div>
+              <div class="hero-actions hub-card-actions">
+                <a class="button button-primary" href="/games/dont-stop-ball/">Play Dont Stop Ball</a>
               </div>
             </article>
 
@@ -201,19 +254,19 @@
 
           <div class="coming-grid">
             <article class="coming-card">
-              <p class="mini-label">Action Lane</p>
-              <h3>Quick retry games</h3>
+              <p class="mini-label">Puzzle Addiction</p>
+              <h3>Flagship brain loop</h3>
               <p>
-                Dont Stop Ball, Sky Hop, and Neon Dash now give the hub three
-                distinct replay loops without repeating the same game idea.
+                Merge Monster 2048 now gives the hub a real puzzle category
+                instead of a placeholder lane.
               </p>
             </article>
             <article class="coming-card">
-              <p class="mini-label">Puzzle Lane</p>
-              <h3>One slower shelf</h3>
+              <p class="mini-label">Action Shelf</p>
+              <h3>Three fast replay runs</h3>
               <p>
-                A calmer genre gives the page more identity once the second or
-                third wave of games arrives.
+                Dont Stop Ball, Sky Hop, and Neon Dash still cover clean action
+                loops without repeating the same cabinet idea.
               </p>
             </article>
             <article class="coming-card">
