@@ -251,6 +251,7 @@
       }
 
       .overlay[hidden] {
+        display: none !important;
         opacity: 0;
         pointer-events: none;
       }
@@ -770,8 +771,8 @@
           name: "Warmup",
           start: 0,
           speed: 240,
-          spawnMin: 1.05,
-          spawnMax: 1.35,
+          spawnMin: 1.12,
+          spawnMax: 1.48,
           note: "Warmup gives you space to read the first telegraphs before the pressure climbs.",
           colors: ["#0d2134", "#07111d"]
         },
@@ -806,8 +807,8 @@
           name: "Redline",
           start: 70,
           speed: 470,
-          spawnMin: 0.68,
-          spawnMax: 0.88,
+          spawnMin: 0.72,
+          spawnMax: 0.92,
           note: "Redline stacks sweepers with split gates and forces quick follow-up reads.",
           colors: ["#311a40", "#100814"]
         },
@@ -815,8 +816,8 @@
           name: "Meltdown",
           start: 92,
           speed: 545,
-          spawnMin: 0.6,
-          spawnMax: 0.82,
+          spawnMin: 0.64,
+          spawnMax: 0.86,
           note: "Meltdown is the stress test. If you still have lives here, cash the run in.",
           colors: ["#3b162f", "#13050d"]
         }
@@ -1249,7 +1250,7 @@
             kind,
             x: random(14, width - 138),
             y: -44,
-            width: random(112, 138),
+            width: random(104, 128),
             height: 28,
             speed: stageSpeed + random(4, 34),
             drift: random(-20, 20),
@@ -1260,7 +1261,7 @@
         }
 
         if (kind === "gate") {
-          const gapWidth = random(100, 136);
+          const gapWidth = random(112, 148);
           const gapX = random(42, width - gapWidth - 42);
           game.obstacles.push({
             kind,
@@ -1285,7 +1286,7 @@
             width: sweepWidth,
             height: 18,
             speed: stageSpeed + random(10, 42),
-            drift: random(-78, 78),
+            drift: random(-64, 64),
             scored: false
           });
           return;
@@ -1385,6 +1386,7 @@
         playSound("hit");
 
         if (game.lives <= 0) {
+          spawnFloatingText(game.player.x, game.player.y - 54, "Run Broken", "#ff7d6c");
           endRun();
         }
       }
@@ -1725,6 +1727,26 @@
       function drawObstacles() {
         for (const obstacle of game.obstacles) {
           context.save();
+          const warningAlpha = clamp(1 - Math.max(0, obstacle.y + 42) / 150, 0, 0.78);
+          if (warningAlpha > 0.03) {
+            context.save();
+            context.globalAlpha = warningAlpha;
+            context.shadowBlur = 12;
+            context.shadowColor = "#ff7d6c";
+            context.fillStyle = "rgba(255,125,108,0.72)";
+            if (obstacle.kind === "gate") {
+              context.fillRect(16, 22, obstacle.gapX - 22, 5);
+              context.fillRect(obstacle.gapX + obstacle.gapWidth + 6, 22, width - obstacle.gapX - obstacle.gapWidth - 22, 5);
+              context.strokeStyle = "rgba(140,245,218,0.75)";
+              context.lineWidth = 2;
+              context.strokeRect(obstacle.gapX, 18, obstacle.gapWidth, 13);
+            } else {
+              const markerX = obstacle.kind === "spinner" ? obstacle.x - obstacle.armLength : obstacle.x;
+              const markerW = obstacle.kind === "spinner" ? obstacle.armLength * 2 : obstacle.width;
+              context.fillRect(markerX, 20, markerW, 6);
+            }
+            context.restore();
+          }
           context.shadowBlur = obstacle.kind === "spinner" ? 18 : 14;
           context.shadowColor = "rgba(255, 125, 108, 0.9)";
 

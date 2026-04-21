@@ -256,6 +256,7 @@
       }
 
       .overlay[hidden] {
+        display: none !important;
         opacity: 0;
         pointer-events: none;
       }
@@ -764,7 +765,7 @@
         game.particles = [];
         overlay.hidden = true;
         pauseButton.textContent = "Pause";
-        claimNoteElement.textContent = "You are safe on your color. Leave it only when you can reconnect before a cutter reaches the trail.";
+        claimNoteElement.textContent = "Safe color is home base. Leave it, draw a short loop, then return before a cutter touches the gold trail.";
         updateHud();
       }
 
@@ -858,7 +859,7 @@
         game.score += captured * 18 + Math.floor(game.capturePercent * 12);
         game.flash = 1;
         relocateCutters();
-        spawnClaimParticles(game.player.x, game.player.y, Math.min(34, Math.max(10, Math.floor(captured / 4))));
+        spawnClaimParticles(game.player.x, game.player.y, Math.min(44, Math.max(14, Math.floor(captured / 3))));
         claimNoteElement.textContent =
           captured > 0
             ? "Claim secured: " + captured + " cells. Keep chaining smart loops before the cutters narrow the field."
@@ -1130,7 +1131,7 @@
         drawPlayer();
         drawParticles();
         if (game.flash > 0) {
-          context.fillStyle = "rgba(54,223,189," + game.flash * 0.12 + ")";
+          context.fillStyle = "rgba(54,223,189," + game.flash * 0.17 + ")";
           context.fillRect(0, 0, size, size);
         }
       }
@@ -1141,6 +1142,7 @@
         gradient.addColorStop(1, "#040a12");
         context.fillStyle = gradient;
         context.fillRect(0, 0, size, size);
+        const trailPulse = game.outside ? 0.5 + Math.sin(game.pulse * 10) * 0.24 : 0.28;
 
         for (let y = 0; y < rows; y += 1) {
           for (let x = 0; x < cols; x += 1) {
@@ -1149,8 +1151,10 @@
               context.fillStyle = "rgba(54, 223, 189, 0.28)";
               context.fillRect(x * cell, y * cell, cell + 0.5, cell + 0.5);
             } else if (trail[idx]) {
+              context.fillStyle = "rgba(255, 107, 107, " + trailPulse + ")";
+              context.fillRect(x * cell, y * cell, cell, cell);
               context.fillStyle = "rgba(255, 198, 114, 0.82)";
-              context.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+              context.fillRect(x * cell + 2, y * cell + 2, cell - 4, cell - 4);
             }
           }
         }
@@ -1237,6 +1241,13 @@
           context.strokeStyle = "rgba(255,255,255,0.46)";
           context.lineWidth = 2;
           context.stroke();
+          if (game.outside) {
+            context.strokeStyle = "rgba(255,107,107,0.32)";
+            context.lineWidth = 3;
+            context.beginPath();
+            context.arc(0, 0, cell * 0.74, 0, Math.PI * 2);
+            context.stroke();
+          }
           context.restore();
         }
       }

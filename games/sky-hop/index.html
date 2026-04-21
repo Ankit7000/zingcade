@@ -243,6 +243,7 @@
       }
 
       .overlay[hidden] {
+        display: none !important;
         opacity: 0;
         pointer-events: none;
       }
@@ -1262,7 +1263,7 @@
           platformWidth *= 0.94;
         }
 
-        platformWidth = clamp(platformWidth, 52, 136);
+        platformWidth = clamp(platformWidth, 58, 138);
 
         return {
           kind,
@@ -1423,14 +1424,14 @@
 
         game.hops += 1;
         game.comboChain = game.comboFill > 0.08 ? game.comboChain + 1 : 1;
-        game.comboFill = Math.min(1, game.comboFill + 0.42);
+        game.comboFill = Math.min(1, game.comboFill + 0.46);
         game.comboMultiplier = Math.min(4, 1 + (game.comboChain - 1) * 0.25);
 
         const scoreGain = Math.round((14 + getHeightMeters() * 0.15) * game.comboMultiplier);
         game.score += scoreGain;
         game.best = Math.max(game.best, Math.floor(game.score));
 
-        platform.flash = 0.28;
+        platform.flash = 0.34;
         playPlatformSound(platform.kind);
 
         let label = "+" + scoreGain;
@@ -1462,7 +1463,7 @@
           spawnFloatingText(player.x, platform.y - 20, "x" + game.comboMultiplier.toFixed(1), "#ffc672");
         }
         spawnFloatingText(player.x, platform.y - 40, label, color);
-        createBurst(player.x, platform.y, color, platform.kind === "spring" ? 18 : 12, 24, 120);
+        createBurst(player.x, platform.y, color, platform.kind === "spring" ? 22 : 14, 28, 135);
       }
 
       function handleLandings(previousY) {
@@ -1482,12 +1483,12 @@
           const top = platform.y;
           const padding =
             platform.kind === "tiny"
-              ? 10
+              ? 12
               : platform.kind === "vertical"
-                ? 16
-                : 20;
-          const landingWindowTop = top - 12;
-          const landingWindowBottom = top + 16;
+                ? 18
+                : 22;
+          const landingWindowTop = top - 14;
+          const landingWindowBottom = top + 18;
           const withinVerticalWindow =
             previousBottom <= landingWindowBottom && currentBottom >= landingWindowTop;
           const withinHorizontalWindow =
@@ -1781,6 +1782,9 @@
             10
           );
           context.fill();
+
+          context.fillStyle = "rgba(255,255,255,0.22)";
+          context.fillRect(platform.x + 8, platform.y + springOffset + 3, Math.max(8, platform.width - 16), 3);
 
           context.strokeStyle = "rgba(255,255,255,0.18)";
           context.lineWidth = 2 + platform.flash * 8;

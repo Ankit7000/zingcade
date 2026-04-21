@@ -1804,6 +1804,10 @@
         }
 
         ensureAudio();
+        if (state.over) {
+          startNewRun();
+          return;
+        }
         state.pointerStart = {
           x: event.clientX,
           y: event.clientY,
@@ -1833,7 +1837,7 @@
 
         const deltaX = event.clientX - start.x;
         const deltaY = event.clientY - start.y;
-        const threshold = Math.max(15, boardFrame.clientWidth * 0.06);
+        const threshold = Math.max(12, boardFrame.clientWidth * 0.045);
 
         if (Math.abs(deltaX) > Math.abs(deltaY) * 1.05 && Math.abs(deltaX) > threshold) {
           handleDirectionInput(deltaX > 0 ? "right" : "left");

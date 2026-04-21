@@ -146,6 +146,11 @@
         gap: 8px;
       }
 
+      .vault-row.current .vault-feedback {
+        border-color: rgba(75, 158, 255, 0.35);
+        box-shadow: 0 0 16px rgba(75, 158, 255, 0.12);
+      }
+
       .vault-slots {
         display: flex;
         flex: 1;
@@ -693,6 +698,7 @@
           const rowEl = document.createElement("div");
           rowEl.className = "vault-row";
           rowEl.id = `row-${r}`;
+          if (r === 0) rowEl.classList.add("current");
           
           const slotsWrapper = document.createElement("div");
           slotsWrapper.className = "vault-slots";
@@ -781,6 +787,7 @@
         
         // Disable row UI logic
         document.getElementById(`row-${currentRow}`).classList.add("submitted");
+        document.getElementById(`row-${currentRow}`).classList.remove("current");
         for (let c = 0; c < COLS; c++) {
           document.getElementById(`slot-${currentRow}-${c}`).classList.remove("active");
         }
@@ -825,6 +832,7 @@
             currentGuess = [];
             
             // Activate next row
+            document.getElementById(`row-${currentRow}`).classList.add("current");
             for (let c = 0; c < COLS; c++) {
               document.getElementById(`slot-${currentRow}-${c}`).classList.add("active");
             }
@@ -921,7 +929,9 @@
             kicker: "Access Denied",
             kickerClass: "failed",
             title: "Vault Locked",
-            text: mode === "daily" ? "The daily sequence was lost." : "The sequence was lost.",
+            text: mode === "daily"
+              ? "The daily sequence was lost. Review the solution below, then take a practice run while the pattern is fresh."
+              : "The sequence was lost. The solution is below, and the next practice run is one tap away.",
             showSolution: true
           });
         }, 800);
