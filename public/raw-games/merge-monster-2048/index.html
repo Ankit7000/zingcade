@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Merge Monster 2048 | Zingcade</title>
+    <meta
+      name="description"
+      content="Play Merge Monster 2048 on Zingcade, a polished creature-merging puzzle game with swipe controls, rank preview, local bests, and daily targets."
+    />
+    <meta name="theme-color" content="#120c20" />
+    <meta name="zingcade:category" content="puzzle-addiction" />
+    <meta name="zingcade:category-label" content="Puzzle Addiction" />
+    <link rel="canonical" href="https://zingcade.com/games/merge-monster-2048/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+      :root {
+        --mm-bg: #120c20;
+        --mm-panel: rgba(15, 10, 28, 0.92);
+        --mm-panel-strong: rgba(20, 12, 35, 0.98);
+        --mm-border: rgba(255, 207, 138, 0.12);
+        --mm-accent: #ffd88e;
+        --mm-hot: #ff8d71;
+        --mm-cool: #8cf5da;
+        --mm-muted: rgba(246, 240, 228, 0.66);
+        --mm-text: #f7f1e7;
+        --board-gap: 12px;
+      }
+
+      html,
+      body {
+        overscroll-behavior: none;
+      }
+
+      body {
+        font-family: "Rajdhani", "Trebuchet MS", sans-serif;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        color: var(--mm-text);
+        background:
+          radial-gradient(circle at 14% 10%, rgba(255, 216, 142, 0.12), transparent 26%),
+          radial-gradient(circle at 88% 9%, rgba(140, 245, 218, 0.12), transparent 28%),
+          radial-gradient(circle at 48% 55%, rgba(255, 141, 113, 0.08), transparent 34%),
+          linear-gradient(180deg, #1a102b 0%, #120c20 48%, #090610 100%);
+      }
+
+      button {
+        border: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .page {
+        width: min(100% - 1.25rem, 1200px);
+        min-height: 100dvh;
+        margin: 0 auto;
+        padding:
+          calc(1rem + env(safe-area-inset-top))
+          env(safe-area-inset-right)
+          calc(2.75rem + env(safe-area-inset-bottom))
+          env(safe-area-inset-left);
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .back-link {
+        justify-self: start;
+        color: var(--mm-muted);
+      }
+
+      .title h1,
+      .title p {
+        margin: 0;
+      }
+
+      .title h1 {
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(2.15rem, 4vw, 3.65rem);
+        line-height: 0.95;
+        letter-spacing: 0.04em;
+      }
+
+      .title p {
+        margin-top: 0.6rem;
+        color: var(--mm-muted);
+        line-height: 1.6;
+        max-width: 56ch;
+      }
+
+      .meta-pill {
+        justify-self: end;
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 0 0.95rem;
+        border-radius: 999px;
+        color: #231307;
+        background: linear-gradient(135deg, var(--mm-accent), #fff1c8);
+        box-shadow: 0 12px 34px rgba(255, 216, 142, 0.18);
+        font-weight: 700;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 740px) minmax(280px, 320px);
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .panel {
+        border-radius: 30px;
+        border: 1px solid var(--mm-border);
+        background: var(--mm-panel);
+        box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34);
+      }
+
+      .game-panel {
+        padding: 1rem;
+      }
+
+      .eyebrow-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        margin-bottom: 0.95rem;
+      }
+
+      .category-pill,
+      .support-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 0.8rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .category-pill {
+        color: #231307;
+        background: linear-gradient(135deg, var(--mm-accent), #fff1c8);
+      }
+
+      .support-pill {
+        color: var(--mm-muted);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 0.85rem;
+      }
+
+      .hud-item,
+      .status-card,
+      .board-note,
+      .overlay-card,
+      .info-block,
+      .callout,
+      .content-card {
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .hud-item {
+        padding: 0.85rem 0.9rem;
+        border-radius: 18px;
+      }
+
+      .hud-label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 0.74rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mm-muted);
+      }
+
+      .hud-value,
+      .summary-value,
+      .tile-power {
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .hud-value {
+        font-size: 1.15rem;
+        font-weight: 900;
+      }
+
+      .hud-rank {
+        color: var(--mm-accent);
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 0.85rem;
+      }
+
+      .status-card {
+        position: relative;
+        padding: 0.9rem;
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .target-card {
+        background: linear-gradient(135deg, rgba(20, 12, 35, 0.98), rgba(27, 20, 48, 1));
+        border-color: rgba(140, 245, 218, 0.16);
+      }
+
+      .target-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(140, 245, 218, 0.08), transparent 50%);
+        pointer-events: none;
+      }
+
+      .status-card h2,
+      .status-card p,
+      .info-block h2,
+      .info-block h3,
+      .info-block p,
+      .callout p,
+      .content-card h2,
+      .content-card p {
+        margin: 0;
+      }
+
+      .status-card h2,
+      .info-block h2,
+      .info-block h3,
+      .content-card h2 {
+        font-family: "Orbitron", sans-serif;
+        font-size: 1rem;
+      }
+
+      .status-card p,
+      .info-block p,
+      .callout p,
+      .content-card p,
+      .board-note,
+      .hint {
+        color: var(--mm-muted);
+        line-height: 1.65;
+      }
+
+      .rank-summary {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: baseline;
+        margin-top: 0.55rem;
+      }
+
+      .rank-current {
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.15rem;
+        color: var(--mm-accent);
+      }
+
+      .rank-track {
+        position: relative;
+        height: 10px;
+        margin-top: 0.8rem;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .rank-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(135deg, var(--mm-accent), #fff1c8);
+        box-shadow: 0 0 14px rgba(255, 216, 142, 0.4);
+        transition: width 0.18s ease;
+      }
+
+      .challenge-state {
+        margin-top: 0.55rem;
+        font-weight: 700;
+        color: var(--mm-text);
+      }
+
+      .challenge-state.complete {
+        color: var(--mm-cool);
+      }
+
+      .utility-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.85rem;
+        padding: 0.85rem 0.95rem;
+        margin-bottom: 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .utility-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+      }
+
+      .board-frame {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        padding: var(--board-gap);
+        border-radius: 30px;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(255, 216, 142, 0.08), rgba(255, 255, 255, 0.03)),
+          linear-gradient(180deg, rgba(21, 15, 36, 0.98), rgba(13, 9, 24, 1));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        touch-action: none;
+        user-select: none;
+      }
+
+      .board-frame.bump {
+        animation: boardBump 180ms ease;
+      }
+
+      .cell-layer,
+      .tile-layer {
+        position: absolute;
+        inset: var(--board-gap);
+      }
+
+      .cell-layer {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--board-gap);
+      }
+
+      .board-cell {
+        border-radius: 22px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+          rgba(255, 255, 255, 0.03);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      }
+
+      .tile-layer {
+        pointer-events: none;
+      }
+
+      .tile {
+        position: absolute;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        align-items: start;
+        justify-items: start;
+        padding: 0.55rem;
+        border-radius: 22px;
+        overflow: hidden;
+        transform-origin: center;
+        color: var(--tile-text, #160f0c);
+        background: var(--tile-bg, linear-gradient(135deg, #fff1ce, #f1c37a));
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.36),
+          0 14px 30px rgba(0, 0, 0, 0.2),
+          0 0 0 1px rgba(255, 255, 255, 0.12);
+      }
+
+      .tile::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.28), transparent 35%);
+        pointer-events: none;
+      }
+
+      .tile.tile-new {
+        animation: tileSpawn 180ms ease;
+      }
+
+      .tile.tile-merged {
+        animation: tilePulse 220ms ease;
+      }
+
+      .tile-mark {
+        position: relative;
+        z-index: 1;
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(0.74rem, 2vw, 1rem);
+        letter-spacing: 0.12em;
+      }
+
+      .tile-name {
+        position: relative;
+        z-index: 1;
+        align-self: center;
+        font-size: clamp(0.88rem, 2vw, 1.15rem);
+        font-weight: 700;
+        line-height: 1.05;
+      }
+
+      .tile-power {
+        position: relative;
+        z-index: 1;
+        align-self: end;
+        font-size: clamp(0.74rem, 2vw, 0.92rem);
+        opacity: 0.86;
+      }
+
+      .board-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        border-radius: 30px;
+        background: rgba(12, 9, 21, 0.85);
+        backdrop-filter: blur(14px);
+      }
+
+      .board-overlay[hidden] {
+        display: none;
+      }
+
+      .milestone-alert {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .milestone-alert.show {
+        animation: milestoneFlash 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+      .milestone-text {
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(1.6rem, 5vw, 2.8rem);
+        color: #fff;
+        text-shadow: 0 4px 20px rgba(255, 255, 255, 0.5), 0 0 40px var(--mm-accent);
+        transform: scale(0.6);
+        line-height: 1.1;
+      }
+
+      .overlay-card {
+        width: min(100%, 30rem);
+        padding: 1.25rem;
+        border-radius: 24px;
+        text-align: center;
+      }
+
+      .overlay-kicker {
+        margin: 0 0 0.6rem;
+        font-size: 0.76rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mm-accent);
+      }
+
+      .overlay-card h2 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(1.9rem, 4vw, 2.8rem);
+      }
+
+      .overlay-card p {
+        margin: 0.8rem 0 0;
+        color: var(--mm-muted);
+        line-height: 1.7;
+      }
+
+      .overlay-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.65rem;
+        margin-top: 1rem;
+      }
+
+      .summary-item {
+        padding: 0.8rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .summary-label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mm-muted);
+      }
+
+      .overlay-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.7rem;
+        margin-top: 1rem;
+      }
+
+      .board-note {
+        margin-top: 0.85rem;
+        padding: 0.85rem 0.95rem;
+        border-radius: 18px;
+      }
+
+      .info-panel {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+      }
+
+      .info-block,
+      .callout,
+      .content-card {
+        padding: 1rem;
+        border-radius: 20px;
+      }
+
+      .info-block p,
+      .callout p,
+      .content-card p,
+      .tip-list li,
+      .evo-list li {
+        color: var(--mm-muted);
+        line-height: 1.7;
+      }
+
+      .tip-list,
+      .evo-list {
+        margin: 0.75rem 0 0;
+        padding-left: 1.1rem;
+      }
+
+      .evo-list strong {
+        color: var(--mm-text);
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 0.4rem;
+      }
+
+      .content-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .mini-label {
+        margin: 0 0 0.45rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mm-accent);
+        font-weight: 700;
+      }
+
+      @keyframes boardBump {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+
+        25% {
+          transform: translateX(-4px);
+        }
+
+        75% {
+          transform: translateX(4px);
+        }
+      }
+
+      @keyframes tileSpawn {
+        0% {
+          transform: scale(0.2);
+          opacity: 0;
+        }
+
+        50% {
+          transform: scale(1.15);
+        }
+
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes tilePulse {
+        0% {
+          transform: scale(0.9);
+        }
+
+        40% {
+          transform: scale(1.15);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes milestoneFlash {
+        0% { opacity: 0; transform: scale(0.6); }
+        15% { opacity: 1; transform: scale(1.1); }
+        30% { transform: scale(1); }
+        80% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(1.05); }
+      }
+
+      @media (max-width: 980px) {
+        .layout,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .meta-pill {
+          justify-self: start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 1rem, 1180px);
+          padding-top: 1rem;
+        }
+
+        .hud,
+        .status-grid,
+        .overlay-summary,
+        .content-strip {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .utility-row,
+        .overlay-actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .utility-actions,
+        .overlay-actions {
+          width: 100%;
+        }
+
+        .utility-actions .button,
+        .overlay-actions .button {
+          width: 100%;
+        }
+
+        .tile {
+          padding: 0.42rem;
+          border-radius: 18px;
+        }
+
+        .tile-name {
+          font-size: clamp(0.78rem, 3.4vw, 1rem);
+        }
+      }
+
+      @media (max-width: 540px) {
+        :root {
+          --board-gap: 10px;
+        }
+
+        .hud,
+        .status-grid,
+        .overlay-summary,
+        .content-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .hud-item,
+        .status-card {
+          padding: 0.8rem;
+        }
+
+        .tile-mark {
+          font-size: 0.68rem;
+        }
+
+        .board-frame {
+          max-width: min(100%, 75dvh);
+          margin: 0 auto;
+        }
+
+        .tile-power {
+          font-size: 0.7rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a class="brand" href="/">Zingcade</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/games/">Games</a>
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
+        </nav>
+        <a class="button button-secondary nav-play" href="/games/">View Games</a>
+      </div>
+    </header>
+
+    <main class="page" data-category="puzzle-addiction">
+      <div class="topbar">
+        <a class="back-link" href="/games/">&#8592; Back to Games</a>
+        <div class="title">
+          <h1>Merge Monster 2048</h1>
+          <p>
+            Evolve creatures on a 4x4 board, chase a higher rank preview, and
+            keep every move clean enough to reach the rarest monsters.
+          </p>
+        </div>
+        <div class="meta-pill">Puzzle Addiction</div>
+      </div>
+
+      <section class="layout">
+        <div class="panel game-panel">
+          <div class="eyebrow-row">
+            <span class="category-pill">Puzzle Addiction</span>
+            <span class="support-pill">Arrow keys and swipe</span>
+            <span class="support-pill">Daily target ready</span>
+          </div>
+
+          <div class="hud">
+            <div class="hud-item">
+              <span class="hud-label">Score</span>
+              <span class="hud-value" id="score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Best Score</span>
+              <span class="hud-value" id="best-score">0</span>
+            </div>
+            <div class="hud-item" id="best-evolution-card">
+              <span class="hud-label">Best Evolution</span>
+              <span class="hud-value" id="best-evolution">Egg</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Current Rank</span>
+              <span class="hud-value hud-rank" id="rank-name">Bronze</span>
+            </div>
+          </div>
+
+          <div class="status-grid">
+            <article class="status-card">
+              <span class="hud-label">Rank Progress</span>
+              <h2 id="rank-heading">Bronze Hunter</h2>
+              <div class="rank-summary">
+                <span class="rank-current" id="rank-current">Bronze</span>
+                <span id="rank-next-copy">1400 to Silver</span>
+              </div>
+              <div class="rank-track" aria-hidden="true">
+                <div class="rank-fill" id="rank-fill"></div>
+              </div>
+            </article>
+
+            <article class="status-card target-card">
+              <span class="hud-label">Daily Challenge</span>
+              <h2 id="daily-target-name">Reach Dragon</h2>
+              <p id="daily-target-copy">
+                Daily target support is live. Today rewards a clean climb into the Dragon tier.
+              </p>
+              <p class="challenge-state" id="daily-state">Not cleared yet</p>
+            </article>
+
+            <article class="status-card">
+              <span class="hud-label">Run Pace</span>
+              <h2 id="run-pace-name">Bronze Pace</h2>
+              <p id="run-pace-copy">
+                Build the board around one corner and leave a clean merge lane for late-game pivots.
+              </p>
+            </article>
+          </div>
+
+          <div class="utility-row">
+            <div class="hint">
+              Swipe or use arrow keys. Matching creatures merge once per move,
+              and a fresh basic tile only spawns after a real slide.
+            </div>
+            <div class="utility-actions">
+              <button class="button button-secondary" id="restart-button" type="button">
+                Restart Run
+              </button>
+              <button class="button button-secondary" id="sound-button" type="button">
+                Sound On
+              </button>
+            </div>
+          </div>
+
+          <div class="board-frame" id="board-frame" aria-label="Merge Monster 2048 board">
+            <div class="cell-layer" id="cell-layer" aria-hidden="true"></div>
+            <div class="tile-layer" id="tile-layer"></div>
+            <div class="board-overlay" id="overlay" hidden>
+              <div class="overlay-card">
+                <p class="overlay-kicker" id="overlay-kicker">Run Complete</p>
+                <h2 id="overlay-title">Game Over</h2>
+                <p id="overlay-copy">
+                  The board is locked. Rest up and try to build your Dragon lane earlier.
+                </p>
+                <div class="overlay-summary">
+                  <div class="summary-item">
+                    <span class="summary-label">Final Score</span>
+                    <span class="summary-value" id="overlay-score">0</span>
+                  </div>
+                  <div class="summary-item" id="overlay-best-card">
+                    <span class="summary-label">Best Score</span>
+                    <span class="summary-value" id="overlay-best">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Top Evolution</span>
+                    <span class="summary-value" id="overlay-evolution">Egg</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Rank</span>
+                    <span class="summary-value" id="overlay-rank">Bronze</span>
+                  </div>
+                </div>
+                <div class="overlay-actions">
+                  <button class="button button-primary" id="overlay-restart" type="button" style="animation: tilePulse 2s infinite ease-in-out alternate;">
+                    Play Again
+                  </button>
+                  <a class="button button-secondary" href="/games/">View Games</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="milestone-alert" id="milestone-alert">
+              <div class="milestone-text" id="milestone-text">NEW EVOLUTION</div>
+            </div>
+          </div>
+
+          <div class="board-note" id="board-note">
+            Start by stacking your highest creature on one edge. Fast restarts
+            and daily targets are built in, but the core win is still keeping a
+            clean merge ladder alive.
+          </div>
+        </div>
+
+        <aside class="panel info-panel">
+          <section class="info-block">
+            <h2>How it plays</h2>
+            <p>
+              Merge Monster 2048 keeps the proven slide-and-merge structure but
+              shifts the focus to creature evolution. Every valid move spawns a
+              new basic tile, every merge climbs the ladder, and every dead move
+              tightens the board.
+            </p>
+          </section>
+
+          <section class="info-block">
+            <h3>Controls</h3>
+            <ul class="tip-list">
+              <li>Desktop: Arrow keys are always active, and WASD also works.</li>
+              <li>Mobile: Swipe inside the board. Touch scroll is blocked while you play.</li>
+              <li>Restart: Tap the restart button or press R for an instant reset.</li>
+            </ul>
+          </section>
+
+          <section class="info-block">
+            <h3>Evolution ladder</h3>
+            <ol class="evo-list">
+              <li><strong>Egg</strong> to <strong>Slime</strong> starts every run.</li>
+              <li><strong>Goblin</strong>, <strong>Wolf</strong>, and <strong>Golem</strong> stabilize the mid-board.</li>
+              <li><strong>Mage</strong> and <strong>Dragon</strong> are the serious climb gates.</li>
+              <li><strong>Ancient Dragon</strong>, <strong>Mythic Beast</strong>, and <strong>Void Titan</strong> separate clean boards from lucky ones.</li>
+            </ol>
+          </section>
+
+          <div class="callout">
+            <strong>Rank preview support</strong>
+            <p>
+              Bronze through Legend is calculated locally for now from best
+              score and best evolution. The UI is structured so a shared Zingcade
+              profile system can replace the local profile later.
+            </p>
+          </div>
+
+          <div class="callout">
+            <strong>Daily challenge support</strong>
+            <p>
+              Daily targets already rotate and store completion locally. Seeded
+              starting boards can plug into the same challenge object later
+              without changing the board engine.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="content-strip" aria-label="Game summary">
+        <article class="content-card">
+          <p class="mini-label">What It Is</p>
+          <h2>Creature-first merge puzzle.</h2>
+          <p>
+            The board reads like a clean arcade puzzle cabinet, not a plain
+            number grid. Names, marks, and tier color carry the run.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Replay Hook</p>
+          <h2>Short runs, stubborn mastery.</h2>
+          <p>
+            Daily targets, local best evolution tracking, and a visible rank
+            ladder make each restart feel like progress instead of a wipe.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Best Habit</p>
+          <h2>Protect one anchor corner.</h2>
+          <p>
+            Late boards punish drifting. Build around one edge, keep your
+            largest creature parked, and only break formation when a merge line
+            is guaranteed.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-content">
+        <div class="footer-brand">
+          <p>Zingcade</p>
+          <p>Static browser games for quick play and clean review cycles.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="/js/zingcade-progression.js"></script>
+    <script src="/js/progression-ui.js"></script>
+    <script>
+      const SIZE = 4;
+      const MOVE_DURATION = 170;
+      const STORAGE_KEYS = {
+        bestScore: "zingcade-merge-monster-best-score",
+        bestTier: "zingcade-merge-monster-best-tier",
+        mute: "zingcade-merge-monster-muted",
+        dailyPrefix: "zingcade-merge-monster-daily-"
+      };
+
+      const TIERS = [
+        {
+          name: "Egg",
+          mark: "EG",
+          power: 2,
+          bg: "linear-gradient(135deg, #fff5dd, #f1cf89)",
+          text: "#2c2311"
+        },
+        {
+          name: "Slime",
+          mark: "SL",
+          power: 4,
+          bg: "linear-gradient(135deg, #dcffe0, #7de29a)",
+          text: "#112515"
+        },
+        {
+          name: "Goblin",
+          mark: "GB",
+          power: 8,
+          bg: "linear-gradient(135deg, #d9ffd9, #8fcf6d)",
+          text: "#142212"
+        },
+        {
+          name: "Wolf",
+          mark: "WF",
+          power: 16,
+          bg: "linear-gradient(135deg, #dfe8ff, #96a9d8)",
+          text: "#121a2c"
+        },
+        {
+          name: "Golem",
+          mark: "GL",
+          power: 32,
+          bg: "linear-gradient(135deg, #ece7de, #b7a78e)",
+          text: "#261d15"
+        },
+        {
+          name: "Mage",
+          mark: "MG",
+          power: 64,
+          bg: "linear-gradient(135deg, #f2dfff, #c093ff)",
+          text: "#241133"
+        },
+        {
+          name: "Dragon",
+          mark: "DR",
+          power: 128,
+          bg: "linear-gradient(135deg, #ffe1d5, #ff8d71)",
+          text: "#32120c"
+        },
+        {
+          name: "Ancient Dragon",
+          mark: "AD",
+          power: 256,
+          bg: "linear-gradient(135deg, #ffe2ba, #ffb55e)",
+          text: "#351d06"
+        },
+        {
+          name: "Mythic Beast",
+          mark: "MB",
+          power: 512,
+          bg: "linear-gradient(135deg, #d7fffb, #69d7d0)",
+          text: "#0e2624"
+        },
+        {
+          name: "Void Titan",
+          mark: "VT",
+          power: 1024,
+          bg: "linear-gradient(135deg, #f1dcff, #8a54dd)",
+          text: "#1b0b30"
+        },
+        {
+          name: "Rift Colossus",
+          mark: "RC",
+          power: 2048,
+          bg: "linear-gradient(135deg, #ffe0ef, #f06ba6)",
+          text: "#320b1d"
+        },
+        {
+          name: "Astral Hydra",
+          mark: "AH",
+          power: 4096,
+          bg: "linear-gradient(135deg, #d8f0ff, #6cc4ff)",
+          text: "#082539"
+        },
+        {
+          name: "Celestial Phoenix",
+          mark: "CP",
+          power: 8192,
+          bg: "linear-gradient(135deg, #fff3cb, #ffd45b)",
+          text: "#3a2602"
+        },
+        {
+          name: "World Eater",
+          mark: "WE",
+          power: 16384,
+          bg: "linear-gradient(135deg, #ffdcd6, #ff6666)",
+          text: "#360b0b"
+        }
+      ];
+
+      const RANKS = [
+        { name: "Bronze", title: "Bronze Hunter", minPoints: 0 },
+        { name: "Silver", title: "Silver Keeper", minPoints: 1400 },
+        { name: "Gold", title: "Gold Tactician", minPoints: 4200 },
+        { name: "Platinum", title: "Platinum Caller", minPoints: 9400 },
+        { name: "Diamond", title: "Diamond Tamer", minPoints: 18000 },
+        { name: "Master", title: "Master Evolver", minPoints: 32000 },
+        { name: "Grandmaster", title: "Grandmaster Breeder", minPoints: 52000 },
+        { name: "Legend", title: "Legend of the Rift", minPoints: 82000 }
+      ];
+
+      const DAILY_TARGET_TIERS = [4, 5, 6, 6, 7, 8, 5, 7];
+
+      const scoreElement = document.getElementById("score");
+      const bestScoreElement = document.getElementById("best-score");
+      const bestEvolutionElement = document.getElementById("best-evolution");
+      const rankNameElement = document.getElementById("rank-name");
+      const rankHeadingElement = document.getElementById("rank-heading");
+      const rankCurrentElement = document.getElementById("rank-current");
+      const rankNextCopyElement = document.getElementById("rank-next-copy");
+      const rankFillElement = document.getElementById("rank-fill");
+      const dailyTargetNameElement = document.getElementById("daily-target-name");
+      const dailyTargetCopyElement = document.getElementById("daily-target-copy");
+      const dailyStateElement = document.getElementById("daily-state");
+      const runPaceNameElement = document.getElementById("run-pace-name");
+      const runPaceCopyElement = document.getElementById("run-pace-copy");
+      const boardNoteElement = document.getElementById("board-note");
+      const cellLayer = document.getElementById("cell-layer");
+      const tileLayer = document.getElementById("tile-layer");
+      const boardFrame = document.getElementById("board-frame");
+      const restartButton = document.getElementById("restart-button");
+      const soundButton = document.getElementById("sound-button");
+      const overlayElement = document.getElementById("overlay");
+      const overlayScoreElement = document.getElementById("overlay-score");
+      const overlayBestElement = document.getElementById("overlay-best");
+      const overlayBestCardElement = document.getElementById("overlay-best-card");
+      const overlayEvolutionElement = document.getElementById("overlay-evolution");
+      const overlayRankElement = document.getElementById("overlay-rank");
+      const overlayRestartButton = document.getElementById("overlay-restart");
+      let zcLatestResult = null;
+      
+      const milestoneAlert = document.getElementById("milestone-alert");
+      const milestoneText = document.getElementById("milestone-text");
+      const bestEvolutionCard = document.getElementById("best-evolution-card");
+
+      const tileElements = new Map();
+
+      const audio = {
+        context: null,
+        muted: false
+      };
+
+      const state = {
+        tiles: [],
+        nextId: 1,
+        score: 0,
+        bestScore: 0,
+        bestTier: 0,
+        highestTierThisRun: 0,
+        animating: false,
+        over: false,
+        note: "Start by stacking your highest creature on one edge.",
+        pointerStart: null,
+        daily: null
+      };
+
+      function lsGet(key, fallback) {
+        try {
+          const value = localStorage.getItem(key);
+          if (value === null) {
+            return fallback;
+          }
+          return Number.isFinite(fallback) ? Number(value) : value;
+        } catch (error) {
+          return fallback;
+        }
+      }
+
+      function lsSet(key, value) {
+        try {
+          localStorage.setItem(key, String(value));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function getTierMeta(tier) {
+        if (TIERS[tier]) {
+          return TIERS[tier];
+        }
+
+        const power = Math.pow(2, tier + 1);
+        const hue = (tier * 37) % 360;
+        return {
+          name: "Ascendant " + power,
+          mark: "A" + power,
+          power,
+          bg: "linear-gradient(135deg, hsl(" + hue + " 92% 76%), hsl(" + ((hue + 40) % 360) + " 84% 64%))",
+          text: "#1a1010"
+        };
+      }
+
+      function getBestTierName() {
+        return getTierMeta(state.bestTier).name;
+      }
+
+      function getTierPower(tier) {
+        return getTierMeta(tier).power;
+      }
+
+      function getProfilePoints(score, tier) {
+        return score + getTierPower(tier) * 28 + tier * 420;
+      }
+
+      function getRankState(score, tier) {
+        const points = getProfilePoints(score, tier);
+        let currentIndex = 0;
+
+        for (let index = 0; index < RANKS.length; index += 1) {
+          if (points >= RANKS[index].minPoints) {
+            currentIndex = index;
+          }
+        }
+
+        const rank = RANKS[currentIndex];
+        const next = RANKS[currentIndex + 1] || null;
+
+        if (!next) {
+          return {
+            rank,
+            next,
+            progress: 100,
+            remaining: 0
+          };
+        }
+
+        const currentFloor = rank.minPoints;
+        const range = next.minPoints - currentFloor;
+        const clamped = Math.max(0, Math.min(range, points - currentFloor));
+
+        return {
+          rank,
+          next,
+          progress: (clamped / range) * 100,
+          remaining: Math.max(0, next.minPoints - points)
+        };
+      }
+
+      function getDailyChallenge() {
+        const now = new Date();
+        const dayKey = now.toISOString().slice(0, 10);
+        const daySeed = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86400000);
+        const targetTier = DAILY_TARGET_TIERS[daySeed % DAILY_TARGET_TIERS.length];
+        return {
+          dayKey,
+          targetTier,
+          target: getTierMeta(targetTier),
+          storageKey: STORAGE_KEYS.dailyPrefix + dayKey
+        };
+      }
+
+      function ensureAudio() {
+        if (audio.muted) {
+          return null;
+        }
+
+        if (!audio.context) {
+          const AudioCtor = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtor) {
+            return null;
+          }
+          audio.context = new AudioCtor();
+        }
+
+        if (audio.context.state === "suspended") {
+          audio.context.resume();
+        }
+
+        return audio.context;
+      }
+
+      function playSound(kind) {
+        if (audio.muted) {
+          return;
+        }
+
+        const context = ensureAudio();
+        if (!context) {
+          return;
+        }
+
+        const config = {
+          move: { type: "sine", base: 180, peak: 240, duration: 0.06, gain: 0.03 },
+          merge: { type: "square", base: 220, peak: 520, duration: 0.12, gain: 0.04 },
+          milestone: { type: "triangle", base: 440, peak: 880, duration: 0.25, gain: 0.05 },
+          over: { type: "sawtooth", base: 220, peak: 80, duration: 0.35, gain: 0.04 }
+        }[kind];
+
+        if (!config) {
+          return;
+        }
+
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+        const now = context.currentTime;
+
+        oscillator.type = config.type;
+        oscillator.frequency.setValueAtTime(config.base, now);
+        oscillator.frequency.exponentialRampToValueAtTime(Math.max(50, config.peak), now + config.duration);
+        gainNode.gain.setValueAtTime(config.gain, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+
+        oscillator.start(now);
+        oscillator.stop(now + config.duration);
+      }
+
+      function buildEmptyCells() {
+        cellLayer.innerHTML = "";
+        for (let index = 0; index < SIZE * SIZE; index += 1) {
+          const cell = document.createElement("div");
+          cell.className = "board-cell";
+          cellLayer.appendChild(cell);
+        }
+      }
+
+      function createTile(tier, row, col) {
+        return {
+          id: state.nextId++,
+          tier,
+          row,
+          col,
+          prevRow: row,
+          prevCol: col,
+          justSpawned: true,
+          justMerged: false
+        };
+      }
+
+      function getGrid() {
+        const grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+        for (const tile of state.tiles) {
+          grid[tile.row][tile.col] = tile;
+        }
+        return grid;
+      }
+
+      function getEmptySlots() {
+        const taken = new Set(state.tiles.map((tile) => tile.row + ":" + tile.col));
+        const empty = [];
+        for (let row = 0; row < SIZE; row += 1) {
+          for (let col = 0; col < SIZE; col += 1) {
+            const key = row + ":" + col;
+            if (!taken.has(key)) {
+              empty.push({ row, col });
+            }
+          }
+        }
+        return empty;
+      }
+
+      function spawnRandomTile() {
+        const empty = getEmptySlots();
+        if (!empty.length) {
+          return null;
+        }
+
+        const slot = empty[Math.floor(Math.random() * empty.length)];
+        const tile = createTile(Math.random() < 0.12 ? 1 : 0, slot.row, slot.col);
+        state.tiles.push(tile);
+        return tile;
+      }
+
+      function resetAnimationFlags() {
+        for (const tile of state.tiles) {
+          tile.prevRow = tile.row;
+          tile.prevCol = tile.col;
+          tile.justMerged = false;
+          tile.justSpawned = false;
+        }
+      }
+
+      function updateProfileState() {
+        if (state.score > state.bestScore) {
+          state.bestScore = state.score;
+          lsSet(STORAGE_KEYS.bestScore, state.bestScore);
+        }
+
+        if (state.highestTierThisRun > state.bestTier) {
+          state.bestTier = state.highestTierThisRun;
+          lsSet(STORAGE_KEYS.bestTier, state.bestTier);
+        }
+      }
+
+      function updateDailyState() {
+        if (state.highestTierThisRun >= state.daily.targetTier) {
+          lsSet(state.daily.storageKey, "done");
+        }
+      }
+
+      function getBoardMetrics() {
+        const boardGap = parseFloat(getComputedStyle(boardFrame).getPropertyValue("--board-gap")) || 12;
+        const innerSize = boardFrame.clientWidth - boardGap * 2;
+        const cellSize = (innerSize - boardGap * (SIZE - 1)) / SIZE;
+        return {
+          boardGap,
+          cellSize
+        };
+      }
+
+      function positionFor(row, col) {
+        const metrics = getBoardMetrics();
+        return {
+          left: metrics.boardGap + col * (metrics.cellSize + metrics.boardGap),
+          top: metrics.boardGap + row * (metrics.cellSize + metrics.boardGap),
+          size: metrics.cellSize
+        };
+      }
+
+      function applyTileContent(element, tile) {
+        const meta = getTierMeta(tile.tier);
+        element.innerHTML =
+          '<span class="tile-mark">' +
+          meta.mark +
+          "</span>" +
+          '<strong class="tile-name">' +
+          meta.name +
+          "</strong>" +
+          '<span class="tile-power">' +
+          meta.power +
+          "</span>";
+        element.style.setProperty("--tile-bg", meta.bg);
+        element.style.setProperty("--tile-text", meta.text);
+      }
+
+      function renderTiles() {
+        const used = new Set();
+
+        for (const tile of state.tiles) {
+          const placement = positionFor(tile.row, tile.col);
+          let element = tileElements.get(tile.id);
+          const isNew = !element;
+
+          if (!element) {
+            element = document.createElement("div");
+            element.className = "tile";
+            tileLayer.appendChild(element);
+            tileElements.set(tile.id, element);
+          }
+
+          applyTileContent(element, tile);
+          element.style.width = placement.size + "px";
+          element.style.height = placement.size + "px";
+          element.style.left = placement.left + "px";
+          element.style.top = placement.top + "px";
+          element.classList.toggle("tile-new", tile.justSpawned);
+          element.classList.toggle("tile-merged", tile.justMerged);
+
+          if (!isNew) {
+            const previous = positionFor(tile.prevRow, tile.prevCol);
+            const deltaX = previous.left - placement.left;
+            const deltaY = previous.top - placement.top;
+            element.style.transition = "none";
+            element.style.transform = "translate(" + deltaX + "px, " + deltaY + "px)";
+            requestAnimationFrame(() => {
+              element.style.transition = "transform " + MOVE_DURATION + "ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+              element.style.transform = "translate(0px, 0px)";
+            });
+          } else {
+            element.style.transition = "none";
+            element.style.transform = "scale(0.2)";
+            requestAnimationFrame(() => {
+              element.style.transition = "transform 180ms cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+              element.style.transform = "scale(1)";
+            });
+          }
+
+          used.add(tile.id);
+        }
+
+        for (const [id, element] of tileElements.entries()) {
+          if (!used.has(id)) {
+            tileElements.delete(id);
+            element.remove();
+          }
+        }
+      }
+
+      function updateHud() {
+        const profileRank = getRankState(state.bestScore, state.bestTier);
+        const liveRank = getRankState(Math.max(state.score, 0), state.highestTierThisRun);
+        const dailyDone = lsGet(state.daily.storageKey, "") === "done";
+
+        scoreElement.textContent = String(state.score);
+        bestScoreElement.textContent = String(state.bestScore);
+        bestEvolutionElement.textContent = getBestTierName();
+        bestEvolutionCard.style.boxShadow = "inset 0 0 12px " + getTierMeta(state.bestTier).bg.replace("linear-gradient(135deg, ", "").split(",")[0];
+        
+        rankNameElement.textContent = profileRank.rank.name;
+        rankHeadingElement.textContent = profileRank.rank.title;
+        rankCurrentElement.textContent = profileRank.rank.name;
+        rankFillElement.style.width = profileRank.progress.toFixed(2) + "%";
+        runPaceNameElement.textContent = liveRank.rank.name + " Pace";
+
+        if (profileRank.next) {
+          rankNextCopyElement.textContent = profileRank.remaining + " to " + profileRank.next.name;
+        } else {
+          rankNextCopyElement.textContent = "Legend locked in";
+        }
+
+        runPaceCopyElement.textContent =
+          "Current run peaks at " +
+          getTierMeta(state.highestTierThisRun).name +
+          " and grades out at " +
+          liveRank.rank.name +
+          ".";
+
+        dailyTargetNameElement.textContent = "Reach " + state.daily.target.name;
+        dailyTargetCopyElement.textContent =
+          "Daily targets rotate by date now, and seeded opening boards can hook into this challenge object later.";
+        dailyStateElement.textContent = dailyDone ? "Daily target cleared" : "Not cleared yet";
+        dailyStateElement.classList.toggle("complete", dailyDone);
+        boardNoteElement.textContent = state.note;
+
+        soundButton.textContent = audio.muted ? "Sound Off" : "Sound On";
+      }
+
+      function showGameOver() {
+        const profileRank = getRankState(state.bestScore, state.bestTier);
+        zcLatestResult = window.Zingcade
+          ? window.Zingcade.postRun("merge-monster-2048", {
+              score: state.score,
+              bestTier: state.highestTierThisRun,
+              tier: state.highestTierThisRun
+            })
+          : null;
+        overlayScoreElement.textContent = String(state.score);
+        overlayBestElement.textContent = String(state.bestScore);
+        overlayEvolutionElement.textContent = getTierMeta(state.highestTierThisRun).name;
+        overlayRankElement.textContent = profileRank.rank.name;
+        
+        if (state.score >= state.bestScore && state.score > 0) {
+          overlayBestCardElement.style.boxShadow = "inset 0 0 15px rgba(140, 245, 218, 0.4)";
+          overlayBestCardElement.style.borderColor = "rgba(140, 245, 218, 0.6)";
+        } else {
+          overlayBestCardElement.style.boxShadow = "none";
+          overlayBestCardElement.style.borderColor = "rgba(255, 255, 255, 0.08)";
+        }
+        renderZingcadeResult(zcLatestResult);
+        
+        overlayElement.hidden = false;
+      }
+
+      function hideGameOver() {
+        overlayElement.hidden = true;
+        renderZingcadeResult(null);
+      }
+
+      function renderZingcadeResult(result) {
+        const existing = document.getElementById("zc-go-widget");
+        if (existing) {
+          existing.remove();
+        }
+        if (!result || !window.ZingcadeUI) {
+          return;
+        }
+        document.querySelector(".overlay-summary").insertAdjacentHTML("afterend", '<div id="zc-go-widget">' + window.ZingcadeUI.createGameOverWidget(result) + "</div>");
+      }
+
+      function bumpBoard() {
+        boardFrame.classList.remove("bump");
+        boardFrame.offsetWidth;
+        boardFrame.classList.add("bump");
+      }
+
+      function setNote(copy) {
+        state.note = copy;
+        boardNoteElement.textContent = copy;
+      }
+
+      function hasMovesAvailable() {
+        if (state.tiles.length < SIZE * SIZE) {
+          return true;
+        }
+
+        const grid = getGrid();
+        for (let row = 0; row < SIZE; row += 1) {
+          for (let col = 0; col < SIZE; col += 1) {
+            const tile = grid[row][col];
+            if (!tile) {
+              return true;
+            }
+
+            const right = col + 1 < SIZE ? grid[row][col + 1] : null;
+            const down = row + 1 < SIZE ? grid[row + 1][col] : null;
+
+            if ((right && right.tier === tile.tier) || (down && down.tier === tile.tier)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      function processLine(line, fixedIndex, direction) {
+        const compacted = line.filter(Boolean);
+        const result = [];
+        let scoreGain = 0;
+        let merged = false;
+        let highestMerge = state.highestTierThisRun;
+
+        for (const tile of compacted) {
+          tile.prevRow = tile.row;
+          tile.prevCol = tile.col;
+          tile.justMerged = false;
+          tile.justSpawned = false;
+
+          const last = result[result.length - 1];
+          if (last && last.tier === tile.tier && !last.locked) {
+            last.tier += 1;
+            last.locked = true;
+            last.justMerged = true;
+            scoreGain += getTierPower(last.tier);
+            highestMerge = Math.max(highestMerge, last.tier);
+            merged = true;
+          } else {
+            result.push(tile);
+          }
+        }
+
+        while (result.length < SIZE) {
+          result.push(null);
+        }
+
+        result.forEach((tile, index) => {
+          if (!tile) {
+            return;
+          }
+
+          delete tile.locked;
+
+          if (direction === "left") {
+            tile.row = fixedIndex;
+            tile.col = index;
+          } else if (direction === "right") {
+            tile.row = fixedIndex;
+            tile.col = SIZE - 1 - index;
+          } else if (direction === "up") {
+            tile.row = index;
+            tile.col = fixedIndex;
+          } else {
+            tile.row = SIZE - 1 - index;
+            tile.col = fixedIndex;
+          }
+        });
+
+        return {
+          line: result,
+          scoreGain,
+          merged,
+          highestMerge
+        };
+      }
+
+      function attemptMove(direction) {
+        if (state.animating || state.over) {
+          return;
+        }
+
+        ensureAudio();
+
+        const grid = getGrid();
+        const nextTiles = [];
+        let moved = false;
+        let gained = 0;
+        let highestMerge = state.highestTierThisRun;
+        let mergedThisTurn = false;
+
+        for (let index = 0; index < SIZE; index += 1) {
+          let source;
+
+          if (direction === "left") {
+            source = [grid[index][0], grid[index][1], grid[index][2], grid[index][3]];
+          } else if (direction === "right") {
+            source = [grid[index][3], grid[index][2], grid[index][1], grid[index][0]];
+          } else if (direction === "up") {
+            source = [grid[0][index], grid[1][index], grid[2][index], grid[3][index]];
+          } else {
+            source = [grid[3][index], grid[2][index], grid[1][index], grid[0][index]];
+          }
+
+          const processed = processLine(source, index, direction);
+          gained += processed.scoreGain;
+          highestMerge = Math.max(highestMerge, processed.highestMerge);
+          mergedThisTurn = mergedThisTurn || processed.merged;
+
+          for (const tile of processed.line) {
+            if (!tile) {
+              continue;
+            }
+
+            if (tile.row !== tile.prevRow || tile.col !== tile.prevCol || tile.justMerged) {
+              moved = true;
+            }
+
+            nextTiles.push(tile);
+          }
+        }
+
+        if (!moved) {
+          bumpBoard();
+          setNote("No slide there. Keep one anchor corner open before you commit.");
+          if (!hasMovesAvailable()) {
+            state.over = true;
+            playSound("over");
+            showGameOver();
+          }
+          return;
+        }
+
+        state.tiles = nextTiles;
+        state.score += gained;
+        state.highestTierThisRun = Math.max(
+          highestMerge,
+          state.tiles.reduce((maxTier, tile) => Math.max(maxTier, tile.tier), 0)
+        );
+
+        const spawnedTile = spawnRandomTile();
+        if (spawnedTile) {
+          state.highestTierThisRun = Math.max(state.highestTierThisRun, spawnedTile.tier);
+        }
+
+        const beatBestEvolution = state.highestTierThisRun > state.bestTier;
+        const latestTier = getTierMeta(state.highestTierThisRun).name;
+
+        updateProfileState();
+        updateDailyState();
+        updateHud();
+        renderTiles();
+
+        if (mergedThisTurn) {
+          playSound("merge");
+        } else {
+          playSound("move");
+        }
+
+        if (beatBestEvolution) {
+          playSound("milestone");
+          milestoneText.innerHTML = "NEW EVOLUTION<br><span style='color: var(--mm-accent)'>" + latestTier + "</span>";
+          milestoneAlert.classList.remove("show");
+          void milestoneAlert.offsetWidth;
+          milestoneAlert.classList.add("show");
+        }
+
+        if (beatBestEvolution) {
+          setNote("New best evolution unlocked: " + latestTier + ".");
+        } else if (mergedThisTurn) {
+          setNote("Clean merge. " + latestTier + " is now on the board.");
+        } else {
+          setNote("Board shifted. Protect your strongest lane and keep space for the next spawn.");
+        }
+
+        state.animating = true;
+        window.setTimeout(() => {
+          state.animating = false;
+          resetAnimationFlags();
+
+          if (!hasMovesAvailable()) {
+            state.over = true;
+            setNote("The board is locked. Restart fast and rebuild the ladder.");
+            updateHud();
+            playSound("over");
+            showGameOver();
+          }
+        }, MOVE_DURATION + 12);
+      }
+
+      function startNewRun() {
+        hideGameOver();
+        tileLayer.innerHTML = "";
+        tileElements.clear();
+        state.tiles = [];
+        state.nextId = 1;
+        state.score = 0;
+        state.highestTierThisRun = 0;
+        state.animating = false;
+        state.over = false;
+        setNote("Start by stacking your highest creature on one edge.");
+
+        spawnRandomTile();
+        spawnRandomTile();
+        state.highestTierThisRun = state.tiles.reduce((maxTier, tile) => Math.max(maxTier, tile.tier), 0);
+        resetAnimationFlags();
+        updateHud();
+        renderTiles();
+      }
+
+      function handleDirectionInput(direction) {
+        if (state.over) {
+          return;
+        }
+        attemptMove(direction);
+      }
+
+      function toggleSound() {
+        audio.muted = !audio.muted;
+        lsSet(STORAGE_KEYS.mute, audio.muted ? 1 : 0);
+        updateHud();
+      }
+
+      function handlePointerDown(event) {
+        if (event.pointerType === "mouse" && event.button !== 0) {
+          return;
+        }
+
+        ensureAudio();
+        if (state.over) {
+          startNewRun();
+          return;
+        }
+        state.pointerStart = {
+          x: event.clientX,
+          y: event.clientY,
+          id: event.pointerId
+        };
+
+        if (typeof boardFrame.setPointerCapture === "function") {
+          try {
+            boardFrame.setPointerCapture(event.pointerId);
+          } catch (error) {
+            return;
+          }
+        }
+      }
+
+      function handlePointerUp(event) {
+        if (!state.pointerStart) {
+          return;
+        }
+
+        const start = state.pointerStart;
+        state.pointerStart = null;
+
+        if (typeof boardFrame.hasPointerCapture === "function" && boardFrame.hasPointerCapture(event.pointerId)) {
+          boardFrame.releasePointerCapture(event.pointerId);
+        }
+
+        const deltaX = event.clientX - start.x;
+        const deltaY = event.clientY - start.y;
+        const threshold = Math.max(12, boardFrame.clientWidth * 0.045);
+
+        if (Math.abs(deltaX) > Math.abs(deltaY) * 1.05 && Math.abs(deltaX) > threshold) {
+          handleDirectionInput(deltaX > 0 ? "right" : "left");
+          return;
+        }
+
+        if (Math.abs(deltaY) > Math.abs(deltaX) * 1.05 && Math.abs(deltaY) > threshold) {
+          handleDirectionInput(deltaY > 0 ? "down" : "up");
+        }
+      }
+
+      function handlePointerCancel(event) {
+        state.pointerStart = null;
+
+        if (typeof boardFrame.hasPointerCapture === "function" && boardFrame.hasPointerCapture(event.pointerId)) {
+          boardFrame.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      function handleKeydown(event) {
+        const directions = {
+          ArrowLeft: "left",
+          ArrowRight: "right",
+          ArrowUp: "up",
+          ArrowDown: "down",
+          KeyA: "left",
+          KeyD: "right",
+          KeyW: "up",
+          KeyS: "down"
+        };
+
+        if (directions[event.code]) {
+          event.preventDefault();
+          ensureAudio();
+          handleDirectionInput(directions[event.code]);
+          return;
+        }
+
+        if (event.code === "KeyR") {
+          event.preventDefault();
+          startNewRun();
+          return;
+        }
+
+        if (state.over && (event.code === "Space" || event.code === "Enter")) {
+          event.preventDefault();
+          startNewRun();
+        }
+      }
+
+      function initialise() {
+        state.bestScore = lsGet(STORAGE_KEYS.bestScore, 0);
+        state.bestTier = lsGet(STORAGE_KEYS.bestTier, 0);
+        audio.muted = lsGet(STORAGE_KEYS.mute, 0) === 1;
+        state.daily = getDailyChallenge();
+
+        buildEmptyCells();
+        updateHud();
+        startNewRun();
+
+        restartButton.addEventListener("click", startNewRun);
+        overlayRestartButton.addEventListener("click", startNewRun);
+        soundButton.addEventListener("click", toggleSound);
+        boardFrame.addEventListener("pointerdown", handlePointerDown);
+        boardFrame.addEventListener("pointerup", handlePointerUp);
+        boardFrame.addEventListener("pointercancel", handlePointerCancel);
+        boardFrame.addEventListener("pointerleave", handlePointerCancel);
+        document.addEventListener("keydown", handleKeydown);
+        window.addEventListener("resize", renderTiles);
+      }
+
+      initialise();
+    </script>
+  </body>
+</html>

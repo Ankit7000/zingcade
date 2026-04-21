@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Neon Dash | Zingcade</title>
+  <meta name="description" content="Neon Dash - a perspective endless runner. Dodge neon obstacles, collect coins, and dash through the city. Three lanes, zero mercy."/>
+  <link rel="canonical" href="https://zingcade.com/games/neon-dash/"/>
+  <meta name="theme-color" content="#040a12"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <style>
+    :root {
+      --nd-accent: #8cf5da; --nd-accent2: #ff7d6c; --nd-gold: #ffc672;
+      --nd-blue: #77b8ff; --nd-purple: #bb78ff; --nd-bg: #040a12;
+      --nd-panel: rgba(8,16,28,0.95); --nd-border: rgba(140,245,218,0.13);
+      --nd-muted: rgba(255,255,255,0.45);
+    }
+    html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+    body{min-height:100dvh;max-height:100dvh;display:flex;flex-direction:column;font-family:"Rajdhani","Trebuchet MS",sans-serif;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+      background:radial-gradient(circle at 18% 12%,rgba(140,245,218,0.12),transparent 30%),
+                 radial-gradient(circle at 84% 8%,rgba(187,120,255,0.09),transparent 28%),
+                 linear-gradient(180deg,#081119 0%,var(--nd-bg) 55%,#02060c 100%);}
+    button{border:0;font:inherit;cursor:pointer}
+    .site-header{position:relative;flex:0 0 auto}
+    .nav-shell{min-height:clamp(52px,8dvh,68px)}
+    .site-footer{display:none}.content-strip{display:none!important}
+    .page{width:min(100% - 1.25rem,1180px);flex:1 1 auto;min-height:0;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;
+      padding:clamp(.45rem,1.2dvh,1rem) env(safe-area-inset-right)
+      calc(clamp(.5rem,1.4dvh,1rem) + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
+    .topbar{flex:0 0 auto;display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;margin-bottom:clamp(.45rem,1.2dvh,.85rem)}
+    .back-link{justify-self:start;color:var(--nd-muted)}
+    .title h1,.title p{margin:0}
+    .title h1{font-family:"Orbitron",sans-serif;font-size:clamp(1.7rem,3.3dvh,2.8rem);line-height:.98;letter-spacing:.05em;
+      background:linear-gradient(135deg,#8cf5da,#77b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .title p{margin-top:.35rem;color:var(--nd-muted);font-size:clamp(.9rem,1.8dvh,1.05rem)}
+    .meta-pill{justify-self:end;display:inline-flex;align-items:center;min-height:38px;padding:0 .9rem;border-radius:999px;
+      background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--nd-muted)}
+    .layout{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,700px) minmax(240px,290px);justify-content:center;gap:1rem;align-items:stretch;overflow:hidden}
+    .panel{background:var(--nd-panel);border:1px solid var(--nd-border);border-radius:28px;box-shadow:0 22px 70px rgba(0,0,0,.4)}
+    .game-panel{--canvas-max-width:min(100%,430px);height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:clamp(.55rem,1.25dvh,1rem)}
+    .hud{flex:0 0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:clamp(.4rem,1dvh,.65rem);margin-bottom:clamp(.45rem,1dvh,.7rem)}
+    .hud-item{min-height:0;padding:clamp(.48rem,1.1dvh,.78rem);border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)}
+    .hud-label{display:block;margin-bottom:.3rem;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--nd-muted)}
+    .hud-value{font-family:"Orbitron",sans-serif;font-size:clamp(.88rem,1.8dvh,1.08rem);font-weight:900}
+    .hud-value.pop,.power-name.pop{animation:ndPop .24s ease}
+    .hud-stage{color:var(--nd-accent)}.hud-speed{color:var(--nd-purple)}
+    .power-strip{flex:0 0 auto;padding:clamp(.5rem,1.1dvh,.75rem) .8rem;border-radius:16px;margin-bottom:clamp(.45rem,1dvh,.7rem);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)}
+    .power-meta{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+    .power-name,.power-time{font-family:"Orbitron",sans-serif;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase}
+    .power-time{color:var(--nd-muted)}
+    .power-bar{position:relative;height:7px;margin-top:.45rem;border-radius:999px;overflow:hidden;background:rgba(255,255,255,0.07)}
+    .power-fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:inherit;background:linear-gradient(135deg,var(--nd-accent),#d3fff0);
+      box-shadow:0 0 14px rgba(140,245,218,.3);transition:width .16s linear,background .2s ease}
+    .ctrl-row{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:clamp(.48rem,1.1dvh,.7rem) .8rem;border-radius:16px;
+      margin-bottom:clamp(.45rem,1dvh,.7rem);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)}
+    .hint{color:var(--nd-muted);line-height:1.5;font-size:.95rem}
+    .canvas-wrap{position:relative;flex:1 1 auto;min-height:0;width:var(--canvas-max-width);max-width:100%;margin:0 auto;display:flex;align-items:center;justify-content:center}
+    #phaser-game{position:relative;width:auto;height:100%;max-width:100%;max-height:100%;aspect-ratio:7/12;border-radius:22px;overflow:hidden;background:#040a12;
+      border:1px solid rgba(140,245,218,0.12);touch-action:none}
+    #phaser-game canvas{display:block;width:100%!important;height:100%!important;border-radius:22px;touch-action:none}
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:4;
+      border-radius:22px;background:rgba(4,10,18,0.68);backdrop-filter:blur(10px);text-align:center;transition:opacity .22s ease}
+    .overlay[hidden]{display:none!important;opacity:0;pointer-events:none}
+    .overlay-card{max-width:28rem}
+    .overlay-kicker{margin:0 0 .7rem;letter-spacing:.18em;text-transform:uppercase;font-size:.76rem;color:var(--nd-accent)}
+    .overlay-card h2,.overlay-card p{margin:0}
+    .overlay-card h2{font-family:"Orbitron",sans-serif;font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.02}
+    .overlay-card p{margin-top:.8rem;color:var(--nd-muted);line-height:1.7;font-size:1rem}
+    .overlay-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin-top:1rem}
+    .overlay-summary[hidden],.overlay-note[hidden]{display:none}
+    .summary-item{padding:.8rem .85rem;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)}
+    .summary-label{display:block;margin-bottom:.3rem;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--nd-muted)}
+    .summary-value{font-family:"Orbitron",sans-serif;font-size:1.1rem;font-weight:900}
+    .overlay-note{margin-top:.9rem;padding:.8rem .9rem;border-radius:14px;background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);color:var(--nd-muted);line-height:1.6}
+    .actions{display:flex;flex-wrap:wrap;justify-content:center;gap:.65rem;margin-top:1.1rem}
+    .canvas-tip{flex:0 0 auto;margin-top:clamp(.4rem,1dvh,.65rem);padding:clamp(.45rem,1dvh,.7rem) .8rem;border-radius:16px;background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.06);color:var(--nd-muted);line-height:1.65;font-size:.94rem}
+    .mob-btns{flex:0 0 auto;display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-top:clamp(.4rem,1dvh,.65rem)}
+    .mob-btn{flex:1;min-height:54px;border-radius:16px;font-family:"Orbitron",sans-serif;font-size:.9rem;
+      letter-spacing:.08em;color:#fff;background:rgba(140,245,218,0.08);border:1px solid rgba(140,245,218,0.22);
+      box-shadow:inset 0 0 18px rgba(140,245,218,0.08);touch-action:none}
+    .info-panel{min-height:0;overflow:auto;display:grid;align-content:start;gap:.65rem;padding:.95rem}
+    .info-block{padding:.9rem;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05)}
+    .info-block h2,.info-block h3{margin:0 0 .5rem;font-family:"Orbitron",sans-serif;font-size:1rem}
+    .info-block p,.info-block li{margin:0;color:var(--nd-muted);line-height:1.7}
+    .tips{padding-left:1.1rem;margin:0}
+    .callout{padding:.9rem;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)}
+    .callout strong{display:block;margin-bottom:.4rem}
+    .callout p{margin:0;color:var(--nd-muted);line-height:1.65}
+    .content-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-top:1rem}
+    .content-card{padding:1rem 1.05rem;border-radius:20px;background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.06);box-shadow:0 18px 50px rgba(0,0,0,.22)}
+    .content-card h2,.content-card p{margin:0}
+    .content-card h2{font-family:"Orbitron",sans-serif;font-size:1rem;margin-bottom:.5rem}
+    .content-card p{color:var(--nd-muted);line-height:1.65}
+    .mini-label{margin:0 0 .4rem;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--nd-accent);font-weight:600}
+    @media(max-width:980px){.layout,.topbar{grid-template-columns:1fr}.info-panel{display:none}.meta-pill{justify-self:start}}
+    @media(max-width:720px){.site-nav,.nav-play,.meta-pill,.title p,.back-link,.hint,.canvas-tip{display:none}
+      .nav-shell{min-height:44px}.page{width:min(100% - .65rem,1160px);padding-top:.35rem}.topbar{margin-bottom:.35rem}
+      .title h1{font-size:1.45rem}.game-panel{border-radius:18px;padding:.45rem}
+      .hud{grid-template-columns:repeat(3,minmax(0,1fr));gap:.35rem;margin-bottom:.4rem}.hud-item{padding:.4rem .45rem;border-radius:12px}
+      .hud-label{margin-bottom:.15rem;font-size:.58rem}.hud-value,.summary-value{font-size:.78rem}
+      .power-strip{padding:.42rem .5rem;margin-bottom:.4rem;border-radius:12px}.power-name,.power-time{font-size:.64rem}
+      .power-bar{height:5px;margin-top:.32rem}.ctrl-row{justify-content:flex-end;padding:.35rem .45rem;margin-bottom:.4rem;border-radius:12px}
+      .ctrl-row button{width:auto;padding:.42rem .75rem}.content-strip,.overlay-summary{grid-template-columns:1fr}
+      .actions{flex-direction:column;align-items:stretch}.actions button,.actions a{width:100%}}
+    @media(pointer:coarse), (max-width:720px){.mob-btns{display:grid}.mob-btn{min-height:clamp(42px,8dvh,58px);border-radius:12px;font-size:.76rem}
+      .canvas-wrap{max-width:min(var(--canvas-max-width), calc((100dvh - 245px) * 7 / 12))}}
+    @media(max-height:680px){.canvas-tip,.title p{display:none}.hud-stage{font-size:.68rem}.info-block p,.info-block li,.callout p{line-height:1.45}}
+    @media(max-height:560px){.power-strip{display:none}.hud{grid-template-columns:repeat(5,minmax(0,1fr))}.hud-label{font-size:.56rem}.mob-btn{min-height:38px}}
+    @media(hover:hover) and (pointer:fine){.mob-btns{display:none!important}}
+    @keyframes ndPop{0%{transform:scale(1)}45%{transform:scale(1.18);color:var(--nd-gold)}100%{transform:scale(1)}}
+  </style>
+</head>
+<body class="game-viewport-page">
+<header class="site-header">
+  <div class="container nav-shell">
+    <a class="brand" href="/">Zingcade</a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="/">Home</a><a href="/games/">Games</a><a href="/about.html">About</a><a href="/contact.html">Contact</a>
+    </nav>
+    <a class="button button-secondary nav-play" href="/games/">View Games</a>
+  </div>
+</header>
+<main class="page">
+  <div class="topbar">
+    <a class="back-link" href="/games/">&#8592; Games</a>
+    <div class="title"><h1>Neon Dash</h1><p>Three lanes. Zero mercy. Dash through the city.</p></div>
+    <div class="meta-pill">Phaser / Keyboard / Swipe / Touch</div>
+  </div>
+  <section class="layout">
+    <div class="panel game-panel">
+      <div class="hud">
+        <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="score">0</span></div>
+        <div class="hud-item"><span class="hud-label">Best</span><span class="hud-value" id="best">0</span></div>
+        <div class="hud-item"><span class="hud-label">Coins</span><span class="hud-value" id="coins">0</span></div>
+        <div class="hud-item"><span class="hud-label">Stage</span><span class="hud-value hud-stage" id="stage">City Night</span></div>
+        <div class="hud-item"><span class="hud-label">Speed</span><span class="hud-value hud-speed" id="speed">380</span></div>
+      </div>
+      <div class="power-strip">
+        <div class="power-meta"><span class="power-name" id="pname">No Power</span><span class="power-time" id="ptime">--</span></div>
+        <div class="power-bar"><span class="power-fill" id="pfill"></span></div>
+      </div>
+      <div class="ctrl-row">
+        <div class="hint">Swipe or use <strong>A/D</strong> to change lanes, <strong>W/Up</strong> to jump, <strong>S/Down</strong> to slide. Press <strong>P</strong> to pause.</div>
+        <button class="button button-secondary" id="pauseBtn" type="button">Pause</button>
+      </div>
+      <div class="canvas-wrap">
+        <div id="phaser-game" aria-label="Neon Dash game canvas"></div>
+        <div class="overlay" id="overlay">
+          <div class="overlay-card">
+            <p class="overlay-kicker" id="okicker">PERSPECTIVE RUNNER</p>
+            <h2 id="otitle">Neon Dash</h2>
+            <p id="otext">Three neon lanes. Read warnings, jump low barriers, slide under high beams, and squeeze through rush patterns.</p>
+            <div class="overlay-summary" id="osummary" hidden>
+              <div class="summary-item"><span class="summary-label">Score</span><span class="summary-value" id="oscore">0</span></div>
+              <div class="summary-item"><span class="summary-label">Best</span><span class="summary-value" id="obest">0</span></div>
+              <div class="summary-item"><span class="summary-label">Coins</span><span class="summary-value" id="ocoins">0</span></div>
+            </div>
+            <div class="overlay-note" id="onote" hidden></div>
+            <div class="actions">
+              <button class="button button-primary" id="actionBtn" type="button">Start Dash</button>
+              <button class="button button-secondary" id="continueBtn" type="button" hidden>Continue</button>
+              <a class="button button-secondary" href="/games/" id="gamesLink" hidden>View Games</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="canvas-tip" id="tip">Read the lane ahead. The city gets faster - move early, react early.</div>
+      <div class="mob-btns" style="grid-template-columns: 1fr 1fr 1fr;">
+        <button class="mob-btn" id="mobLeft" type="button" style="grid-row: 1 / 3; grid-column: 1">&lt; LEFT</button>
+        <button class="mob-btn" id="mobUp" type="button" style="grid-row: 1; grid-column: 2">JUMP</button>
+        <button class="mob-btn" id="mobDown" type="button" style="grid-row: 2; grid-column: 2">SLIDE</button>
+        <button class="mob-btn" id="mobRight" type="button" style="grid-row: 1 / 3; grid-column: 3">RIGHT &gt;</button>
+      </div>
+    </div>
+    <aside class="panel info-panel">
+      <section class="info-block">
+        <h2>How to Play</h2>
+        <p>You start in the center lane. Obstacles rush from the horizon with warning flashes. Shift lanes, jump low barriers, slide under high beams, and chase risky coin lines before the city overwhelms you.</p>
+      </section>
+      <section class="info-block">
+        <h3>Controls</h3>
+        <ul class="tips">
+          <li>A / Left arrow - shift left lane</li>
+          <li>D / Right arrow - shift right lane</li>
+          <li>W / Up arrow - jump over barriers</li>
+          <li>S / Down arrow - slide under beams</li>
+          <li>Swipe left, right, up, or down on mobile</li>
+          <li>P - pause or resume</li>
+          <li>Space / Enter - start or restart</li>
+        </ul>
+      </section>
+      <div class="callout">
+        <strong>Obstacle Types</strong>
+        <p>Low Barrier - jump. High Beam - slide. Blocker - change lane. Train - avoid the lane early. Drifter - watch its warning arrow before it commits.</p>
+      </div>
+      <div class="callout">
+        <strong>Power-Ups</strong>
+        <p>Shield gives one free hit. Magnet pulls nearby coins. Boost gives a short speed burst with temporary invincibility.</p>
+      </div>
+      <div class="callout">
+        <strong>Stage Flow</strong>
+        <p>City Night, Storm Grid, Neon Surge, then Overdrive. Each stage raises speed, tightens spacing, and adds harder obstacle combos.</p>
+      </div>
+    </aside>
+  </section>
+  <section class="content-strip">
+    <article class="content-card">
+      <p class="mini-label">What It Is</p>
+      <h2>Perspective endless runner.</h2>
+      <p>The track rushes toward you in full perspective, so obstacles scale up from the horizon and demand instant decisions.</p>
+    </article>
+    <article class="content-card">
+      <p class="mini-label">Key Move</p>
+      <h2>Lane shift beats everything.</h2>
+      <p>When in doubt, shift early. Jumping and sliding are counters, but lane position is still your safety net every run.</p>
+    </article>
+    <article class="content-card">
+      <p class="mini-label">Reference Build</p>
+      <h2>First Phaser game shell.</h2>
+      <p>Neon Dash uses reusable Phaser scenes and runner systems that can carry future Zingcade action games.</p>
+    </article>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="container footer-content">
+    <div class="footer-brand"><p>Zingcade</p><p>Static browser games for quick play.</p></div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a>
+    </nav>
+  </div>
+</footer>
+<script src="/js/zingcade-progression.js?v=2"></script>
+<script src="/js/progression-ui.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+<script type="module" src="./src/main.js?v=3"></script>
+</body>
+</html>

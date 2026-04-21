@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dont Stop Ball | Zingcade</title>
+    <meta
+      name="description"
+      content="Play Dont Stop Ball, a polished browser survival game with lives, power-ups, faster stage ramps, and a smoother dodge flow."
+    />
+    <link rel="canonical" href="https://zingcade.com/games/dont-stop-ball/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+
+      body {
+        min-height: 100dvh;
+        max-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .site-header {
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .nav-shell {
+        min-height: clamp(52px, 8dvh, 68px);
+      }
+
+      .site-footer,
+      .content-strip {
+        display: none;
+      }
+
+      button {
+        border: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .page {
+        width: min(100% - 1.25rem, 1180px);
+        margin: 0 auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding:
+          clamp(0.45rem, 1.1dvh, 0.8rem)
+          max(0.45rem, env(safe-area-inset-right))
+          max(0.45rem, env(safe-area-inset-bottom))
+          max(0.45rem, env(safe-area-inset-left));
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: clamp(0.35rem, 1dvh, 0.75rem);
+        flex: 0 0 auto;
+      }
+
+      .back-link,
+      .meta-pill {
+        color: var(--muted);
+      }
+
+      .back-link {
+        justify-self: start;
+      }
+
+      .title h1,
+      .title p {
+        margin: 0;
+      }
+
+      .title h1 {
+        font-size: clamp(2.2rem, 4vw, 3.4rem);
+        line-height: 0.98;
+      }
+
+      .title p {
+        margin-top: 0.55rem;
+        color: var(--muted);
+      }
+
+      .meta-pill {
+        justify-self: end;
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 0 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 700px) minmax(260px, 300px);
+        justify-content: center;
+        gap: 1rem;
+        align-items: stretch;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 28px;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+      }
+
+      .game-panel {
+        --canvas-max-width: min(100%, 430px);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+        padding: clamp(0.5rem, 1.1dvh, 0.8rem);
+        border-radius: 20px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.45rem;
+        margin-bottom: 0.45rem;
+        flex: 0 0 auto;
+      }
+
+      .hud-item,
+      .control-row,
+      .status-strip,
+      .status-pill,
+      .status-note,
+      .callout {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .hud-item {
+        padding: 0.55rem;
+        border-radius: 13px;
+      }
+
+      .hud-label {
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: clamp(0.58rem, 1.35dvh, 0.7rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .hud-value,
+      .summary-value,
+      .touch-button {
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .hud-value {
+        font-size: clamp(0.82rem, 1.9dvh, 1.05rem);
+        font-weight: 900;
+      }
+
+      .hud-stage,
+      .hud-chain,
+      .hud-lives {
+        color: var(--accent);
+      }
+
+      .hud-value.celebrate {
+        color: #fff0aa;
+        text-shadow: 0 0 18px rgba(255, 198, 114, 0.7);
+      }
+
+      .lives-hearts {
+        display: inline-flex;
+        gap: 0.18rem;
+        align-items: center;
+      }
+
+      .heart {
+        display: inline-block;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      .heart.active {
+        color: #ff7d6c;
+        text-shadow: 0 0 14px rgba(255, 125, 108, 0.8);
+      }
+
+      .control-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.55rem;
+        align-items: center;
+        padding: 0.55rem 0.7rem;
+        border-radius: 14px;
+        margin-bottom: 0.45rem;
+        flex: 0 0 auto;
+      }
+
+      .hint {
+        color: var(--muted);
+        line-height: 1.35;
+        font-size: clamp(0.78rem, 1.55dvh, 0.95rem);
+      }
+
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+        padding: 0.45rem;
+        border-radius: 14px;
+        margin-bottom: 0.5rem;
+        flex: 0 0 auto;
+      }
+
+      .status-pill {
+        padding: 0.48rem 0.55rem;
+        border-radius: 12px;
+      }
+
+      .status-copy {
+        display: block;
+        margin-top: 0.2rem;
+        color: var(--text);
+        line-height: 1.25;
+        font-weight: 700;
+        font-size: clamp(0.72rem, 1.45dvh, 0.9rem);
+      }
+
+      .canvas-wrap {
+        position: relative;
+        width: 100%;
+        max-width: none;
+        flex: 1 1 auto;
+        min-height: 0;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #phaser-game {
+        position: relative;
+        display: block;
+        width: auto;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        aspect-ratio: 7 / 12;
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(8, 20, 36, 0.95), rgba(4, 10, 18, 1));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        touch-action: none;
+        overflow: hidden;
+      }
+
+      #phaser-game canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 22px;
+        touch-action: none;
+      }
+
+      .overlay,
+      .damage-flash {
+        position: absolute;
+        inset: 0;
+        border-radius: 22px;
+      }
+
+      .overlay {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(4, 10, 18, 0.58);
+        backdrop-filter: blur(8px);
+        text-align: center;
+        transition: opacity 0.2s ease;
+      }
+
+      .overlay[hidden] {
+        display: none !important;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .damage-flash {
+        pointer-events: none;
+        background: radial-gradient(circle at center, rgba(255, 125, 108, 0.38), rgba(255, 46, 46, 0.12));
+        opacity: 0;
+        transition: opacity 0.08s linear;
+      }
+
+      .overlay-card {
+        max-width: 29rem;
+      }
+
+      .overlay-kicker {
+        margin: 0 0 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.76rem;
+        color: var(--accent);
+      }
+
+      .overlay-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .overlay-summary[hidden] {
+        display: none;
+      }
+
+      .summary-item {
+        padding: 0.85rem 0.9rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .summary-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .summary-value {
+        font-size: 1.28rem;
+        font-weight: 900;
+      }
+
+      .canvas-note {
+        margin-top: 0.85rem;
+        padding: 0.55rem 0.7rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        line-height: 1.35;
+        font-size: clamp(0.75rem, 1.4dvh, 0.9rem);
+        flex: 0 0 auto;
+      }
+
+      .touch-controls {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.45rem;
+        flex: 0 0 auto;
+      }
+
+      .touch-button {
+        min-height: 48px;
+        border-radius: 14px;
+        background: rgba(140, 245, 218, 0.09);
+        border: 1px solid rgba(140, 245, 218, 0.3);
+        color: var(--text);
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        touch-action: none;
+      }
+
+      .touch-button:active {
+        background: rgba(140, 245, 218, 0.16);
+      }
+
+      .overlay-card h2,
+      .overlay-card p {
+        margin: 0;
+      }
+
+      .overlay-card h2 {
+        font-size: clamp(2rem, 4vw, 2.7rem);
+      }
+
+      .overlay-card p {
+        margin-top: 0.85rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1.2rem;
+      }
+
+      .info-panel {
+        display: grid;
+        gap: 0.55rem;
+        padding: 0.65rem;
+        min-height: 0;
+        height: 100%;
+        overflow: auto;
+      }
+
+      .content-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .content-card {
+        padding: 1rem 1.05rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+      }
+
+      .content-card h2,
+      .content-card p {
+        margin: 0;
+      }
+
+      .content-card p {
+        margin-top: 0.7rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .info-block {
+        padding: 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .info-block h2,
+      .info-block h3,
+      .info-block p,
+      .info-block li,
+      .status-note p,
+      .callout p {
+        margin-top: 0;
+      }
+
+      .info-block p,
+      .info-block li,
+      .status-note p,
+      .callout p {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .tips {
+        padding-left: 1.1rem;
+        margin-bottom: 0;
+      }
+
+      .status-note,
+      .callout {
+        padding: 1rem;
+        border-radius: 18px;
+      }
+
+      .status-note strong,
+      .callout strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      @media (max-width: 980px) {
+          .topbar {
+            grid-template-columns: 1fr;
+          }
+
+          .layout {
+            grid-template-columns: 1fr;
+          }
+
+          .info-panel {
+            display: none;
+          }
+
+        .meta-pill {
+          justify-self: start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 1rem, 1160px);
+          padding: max(0.35rem, env(safe-area-inset-top)) max(0.35rem, env(safe-area-inset-right)) max(0.35rem, env(safe-area-inset-bottom)) max(0.35rem, env(safe-area-inset-left));
+        }
+
+        .site-nav,
+        .nav-play,
+        .meta-pill,
+        .title p,
+        .hint,
+        .status-strip,
+        .canvas-note {
+          display: none;
+        }
+
+        .nav-shell {
+          min-height: 48px;
+        }
+
+        .topbar {
+          grid-template-columns: auto 1fr;
+          gap: 0.6rem;
+          margin-bottom: 0.35rem;
+        }
+
+        .title h1 {
+          font-size: clamp(1.3rem, 6vw, 1.85rem);
+        }
+
+        .hud {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.32rem;
+          margin-bottom: 0.35rem;
+        }
+
+        .hud-item {
+          padding: 0.36rem;
+          border-radius: 10px;
+        }
+
+        .hud-value,
+        .summary-value {
+          font-size: 0.78rem;
+        }
+
+        .hud-label {
+          font-size: 0.5rem;
+        }
+
+        .content-strip,
+        .status-strip,
+        .overlay-summary {
+          grid-template-columns: 1fr;
+        }
+
+        .control-row,
+        .actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .control-row {
+          padding: 0;
+          margin-bottom: 0.35rem;
+          background: transparent;
+          border: 0;
+          align-items: flex-end;
+        }
+
+        .actions button,
+        .actions a {
+          width: 100%;
+        }
+
+        .control-row button {
+          width: auto;
+          min-height: 36px;
+          padding: 0.5rem 0.8rem;
+          align-self: flex-end;
+        }
+
+        .touch-button {
+          min-height: 44px;
+        }
+      }
+
+      @media (pointer: coarse), (max-width: 720px) {
+        .touch-controls {
+          display: grid;
+        }
+
+        .canvas-wrap {
+          max-width: none;
+        }
+      }
+
+      @media (max-height: 640px) {
+        .title p,
+        .meta-pill,
+        .status-strip,
+        .canvas-note {
+          display: none;
+        }
+
+        .topbar {
+          margin-bottom: 0.3rem;
+        }
+
+        .game-panel {
+          padding: 0.42rem;
+        }
+
+        .hud {
+          margin-bottom: 0.3rem;
+        }
+
+        .control-row {
+          padding-block: 0.35rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="game-viewport-page">
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a class="brand" href="/">Zingcade</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/games/">Games</a>
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
+        </nav>
+        <a class="button button-secondary nav-play" href="/games/">View Games</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="topbar">
+        <a class="back-link" href="/games/">&#8592; Back to Games</a>
+        <div class="title">
+          <h1>Dont Stop Ball</h1>
+          <p>Three lives, clutch power-ups, and six hotter stages turn each dodge into a run worth saving.</p>
+        </div>
+        <div class="meta-pill">Keyboard, mouse, and touch</div>
+      </div>
+
+      <section class="layout">
+        <div class="panel game-panel">
+          <div class="hud">
+            <div class="hud-item">
+              <span class="hud-label">Score</span>
+              <span class="hud-value" id="score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Best</span>
+              <span class="hud-value" id="best-score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Lives</span>
+              <span class="hud-value hud-lives lives-hearts" id="lives-display"></span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Streak</span>
+              <span class="hud-value hud-chain" id="chain-count">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Speed</span>
+              <span class="hud-value" id="speed">1.0x</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Stage</span>
+              <span class="hud-value hud-stage" id="stage-label">Warmup</span>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="hint">
+              Move with arrows or A and D. Mouse and touch drag track the ball smoothly.
+              Press <strong>P</strong> to pause. Press <strong>Space</strong> or <strong>Enter</strong> to start or restart.
+            </div>
+            <button class="button button-secondary" id="pause-button" type="button">
+              Pause
+            </button>
+          </div>
+
+          <div class="status-strip" aria-label="Run status">
+            <div class="status-pill">
+              <span class="hud-label">Challenge</span>
+              <span class="status-copy" id="challenge-text">
+                Hold a 5-dodge streak to cash in cleaner score bursts.
+              </span>
+            </div>
+            <div class="status-pill">
+              <span class="hud-label">Power</span>
+              <span class="status-copy" id="power-text">
+                No active power-up. Catch pickups for Shield, Slow-Mo, or Ghost.
+              </span>
+            </div>
+            <div class="status-pill">
+              <span class="hud-label">Stage Note</span>
+              <span class="status-copy" id="run-note">
+                Warmup gives you space to read the first telegraphs before the pressure climbs.
+              </span>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <div id="phaser-game" aria-label="Dont Stop Ball game canvas"></div>
+
+            <div class="damage-flash" id="damage-flash"></div>
+
+            <div class="overlay" id="overlay">
+              <div class="overlay-card">
+                <p class="overlay-kicker" id="overlay-kicker">Arcade Survival</p>
+                <h2 id="overlay-title">Dont Stop Ball</h2>
+                <p id="overlay-text">
+                  Dodge the drop patterns, spend your power-ups well, and try to survive into Meltdown.
+                </p>
+                <div class="overlay-summary" id="overlay-summary" hidden>
+                  <div class="summary-item">
+                    <span class="summary-label">Score</span>
+                    <span class="summary-value" id="overlay-score">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Best</span>
+                    <span class="summary-value" id="overlay-best">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Best Streak</span>
+                    <span class="summary-value" id="overlay-chain">0</span>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="button button-primary" id="action-button" type="button">
+                    Start Game
+                  </button>
+                  <a class="button button-secondary" id="games-link" href="/games/" hidden>
+                    View Games
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="touch-controls" aria-label="Touch controls">
+            <button class="touch-button" id="touch-left" type="button">Hold Left</button>
+            <button class="touch-button" id="touch-right" type="button">Hold Right</button>
+          </div>
+
+          <div class="canvas-note" id="canvas-note">
+            Shield blocks one mistake, Slow-Mo opens a short recovery window, and Ghost lets you cut through a bad read.
+          </div>
+        </div>
+
+        <aside class="panel info-panel">
+          <section class="info-block">
+            <h2>How to play</h2>
+            <p>
+              Dont Stop Ball is a survival dodger about calm movement. The ball now glides with more weight, every hit costs one of three lives, and later stages stack bars, split gates, sweepers, and spinning hazards with less mercy.
+            </p>
+          </section>
+
+          <section class="info-block">
+            <h3>Controls</h3>
+            <ul class="tips">
+              <li>Keyboard: Left and Right arrows or A and D</li>
+              <li>Mouse: move across the canvas to pull the ball into line</li>
+              <li>Touch: drag on the canvas or hold the mobile D-pad buttons</li>
+              <li>Pause: press P or tap the pause button</li>
+              <li>Start or restart: press Space, Enter, tap the overlay, or tap the canvas</li>
+            </ul>
+          </section>
+
+          <div class="status-note">
+            <strong>Power-up mix</strong>
+            <p>
+              Shield soaks a hit, Slow-Mo buys space when the screen gets crowded, and Ghost turns one panic moment into a clean recovery line.
+            </p>
+          </div>
+
+          <div class="callout">
+            <strong>Stage ramp</strong>
+            <p>
+              Warmup and Heated teach the read. Frenzy introduces spinners, then Overdrive, Redline, and Meltdown keep shrinking the safe timing window.
+            </p>
+          </div>
+
+          <div class="callout">
+            <strong>Survival tip</strong>
+            <p>
+              Let the ball settle between moves. The smoother steering rewards short corrections more than wide panic swings, especially when invincibility frames are gone.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="content-strip" aria-label="Game summary">
+        <article class="content-card">
+          <p class="mini-label">What It Is</p>
+          <h2>High-pressure dodge survival.</h2>
+          <p>
+            Dont Stop Ball is a one-more-run dodge game about reading the drop, using three lives well, and reaching the hotter stage bands without wasting a recovery tool.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Controls</p>
+          <h2>Three ways to steer.</h2>
+          <p>
+            Use keyboard, mouse, or touch drag. On mobile, the extra D-pad lets you hold cleaner side steps through busy waves and late spinners.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Tip Or Challenge</p>
+          <h2>Reach Redline with all lives.</h2>
+          <p>
+            Try to save Slow-Mo for Frenzy or later. If you can hit Redline on a live streak, the score will usually take care of itself.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-content">
+        <div class="footer-brand">
+          <p>Zingcade</p>
+          <p>Static browser games for quick play and clean review cycles.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="/js/zingcade-progression.js?v=2"></script>
+    <script src="/js/progression-ui.js?v=2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+    <script type="module" src="./src/main.js?v=1"></script>
+  </body>
+</html>

@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Hop | Zingcade</title>
+    <meta
+      name="description"
+      content="Play Sky Hop, a polished browser climber with combo scoring, seven platform types, shifting sky zones, and stronger landing feel."
+    />
+    <link rel="canonical" href="https://zingcade.com/games/sky-hop/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+      html,
+      body {
+        overscroll-behavior: none;
+      }
+
+      body {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      button {
+        border: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .page {
+        width: min(100% - 1.25rem, 1180px);
+        margin: 0 auto;
+        min-height: 100dvh;
+        padding:
+          calc(1rem + env(safe-area-inset-top))
+          env(safe-area-inset-right)
+          calc(2.75rem + env(safe-area-inset-bottom))
+          env(safe-area-inset-left);
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.1rem;
+      }
+
+      .back-link,
+      .meta-pill {
+        color: var(--muted);
+      }
+
+      .back-link {
+        justify-self: start;
+      }
+
+      .title h1,
+      .title p {
+        margin: 0;
+      }
+
+      .title h1 {
+        font-size: clamp(2.2rem, 4vw, 3.4rem);
+        line-height: 0.98;
+      }
+
+      .title p {
+        margin-top: 0.55rem;
+        color: var(--muted);
+      }
+
+      .meta-pill {
+        justify-self: end;
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 0 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 700px) minmax(260px, 300px);
+        justify-content: center;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 28px;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+      }
+
+      .game-panel {
+        --canvas-max-width: min(100%, 430px);
+        padding: 1rem 1rem 0.95rem;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .hud-item,
+      .control-row,
+      .status-strip,
+      .status-pill,
+      .status-note,
+      .callout {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .hud-item {
+        padding: 0.9rem;
+        border-radius: 18px;
+      }
+
+      .hud-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.74rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .hud-value,
+      .summary-value,
+      .touch-button {
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .hud-value {
+        font-size: 1.24rem;
+        font-weight: 900;
+      }
+
+      .hud-height,
+      .hud-zone,
+      .hud-combo {
+        color: var(--accent);
+      }
+
+      .control-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        padding: 0.8rem 0.95rem;
+        border-radius: 18px;
+        margin-bottom: 0.75rem;
+      }
+
+      .hint {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 18px;
+        margin-bottom: 0.9rem;
+      }
+
+      .status-pill {
+        padding: 0.8rem 0.85rem;
+        border-radius: 16px;
+      }
+
+      .status-copy {
+        display: block;
+        margin-top: 0.35rem;
+        color: var(--text);
+        line-height: 1.5;
+        font-weight: 700;
+      }
+
+      .combo-shell {
+        position: relative;
+        height: 10px;
+        border-radius: 999px;
+        margin-top: 0.75rem;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .combo-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #8cf5da, #ffc672, #ff7d6c);
+        box-shadow: 0 0 16px rgba(255, 198, 114, 0.4);
+      }
+
+      .canvas-wrap {
+        position: relative;
+        width: var(--canvas-max-width);
+        max-width: 100%;
+        margin: 0 auto;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 7 / 12;
+        border-radius: 22px;
+        background: linear-gradient(180deg, #16304c 0%, #08121d 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        touch-action: none;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        border-radius: 22px;
+        background: rgba(4, 10, 18, 0.58);
+        backdrop-filter: blur(8px);
+        text-align: center;
+        transition: opacity 0.2s ease;
+      }
+
+      .overlay[hidden] {
+        display: none !important;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .overlay-card {
+        max-width: 29rem;
+      }
+
+      .overlay-kicker {
+        margin: 0 0 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.76rem;
+        color: var(--accent);
+      }
+
+      .overlay-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .overlay-summary[hidden] {
+        display: none;
+      }
+
+      .summary-item {
+        padding: 0.85rem 0.9rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .summary-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .summary-value {
+        font-size: 1.28rem;
+        font-weight: 900;
+      }
+
+      .overlay-card h2,
+      .overlay-card p {
+        margin: 0;
+      }
+
+      .overlay-card h2 {
+        font-size: clamp(2rem, 4vw, 2.7rem);
+      }
+
+      .overlay-card p {
+        margin-top: 0.85rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1.2rem;
+      }
+
+      .canvas-note {
+        margin-top: 0.85rem;
+        padding: 0.85rem 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .touch-controls {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.85rem;
+      }
+
+      .touch-button {
+        min-height: 58px;
+        border-radius: 18px;
+        background: rgba(140, 245, 218, 0.09);
+        border: 1px solid rgba(140, 245, 218, 0.3);
+        color: var(--text);
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .touch-button:active {
+        background: rgba(140, 245, 218, 0.16);
+      }
+      
+      .milestone-flash {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.5);
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 100;
+        line-height: 1;
+        text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: clamp(2rem, 6vw, 3rem);
+        white-space: nowrap;
+      }
+      
+      .milestone-flash.show {
+        animation: milestonePop 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+
+      @keyframes milestonePop {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        15% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+        30% { transform: translate(-50%, -50%) scale(1); }
+        70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -100%) scale(1.05); }
+      }
+      
+      @keyframes uiPulse {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.04); }
+      }
+
+      .info-panel {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+      }
+
+      .content-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .content-card {
+        padding: 1rem 1.05rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+      }
+
+      .content-card h2,
+      .content-card p {
+        margin: 0;
+      }
+
+      .content-card p {
+        margin-top: 0.7rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .info-block {
+        padding: 0.95rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .info-block h2,
+      .info-block h3,
+      .info-block p,
+      .info-block li,
+      .status-note p,
+      .callout p {
+        margin-top: 0;
+      }
+
+      .info-block p,
+      .info-block li,
+      .status-note p,
+      .callout p {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .tips {
+        padding-left: 1.1rem;
+        margin-bottom: 0;
+      }
+
+      .status-note,
+      .callout {
+        padding: 1rem;
+        border-radius: 18px;
+      }
+
+      .status-note strong,
+      .callout strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      @media (max-width: 980px) {
+        .layout,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .meta-pill {
+          justify-self: start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 1rem, 1160px);
+          padding-top: 1rem;
+        }
+        
+        .game-panel {
+          --canvas-max-width: min(100%, 62dvh);
+        }
+
+        .hud {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.65rem;
+        }
+
+        .hud-item,
+        .status-pill {
+          padding: 0.75rem;
+        }
+
+        .hud-value,
+        .summary-value {
+          font-size: 1.05rem;
+        }
+
+        .content-strip,
+        .status-strip,
+        .overlay-summary {
+          grid-template-columns: 1fr;
+        }
+
+        .control-row,
+        .actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .actions button,
+        .actions a,
+        .control-row button {
+          width: 100%;
+        }
+
+        .touch-button {
+          min-height: 62px;
+        }
+      }
+
+      @media (pointer: coarse), (max-width: 720px) {
+        .touch-controls {
+          display: grid;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a class="brand" href="/">Zingcade</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/games/">Games</a>
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
+        </nav>
+        <a class="button button-secondary nav-play" href="/games/">View Games</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="topbar">
+        <a class="back-link" href="/games/">&#8592; Back to Games</a>
+        <div class="title">
+          <h1>Sky Hop</h1>
+          <p>Ride cleaner landings, chain combo pressure, and climb through five higher sky zones.</p>
+        </div>
+        <div class="meta-pill">Keyboard, mouse, and touch</div>
+      </div>
+
+      <section class="layout">
+        <div class="panel game-panel">
+          <div class="hud">
+            <div class="hud-item">
+              <span class="hud-label">Score</span>
+              <span class="hud-value" id="score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Best</span>
+              <span class="hud-value" id="best-score">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Hops</span>
+              <span class="hud-value" id="hops">0</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Height</span>
+              <span class="hud-value hud-height" id="height-score">0m</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Combo</span>
+              <span class="hud-value hud-combo" id="combo-value">1.0x</span>
+            </div>
+            <div class="hud-item">
+              <span class="hud-label">Zone</span>
+              <span class="hud-value hud-zone" id="zone-label">Low Clouds</span>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="hint">
+              Move with Left and Right or A and D. Mouse and touch drag guide the line.
+              Press <strong>P</strong> to pause. Press <strong>Space</strong> or <strong>Enter</strong> to start or restart.
+            </div>
+            <button class="button button-secondary" id="pause-button" type="button">
+              Pause
+            </button>
+          </div>
+
+          <div class="status-strip" aria-label="Run status">
+            <div class="status-pill">
+              <span class="hud-label">Next Milestone</span>
+              <span class="status-copy" id="milestone-text">
+                Reach 60m to lock in the first real climb target.
+              </span>
+            </div>
+            <div class="status-pill">
+              <span class="hud-label">Combo Window</span>
+              <span class="status-copy" id="combo-note">
+                Land before the bar drains to keep building multiplier.
+              </span>
+              <div class="combo-shell" aria-hidden="true">
+                <div class="combo-fill" id="combo-fill"></div>
+              </div>
+            </div>
+            <div class="status-pill">
+              <span class="hud-label">Landing Note</span>
+              <span class="status-copy" id="landing-note">
+                You get a little extra catch width while falling, so line up early and let the bounce work.
+              </span>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas
+              id="game"
+              width="420"
+              height="720"
+              aria-label="Sky Hop game canvas"
+            ></canvas>
+
+            <div class="overlay" id="overlay">
+              <div class="overlay-card">
+                <p class="overlay-kicker" id="overlay-kicker">Sky Platformer</p>
+                <h2 id="overlay-title">Sky Hop</h2>
+                <p id="overlay-text">
+                  Chain smooth landings, keep the combo alive, and climb far enough to hit the aurora bands.
+                </p>
+                <div class="overlay-summary" id="overlay-summary" hidden>
+                  <div class="summary-item">
+                    <span class="summary-label">Score</span>
+                    <span class="summary-value" id="overlay-score">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Height</span>
+                    <span class="summary-value" id="overlay-height">0m</span>
+                  </div>
+                  <div class="summary-item" id="overlay-best-card">
+                    <span class="summary-label">Best Height</span>
+                    <span class="summary-value" id="overlay-best-height">0m</span>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="button button-primary" id="action-button" type="button" style="animation: uiPulse 2s infinite ease-in-out alternate;">
+                    Play Again
+                  </button>
+                  <a class="button button-secondary" href="/games/">View All Games</a>
+                </div>
+              </div>
+            </div>
+            
+            <div id="milestone-alert" class="milestone-flash">Low Clouds</div>
+          </div>
+
+          <div class="touch-controls" aria-label="Touch controls">
+            <button class="touch-button" id="touch-left" type="button">Hold Left</button>
+            <button class="touch-button" id="touch-right" type="button">Hold Right</button>
+          </div>
+
+          <div class="canvas-note" id="canvas-note">
+            Spring and boost pads cash in big height, crumble pads punish late lines, and the combo bar only stays alive if the next landing comes quickly.
+          </div>
+        </div>
+
+        <aside class="panel info-panel">
+          <section class="info-block">
+            <h2>How to play</h2>
+            <p>
+              Sky Hop is a vertical climber with gentler catches and sharper score pressure. The jump arc now rises longer than it falls, landings forgive more near the edges, and later climbs mix seven pad types while the sky changes color around you.
+            </p>
+          </section>
+
+          <section class="info-block">
+            <h3>Controls</h3>
+            <ul class="tips">
+              <li>Keyboard: Left and Right arrows or A and D</li>
+              <li>Mouse: move across the canvas to steer the hop line</li>
+              <li>Touch: drag on the canvas or hold the mobile D-pad buttons</li>
+              <li>Pause: press P or tap the pause button</li>
+              <li>Start or restart: press Space, Enter, tap the overlay, or tap the canvas</li>
+            </ul>
+          </section>
+
+          <div class="status-note">
+            <strong>Platform mix</strong>
+            <p>
+              Normal, drift, boost, tiny, crumble, spring, and vertical pads all ask for different setup timing. Above 200m, even the safe pads start shrinking.
+            </p>
+          </div>
+
+          <div class="callout">
+            <strong>Combo pressure</strong>
+            <p>
+              The multiplier only holds while the combo bar is alive. Clean landings in quick succession now matter as much as raw height.
+            </p>
+          </div>
+
+          <div class="callout">
+            <strong>Sky Hop tip</strong>
+            <p>
+              Save hard corrections for the way down. The lighter rise and heavier fall make early shaping stronger than late steering, especially on vertical pads.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="content-strip" aria-label="Game summary">
+        <article class="content-card">
+          <p class="mini-label">What It Is</p>
+          <h2>Combo-driven vertical climbing.</h2>
+          <p>
+            Sky Hop is a browser climber about reading the next landing, chaining pads fast enough to keep multiplier alive, and surviving into the harsher upper zones.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Controls</p>
+          <h2>Keyboard, mouse, and touch.</h2>
+          <p>
+            Use left and right or A and D, guide the line with mouse or touch drag, and use the mobile D-pad when you need steadier holds on a narrow platform.
+          </p>
+        </article>
+        <article class="content-card">
+          <p class="mini-label">Tip Or Challenge</p>
+          <h2>Carry a combo past 200m.</h2>
+          <p>
+            Try to keep the bar alive once platforms start shrinking. Spring pads can rescue a climb, but crumble and vertical pads punish hesitation fast.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-content">
+        <div class="footer-brand">
+          <p>Zingcade</p>
+          <p>Static browser games for quick play and clean review cycles.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contact</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="/js/zingcade-progression.js"></script>
+    <script src="/js/progression-ui.js"></script>
+    <script>
+      const canvas = document.getElementById("game");
+      const context = canvas.getContext("2d");
+
+      const overlay = document.getElementById("overlay");
+      const overlayKicker = document.getElementById("overlay-kicker");
+      const overlayTitle = document.getElementById("overlay-title");
+      const overlayText = document.getElementById("overlay-text");
+      const overlaySummary = document.getElementById("overlay-summary");
+      const overlayScore = document.getElementById("overlay-score");
+      const overlayHeight = document.getElementById("overlay-height");
+      const overlayBestHeight = document.getElementById("overlay-best-height");
+      const overlayBestCard = document.getElementById("overlay-best-card");
+      let zcLatestResult = null;
+      
+      const actionButton = document.getElementById("action-button");
+      const pauseButton = document.getElementById("pause-button");
+
+      const scoreElement = document.getElementById("score");
+      const bestScoreElement = document.getElementById("best-score");
+      const hopsElement = document.getElementById("hops");
+      const heightElement = document.getElementById("height-score");
+      const comboElement = document.getElementById("combo-value");
+      const zoneElement = document.getElementById("zone-label");
+      const comboFillElement = document.getElementById("combo-fill");
+      const comboNoteElement = document.getElementById("combo-note");
+      const milestoneElement = document.getElementById("milestone-text");
+      const landingNoteElement = document.getElementById("landing-note");
+      const canvasNoteElement = document.getElementById("canvas-note");
+      const touchLeftButton = document.getElementById("touch-left");
+      const touchRightButton = document.getElementById("touch-right");
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const bestScoreKey = "zingcade-sky-hop-best";
+      const bestHeightKey = "zingcade-sky-hop-best-height";
+
+      const ZONES = [
+        {
+          name: "Low Clouds",
+          start: 0,
+          colors: ["#1b4a70", "#0a1420"],
+          accent: "#8cf5da",
+          note: "Low Clouds are forgiving. Use them to build an early combo before the platform mix widens."
+        },
+        {
+          name: "Sunwash",
+          start: 80,
+          colors: ["#2a567a", "#13243a"],
+          accent: "#ffc672",
+          note: "Sunwash opens the sky and adds more spring and drift pads into the route."
+        },
+        {
+          name: "Violet Drift",
+          start: 160,
+          colors: ["#50386f", "#15172c"],
+          accent: "#c8a7ff",
+          note: "Violet Drift starts asking for cleaner timing on crumble and vertical pads."
+        },
+        {
+          name: "Aurora Rise",
+          start: 260,
+          colors: ["#15435e", "#08101c"],
+          accent: "#8cf5da",
+          note: "Aurora Rise adds color noise and thinner catches. This is where combo control matters."
+        },
+        {
+          name: "Starglass",
+          start: 360,
+          colors: ["#0c1726", "#03070d"],
+          accent: "#ff7d6c",
+          note: "Starglass is the late climb. Platforms are smaller, the sky is darker, and mistakes cost more height."
+        }
+      ];
+
+      const MILESTONES = [60, 120, 180, 260, 340, 420, 520];
+
+      const game = {
+        mode: "start",
+        score: 0,
+        best: loadBestScore(),
+        bestHeight: loadBestHeight(),
+        travel: 0,
+        zoneIndex: 0,
+        hops: 0,
+        comboChain: 0,
+        comboFill: 0,
+        comboMultiplier: 1,
+        nextMilestone: MILESTONES[0],
+        shake: 0,
+        platforms: [],
+        particles: [],
+        floatingTexts: [],
+        stars: [],
+        clouds: [],
+        aurora: [],
+        pointerX: width / 2,
+        pointerActive: false,
+        pointerType: "mouse",
+        input: {
+          left: false,
+          right: false
+        },
+        player: {
+          x: width / 2,
+          y: 620,
+          radius: 17,
+          vx: 0,
+          vy: 0,
+          alpha: 1,
+          rotation: 0,
+          spinSpeed: 0,
+          deathTimer: 0
+        },
+        stageFlash: 0,
+        stageText: "Low Clouds",
+        stageColor: "#8cf5da"
+      };
+
+      let lastTimestamp = 0;
+      let audioContext = null;
+
+      function loadBestScore() {
+        try {
+          return Number(localStorage.getItem(bestScoreKey) || 0);
+        } catch (error) {
+          return 0;
+        }
+      }
+
+      function saveBestScore() {
+        try {
+          localStorage.setItem(bestScoreKey, String(Math.floor(game.best)));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function loadBestHeight() {
+        try {
+          return Number(localStorage.getItem(bestHeightKey) || 0);
+        } catch (error) {
+          return 0;
+        }
+      }
+
+      function saveBestHeight() {
+        try {
+          localStorage.setItem(bestHeightKey, String(Math.floor(game.bestHeight)));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function unlockAudio() {
+        if (!window.AudioContext && !window.webkitAudioContext) {
+          return null;
+        }
+
+        if (!audioContext) {
+          const AudioCtor = window.AudioContext || window.webkitAudioContext;
+          audioContext = new AudioCtor();
+        }
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch(() => {});
+        }
+
+        return audioContext;
+      }
+
+      function tone({
+        frequency = 440,
+        endFrequency = frequency,
+        duration = 0.12,
+        type = "sine",
+        gain = 0.04
+      }) {
+        const audio = unlockAudio();
+        if (!audio) {
+          return;
+        }
+
+        const now = audio.currentTime;
+        const oscillator = audio.createOscillator();
+        const envelope = audio.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          Math.max(50, endFrequency),
+          now + duration
+        );
+
+        envelope.gain.setValueAtTime(0.0001, now);
+        envelope.gain.exponentialRampToValueAtTime(gain, now + 0.02);
+        envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        oscillator.connect(envelope);
+        envelope.connect(audio.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.03);
+      }
+
+      function playPlatformSound(kind) {
+        if (kind === "steady") {
+          tone({ frequency: 410, endFrequency: 500, duration: 0.08, type: "triangle", gain: 0.03 });
+          return;
+        }
+        if (kind === "drift") {
+          tone({ frequency: 460, endFrequency: 620, duration: 0.1, type: "sine", gain: 0.03 });
+          return;
+        }
+        if (kind === "boost") {
+          tone({ frequency: 380, endFrequency: 760, duration: 0.14, type: "sawtooth", gain: 0.055 });
+          return;
+        }
+        if (kind === "tiny") {
+          tone({ frequency: 610, endFrequency: 760, duration: 0.06, type: "square", gain: 0.024 });
+          return;
+        }
+        if (kind === "crumble") {
+          tone({ frequency: 350, endFrequency: 180, duration: 0.12, type: "square", gain: 0.045 });
+          return;
+        }
+        if (kind === "spring") {
+          tone({ frequency: 440, endFrequency: 900, duration: 0.16, type: "triangle", gain: 0.042 });
+          return;
+        }
+        if (kind === "vertical") {
+          tone({ frequency: 500, endFrequency: 420, duration: 0.12, type: "triangle", gain: 0.032 });
+        }
+      }
+
+      function playSound(kind) {
+        if (kind === "start") {
+          tone({ frequency: 290, endFrequency: 430, duration: 0.16, type: "triangle", gain: 0.05 });
+          return;
+        }
+        if (kind === "zone") {
+          tone({ frequency: 320, endFrequency: 520, duration: 0.18, type: "triangle", gain: 0.04 });
+          return;
+        }
+        if (kind === "death") {
+          tone({ frequency: 240, endFrequency: 80, duration: 0.28, type: "sawtooth", gain: 0.055 });
+        }
+      }
+
+      function createSky() {
+        game.stars = Array.from({ length: 46 }, () => ({
+          x: random(0, width),
+          y: random(0, height),
+          size: random(1, 2.8),
+          speed: random(4, 16),
+          alpha: random(0.18, 0.65)
+        }));
+
+        game.clouds = Array.from({ length: 8 }, () => ({
+          x: random(-40, width + 40),
+          y: random(40, height - 70),
+          width: random(74, 132),
+          height: random(22, 40),
+          speed: random(8, 18),
+          alpha: random(0.08, 0.18)
+        }));
+      }
+
+      function resetRun() {
+        game.mode = "playing";
+        game.score = 0;
+        game.travel = 0;
+        game.zoneIndex = 0;
+        game.hops = 0;
+        game.comboChain = 0;
+        game.comboFill = 0;
+        game.comboMultiplier = 1;
+        game.nextMilestone = MILESTONES[0];
+        game.shake = 0;
+        game.platforms = [];
+        game.particles = [];
+        game.floatingTexts = [];
+        game.aurora = [];
+        game.pointerX = width / 2;
+        game.pointerActive = false;
+        game.player.x = width / 2;
+        game.player.y = 620;
+        game.player.vx = 0;
+        game.player.vy = -860;
+        game.player.alpha = 1;
+        game.player.rotation = 0;
+        game.player.spinSpeed = 0;
+        game.player.deathTimer = 0;
+        game.stageFlash = 1.25;
+        game.stageText = ZONES[0].name;
+        game.stageColor = ZONES[0].accent;
+
+        const basePlatform = createPlatform(652, true);
+        basePlatform.x = width / 2 - basePlatform.width / 2;
+        basePlatform.kind = "steady";
+        basePlatform.drift = 0;
+        basePlatform.range = 0;
+        basePlatform.baseY = basePlatform.y;
+        game.platforms.push(basePlatform);
+
+        let highestY = 590;
+        for (let index = 0; index < 11; index += 1) {
+          highestY -= random(62, 96);
+          game.platforms.push(createPlatform(highestY, index < 2));
+        }
+
+        hideOverlay();
+        updateHud();
+      }
+
+      function startRun() {
+        unlockAudio();
+        resetRun();
+        playSound("start");
+      }
+
+      function endRun() {
+        game.mode = "gameover";
+        const reachedHeight = getHeightMeters();
+        const wasRecord = reachedHeight > game.bestHeight;
+        game.best = Math.max(game.best, Math.floor(game.score));
+        game.bestHeight = Math.max(game.bestHeight, reachedHeight);
+        saveBestScore();
+        saveBestHeight();
+        zcLatestResult = window.Zingcade
+          ? window.Zingcade.postRun("sky-hop", {
+              score: Math.floor(game.score),
+              height: reachedHeight,
+              bestHeight: game.bestHeight,
+              hops: game.hops
+            })
+          : null;
+
+        showOverlay({
+          kicker: wasRecord && reachedHeight > 0 ? "New Height Record" : "Fall Complete",
+          title: "Sky Hop",
+          text: wasRecord && reachedHeight > 0
+            ? "You pushed the climb higher than before. Restart while the route memory is still clear."
+            : "Keep the combo alive longer and use spring pads to rescue late routes.",
+          actionLabel: "Restart Hop",
+          showSummary: true,
+          wasRecord: wasRecord && reachedHeight > 0
+        });
+      }
+
+      function showOverlay({ kicker, title, text, actionLabel, showSummary, wasRecord }) {
+        overlayKicker.textContent = kicker;
+        overlayTitle.textContent = title;
+        overlayText.textContent = text;
+        actionButton.textContent = actionLabel;
+        overlaySummary.hidden = !showSummary;
+        overlayScore.textContent = String(Math.floor(game.score));
+        overlayHeight.textContent = getHeightMeters() + "m";
+        overlayBestHeight.textContent = Math.floor(game.bestHeight) + "m";
+        renderZingcadeResult(showSummary ? zcLatestResult : null);
+        
+        if (wasRecord) {
+          overlayBestCard.style.boxShadow = "inset 0 0 15px rgba(140, 245, 218, 0.4)";
+          overlayBestCard.style.borderColor = "rgba(140, 245, 218, 0.6)";
+        } else {
+          overlayBestCard.style.boxShadow = "none";
+          overlayBestCard.style.borderColor = "rgba(255, 255, 255, 0.08)";
+        }
+        
+        overlay.hidden = false;
+      }
+
+      function renderZingcadeResult(result) {
+        const existing = document.getElementById("zc-go-widget");
+        if (existing) {
+          existing.remove();
+        }
+        if (!result || !window.ZingcadeUI) {
+          return;
+        }
+        overlaySummary.insertAdjacentHTML("afterend", '<div id="zc-go-widget">' + window.ZingcadeUI.createGameOverWidget(result) + "</div>");
+      }
+
+      function hideOverlay() {
+        overlay.hidden = true;
+        renderZingcadeResult(null);
+      }
+
+      function activatePrimaryAction() {
+        if (game.mode === "start" || game.mode === "gameover") {
+          startRun();
+          return;
+        }
+
+        if (game.mode === "paused") {
+          game.mode = "playing";
+          hideOverlay();
+        }
+      }
+
+      function togglePause(forcePause = false) {
+        if (game.mode === "playing") {
+          game.mode = "paused";
+          showOverlay({
+            kicker: "Paused",
+            title: "Hold The Climb",
+            text: "Resume when you are ready. The combo bar and platform motion are frozen.",
+            actionLabel: "Resume Hop",
+            showSummary: false,
+            wasRecord: false
+          });
+          return;
+        }
+
+        if (game.mode === "paused" && !forcePause) {
+          game.mode = "playing";
+          hideOverlay();
+        }
+      }
+
+      function setKeyState(code, pressed) {
+        if (code === "ArrowLeft" || code === "KeyA") {
+          game.input.left = pressed;
+        }
+        if (code === "ArrowRight" || code === "KeyD") {
+          game.input.right = pressed;
+        }
+      }
+
+      function getHeightMeters() {
+        return Math.floor(game.travel / 6);
+      }
+
+      function getZone() {
+        return ZONES[game.zoneIndex];
+      }
+
+      function maybeAdvanceZone() {
+        const heightMeters = getHeightMeters();
+        let nextZoneIndex = 0;
+        for (let index = ZONES.length - 1; index >= 0; index -= 1) {
+          if (heightMeters >= ZONES[index].start) {
+            nextZoneIndex = index;
+            break;
+          }
+        }
+
+        if (nextZoneIndex !== game.zoneIndex) {
+          game.zoneIndex = nextZoneIndex;
+          game.stageText = ZONES[nextZoneIndex].name;
+          game.stageColor = ZONES[nextZoneIndex].accent;
+          
+          const milestoneAlert = document.getElementById("milestone-alert");
+          milestoneAlert.textContent = game.stageText;
+          milestoneAlert.style.color = game.stageColor;
+          milestoneAlert.classList.remove("show");
+          void milestoneAlert.offsetWidth;
+          milestoneAlert.classList.add("show");
+          
+          createBurst(width / 2, 188, ZONES[nextZoneIndex].accent, 24, 30, 150);
+          playSound("zone");
+        }
+      }
+
+      function choosePlatformKind(forceSteady) {
+        if (forceSteady) {
+          return "steady";
+        }
+
+        const heightMeters = getHeightMeters();
+        const pool = [
+          { kind: "steady", weight: heightMeters < 80 ? 24 : 14 },
+          { kind: "drift", weight: 16 },
+          { kind: "boost", weight: 12 },
+          { kind: "tiny", weight: heightMeters < 120 ? 10 : 14 },
+          { kind: "crumble", weight: heightMeters < 100 ? 12 : 16 },
+          { kind: "spring", weight: heightMeters < 140 ? 10 : 14 },
+          { kind: "vertical", weight: heightMeters < 120 ? 8 : 16 }
+        ];
+
+        const totalWeight = pool.reduce((sum, entry) => sum + entry.weight, 0);
+        let roll = Math.random() * totalWeight;
+        for (const entry of pool) {
+          roll -= entry.weight;
+          if (roll <= 0) {
+            return entry.kind;
+          }
+        }
+        return "steady";
+      }
+
+      function createPlatform(y, forceSteady) {
+        const kind = choosePlatformKind(forceSteady);
+        const heightMeters = getHeightMeters();
+        let platformWidth = random(88, 128);
+        if (heightMeters > 200) {
+          platformWidth *= 1 - clamp((heightMeters - 200) / 280, 0, 0.28);
+        }
+
+        if (kind === "tiny") {
+          platformWidth *= 0.68;
+        } else if (kind === "boost") {
+          platformWidth *= 0.88;
+        } else if (kind === "spring") {
+          platformWidth *= 0.82;
+        } else if (kind === "vertical") {
+          platformWidth *= 0.84;
+        } else if (kind === "drift") {
+          platformWidth *= 0.94;
+        }
+
+        platformWidth = clamp(platformWidth, 58, 138);
+
+        return {
+          kind,
+          x: random(18, width - platformWidth - 18),
+          y,
+          baseY: y,
+          width: platformWidth,
+          height: 16,
+          drift: kind === "drift" ? random(-86, 86) : 0,
+          range: kind === "vertical" ? random(20, 46) : 0,
+          phase: random(0, Math.PI * 2),
+          state: "ready",
+          timer: 0,
+          vy: 0,
+          flash: 0,
+          spring: 0
+        };
+      }
+
+      function fillPlatformQueue() {
+        let highest =
+          game.platforms.length > 0
+            ? Math.min(...game.platforms.map((platform) => platform.baseY))
+            : height - 80;
+        while (highest > -90 || game.platforms.length < 13) {
+          highest -= random(66, 98);
+          game.platforms.push(createPlatform(highest, false));
+        }
+      }
+
+      function spawnFloatingText(x, y, text, color) {
+        game.floatingTexts.push({
+          x,
+          y,
+          text,
+          color,
+          life: 1
+        });
+      }
+
+      function createBurst(x, y, color, count, speedMin, speedMax) {
+        for (let index = 0; index < count; index += 1) {
+          const angle = random(0, Math.PI * 2);
+          const speed = random(speedMin, speedMax);
+          game.particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: random(2, 5),
+            life: random(0.35, 0.9),
+            color
+          });
+        }
+      }
+
+      function updatePlayer(dt) {
+        const axis = (game.input.right ? 1 : 0) - (game.input.left ? 1 : 0);
+        const player = game.player;
+
+        if (game.pointerActive) {
+          const diff = game.pointerX - player.x;
+          player.vx += clamp(diff * 6.2, -820, 820) * dt;
+        } else if (axis !== 0) {
+          player.vx += axis * 1620 * dt;
+        }
+
+        if (!game.pointerActive && axis === 0) {
+          player.vx *= Math.exp(-5.2 * dt);
+        }
+
+        player.vx = clamp(player.vx, -270, 270);
+        player.x += player.vx * dt;
+        player.x = clamp(player.x, 16, width - 16);
+
+        const gravity = player.vy < 0 ? 1160 : 1850;
+        const previousY = player.y;
+        player.vy += gravity * dt;
+        player.y += player.vy * dt;
+        player.rotation = clamp(player.vx / 340, -0.42, 0.42);
+
+        return previousY;
+      }
+
+      function updatePlatforms(dt) {
+        for (let index = game.platforms.length - 1; index >= 0; index -= 1) {
+          const platform = game.platforms[index];
+
+          if (platform.kind === "drift" && platform.state !== "falling") {
+            platform.x += platform.drift * dt;
+            if (platform.x <= 10 || platform.x + platform.width >= width - 10) {
+              platform.drift *= -1;
+            }
+            platform.x = clamp(platform.x, 10, width - platform.width - 10);
+          }
+
+          if (platform.kind === "vertical" && platform.state !== "falling") {
+            platform.phase += dt * 1.6;
+            platform.y = platform.baseY + Math.sin(platform.phase) * platform.range;
+          } else {
+            platform.y = platform.baseY;
+          }
+
+          if (platform.state === "cracking") {
+            platform.timer -= dt;
+            if (platform.timer <= 0) {
+              platform.state = "falling";
+              platform.vy = 90;
+            }
+          }
+
+          if (platform.state === "falling") {
+            platform.vy += 460 * dt;
+            platform.baseY += platform.vy * dt;
+            platform.y = platform.baseY;
+          }
+
+          if (platform.flash > 0) {
+            platform.flash = Math.max(0, platform.flash - dt * 2.6);
+          }
+
+          if (platform.spring > 0) {
+            platform.spring = Math.max(0, platform.spring - dt * 4.5);
+          }
+
+          if (platform.y > height + 120) {
+            game.platforms.splice(index, 1);
+          }
+        }
+
+        fillPlatformQueue();
+      }
+
+      function getBounceFor(kind) {
+        if (kind === "boost") {
+          return -1040;
+        }
+        if (kind === "spring") {
+          return -1180;
+        }
+        if (kind === "vertical") {
+          return -950;
+        }
+        return -860;
+      }
+
+      function registerLanding(platform) {
+        const player = game.player;
+        player.y = platform.y - player.radius - 1;
+        player.vy = getBounceFor(platform.kind);
+
+        if (platform.kind === "boost") {
+          player.vy -= 40;
+        }
+        if (platform.kind === "spring") {
+          platform.spring = 1;
+        }
+
+        game.hops += 1;
+        game.comboChain = game.comboFill > 0.08 ? game.comboChain + 1 : 1;
+        game.comboFill = Math.min(1, game.comboFill + 0.46);
+        game.comboMultiplier = Math.min(4, 1 + (game.comboChain - 1) * 0.25);
+
+        const scoreGain = Math.round((14 + getHeightMeters() * 0.15) * game.comboMultiplier);
+        game.score += scoreGain;
+        game.best = Math.max(game.best, Math.floor(game.score));
+
+        platform.flash = 0.34;
+        playPlatformSound(platform.kind);
+
+        let label = "+" + scoreGain;
+        let color = "#8cf5da";
+
+        if (platform.kind === "boost") {
+          label = "Boost";
+          color = "#ffc672";
+        } else if (platform.kind === "crumble") {
+          platform.state = "cracking";
+          platform.timer = 0.24;
+          label = "Crack";
+          color = "#ff7d6c";
+        } else if (platform.kind === "spring") {
+          label = "Spring";
+          color = "#ffc672";
+        } else if (platform.kind === "vertical") {
+          label = "Lift";
+          color = "#c8a7ff";
+        } else if (platform.kind === "drift") {
+          label = "Flow";
+          color = "#8cf5da";
+        } else if (platform.kind === "tiny") {
+          label = "Tight";
+          color = "#8cf5da";
+        }
+
+        if (game.comboMultiplier > 1.25) {
+          spawnFloatingText(player.x, platform.y - 20, "x" + game.comboMultiplier.toFixed(1), "#ffc672");
+        }
+        spawnFloatingText(player.x, platform.y - 40, label, color);
+        createBurst(player.x, platform.y, color, platform.kind === "spring" ? 22 : 14, 28, 135);
+      }
+
+      function handleLandings(previousY) {
+        const player = game.player;
+        if (player.vy <= 0) {
+          return;
+        }
+
+        const previousBottom = previousY + player.radius;
+        const currentBottom = player.y + player.radius;
+
+        for (const platform of game.platforms) {
+          if (platform.state === "falling" || platform.state === "cracking") {
+            continue;
+          }
+
+          const top = platform.y;
+          const padding =
+            platform.kind === "tiny"
+              ? 12
+              : platform.kind === "vertical"
+                ? 18
+                : 22;
+          const landingWindowTop = top - 14;
+          const landingWindowBottom = top + 18;
+          const withinVerticalWindow =
+            previousBottom <= landingWindowBottom && currentBottom >= landingWindowTop;
+          const withinHorizontalWindow =
+            player.x >= platform.x - padding && player.x <= platform.x + platform.width + padding;
+
+          if (withinVerticalWindow && withinHorizontalWindow) {
+            registerLanding(platform);
+            return;
+          }
+        }
+      }
+
+      function scrollWorld() {
+        const player = game.player;
+        const liftThreshold = height * 0.36;
+        if (player.y < liftThreshold) {
+          const shift = liftThreshold - player.y;
+          player.y = liftThreshold;
+          game.travel += shift;
+          for (const platform of game.platforms) {
+            platform.baseY += shift;
+            platform.y += shift;
+          }
+          for (const particle of game.particles) {
+            particle.y += shift * 0.25;
+          }
+        }
+      }
+
+      function maybeUpdateMilestone() {
+        const heightMeters = getHeightMeters();
+        const next = MILESTONES.find((value) => value > heightMeters) || (Math.ceil(heightMeters / 100) + 1) * 100;
+        game.nextMilestone = next;
+      }
+
+      function spawnAurora(dt) {
+        if (getHeightMeters() < 260 || game.mode !== "playing") {
+          return;
+        }
+
+        if (Math.random() < dt * 12) {
+          game.aurora.push({
+            x: random(0, width),
+            y: random(40, 220),
+            vx: random(-18, 18),
+            vy: random(-6, 8),
+            size: random(10, 24),
+            life: random(0.6, 1.4),
+            color: Math.random() < 0.5 ? "rgba(140,245,218,0.22)" : "rgba(200,167,255,0.18)"
+          });
+        }
+      }
+
+      function updateAurora(dt) {
+        spawnAurora(dt);
+        for (let index = game.aurora.length - 1; index >= 0; index -= 1) {
+          const particle = game.aurora[index];
+          particle.x += particle.vx * dt;
+          particle.y += particle.vy * dt;
+          particle.life -= dt;
+          if (particle.life <= 0) {
+            game.aurora.splice(index, 1);
+          }
+        }
+      }
+
+      function beginDeath() {
+        game.mode = "dying";
+        game.player.deathTimer = 1.05;
+        game.player.spinSpeed = random(-8, 8);
+        game.shake = 16;
+        createBurst(game.player.x, game.player.y, "#ff7d6c", 26, 30, 180);
+        playSound("death");
+      }
+
+      function updateDeath(dt) {
+        const player = game.player;
+        player.deathTimer -= dt;
+        player.vy += 1550 * dt;
+        player.y += player.vy * dt;
+        player.rotation += player.spinSpeed * dt;
+        player.alpha = Math.max(0, player.alpha - dt * 1.2);
+
+        if (player.deathTimer <= 0) {
+          endRun();
+        }
+      }
+
+      function updateCombo(dt) {
+        if (game.comboChain > 0) {
+          game.comboFill = Math.max(0, game.comboFill - dt * (0.18 + game.comboChain * 0.012));
+          if (game.comboFill === 0) {
+            game.comboChain = 0;
+            game.comboMultiplier = 1;
+          }
+        }
+      }
+
+      function updateParticles(dt) {
+        for (let index = game.particles.length - 1; index >= 0; index -= 1) {
+          const particle = game.particles[index];
+          particle.x += particle.vx * dt;
+          particle.y += particle.vy * dt;
+          particle.vx *= 0.986;
+          particle.vy *= 0.986;
+          particle.life -= dt;
+          if (particle.life <= 0) {
+            game.particles.splice(index, 1);
+          }
+        }
+
+        for (let index = game.floatingTexts.length - 1; index >= 0; index -= 1) {
+          const label = game.floatingTexts[index];
+          label.y -= 28 * dt;
+          label.life -= dt;
+          if (label.life <= 0) {
+            game.floatingTexts.splice(index, 1);
+          }
+        }
+
+        if (game.mode === "playing") {
+          game.particles.push({
+            x: game.player.x + random(-5, 5),
+            y: game.player.y + game.player.radius + 2,
+            vx: random(-22, 22),
+            vy: random(26, 80),
+            size: random(1.6, 4.2),
+            life: random(0.18, 0.38),
+            color: "#8cf5da"
+          });
+        }
+
+        if (game.stageFlash > 0) {
+          game.stageFlash = Math.max(0, game.stageFlash - dt);
+        }
+        if (game.shake > 0) {
+          game.shake = Math.max(0, game.shake - dt * 24);
+        }
+      }
+
+      function updateHud() {
+        const heightMeters = getHeightMeters();
+        game.best = Math.max(game.best, Math.floor(game.score));
+        game.bestHeight = Math.max(game.bestHeight, heightMeters);
+
+        scoreElement.textContent = String(Math.floor(game.score));
+        bestScoreElement.textContent = String(Math.floor(game.best));
+        hopsElement.textContent = String(game.hops);
+        heightElement.textContent = heightMeters + "m";
+        comboElement.textContent = game.comboMultiplier.toFixed(1) + "x";
+        zoneElement.textContent = getZone().name;
+        comboFillElement.style.width = Math.round(game.comboFill * 100) + "%";
+        comboNoteElement.textContent =
+          game.comboChain > 0
+            ? "Chain " + game.comboChain + " is live. Land again before the bar runs dry."
+            : "Land before the bar drains to keep building multiplier.";
+        milestoneElement.textContent =
+          "Reach " + game.nextMilestone + "m. Current height: " + heightMeters + "m.";
+        landingNoteElement.textContent = getZone().note;
+        canvasNoteElement.textContent =
+          heightMeters >= 260
+            ? "Aurora air means thinner pads and stronger combo pressure. Spring and boost pads are your bailout tools."
+            : heightMeters >= 200
+              ? "Platforms are shrinking now. Set your line earlier and let the heavier fall finish the catch."
+              : "Spring and boost pads cash in big height, crumble pads punish late lines, and the combo bar only stays alive if the next landing comes quickly.";
+
+        overlayScore.textContent = String(Math.floor(game.score));
+        overlayHeight.textContent = heightMeters + "m";
+        overlayBestHeight.textContent = Math.floor(game.bestHeight) + "m";
+      }
+
+      function update(dt) {
+        updateParticles(dt);
+        updateAurora(dt);
+
+        if (game.mode === "playing") {
+          const previousY = updatePlayer(dt);
+          updatePlatforms(dt);
+          handleLandings(previousY);
+          scrollWorld();
+          updateCombo(dt);
+          maybeAdvanceZone();
+          maybeUpdateMilestone();
+
+          if (game.player.y - game.player.radius > height + 60) {
+            beginDeath();
+          }
+        } else if (game.mode === "dying") {
+          updatePlatforms(dt);
+          updateDeath(dt);
+        }
+
+        updateHud();
+      }
+
+      function drawBackground() {
+        const zone = getZone();
+        const gradient = context.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, zone.colors[0]);
+        gradient.addColorStop(1, zone.colors[1]);
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, width, height);
+
+        for (const star of game.stars) {
+          const y = (star.y + game.travel * 0.02 + performance.now() * 0.002 * star.speed) % height;
+          context.globalAlpha = star.alpha;
+          context.fillStyle = "#f2fbff";
+          context.fillRect(star.x, y, star.size, star.size);
+        }
+        context.globalAlpha = 1;
+
+        for (const cloud of game.clouds) {
+          const x = ((cloud.x + performance.now() * 0.001 * cloud.speed) % (width + 140)) - 70;
+          context.globalAlpha = cloud.alpha;
+          context.fillStyle = "rgba(255,255,255,0.28)";
+          context.beginPath();
+          context.ellipse(x, cloud.y, cloud.width * 0.35, cloud.height * 0.5, 0, 0, Math.PI * 2);
+          context.ellipse(x + cloud.width * 0.16, cloud.y - 4, cloud.width * 0.25, cloud.height * 0.36, 0, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.globalAlpha = 1;
+
+        if (getHeightMeters() >= 260) {
+          context.lineWidth = 2;
+          for (let band = 0; band < 3; band += 1) {
+            context.beginPath();
+            context.strokeStyle =
+              band % 2 === 0 ? "rgba(140,245,218,0.16)" : "rgba(200,167,255,0.14)";
+            for (let x = 0; x <= width; x += 12) {
+              const y = 120 + band * 30 + Math.sin(x * 0.025 + performance.now() * 0.0015 + band) * 12;
+              if (x === 0) {
+                context.moveTo(x, y);
+              } else {
+                context.lineTo(x, y);
+              }
+            }
+            context.stroke();
+          }
+        }
+
+        for (const particle of game.aurora) {
+          context.globalAlpha = Math.max(0, particle.life * 0.6);
+          context.fillStyle = particle.color;
+          context.beginPath();
+          context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.globalAlpha = 1;
+      }
+
+      function drawPlatforms() {
+        for (const platform of game.platforms) {
+          context.save();
+          context.globalAlpha = platform.state === "falling" ? 0.45 : 1;
+          context.shadowBlur = 12;
+
+          let colorA = "#b9fcf2";
+          let colorB = "#52ceb5";
+          if (platform.kind === "boost") {
+            colorA = "#ffe4a1";
+            colorB = "#ffc672";
+          } else if (platform.kind === "crumble") {
+            colorA = "#ffb2a4";
+            colorB = "#ff7d6c";
+          } else if (platform.kind === "spring") {
+            colorA = "#ffe5ab";
+            colorB = "#ffd45d";
+          } else if (platform.kind === "vertical") {
+            colorA = "#e0cfff";
+            colorB = "#b88cff";
+          }
+
+          context.shadowColor = colorB;
+          const gradient = context.createLinearGradient(
+            platform.x,
+            platform.y,
+            platform.x,
+            platform.y + platform.height
+          );
+          gradient.addColorStop(0, colorA);
+          gradient.addColorStop(1, colorB);
+          context.fillStyle = gradient;
+
+          const springOffset = platform.kind === "spring" ? platform.spring * 6 : 0;
+          roundRect(
+            context,
+            platform.x,
+            platform.y + springOffset,
+            platform.width,
+            platform.height - springOffset,
+            10
+          );
+          context.fill();
+
+          context.fillStyle = "rgba(255,255,255,0.22)";
+          context.fillRect(platform.x + 8, platform.y + springOffset + 3, Math.max(8, platform.width - 16), 3);
+
+          context.strokeStyle = "rgba(255,255,255,0.18)";
+          context.lineWidth = 2 + platform.flash * 8;
+          context.stroke();
+
+          if (platform.kind === "boost") {
+            context.fillStyle = "rgba(255,255,255,0.32)";
+            context.fillRect(platform.x + 10, platform.y + 4, platform.width - 20, 4);
+          }
+
+          if (platform.kind === "drift") {
+            context.strokeStyle = "rgba(255,255,255,0.24)";
+            context.beginPath();
+            context.moveTo(platform.x + 14, platform.y + 8);
+            context.lineTo(platform.x + platform.width - 14, platform.y + 8);
+            context.stroke();
+          }
+
+          if (platform.kind === "crumble") {
+            context.strokeStyle = "rgba(44,0,0,0.25)";
+            context.beginPath();
+            context.moveTo(platform.x + 14, platform.y + 3);
+            context.lineTo(platform.x + platform.width - 18, platform.y + 12);
+            context.moveTo(platform.x + 22, platform.y + 13);
+            context.lineTo(platform.x + platform.width - 26, platform.y + 4);
+            context.stroke();
+          }
+
+          if (platform.kind === "spring") {
+            context.strokeStyle = "rgba(80,50,0,0.45)";
+            context.lineWidth = 2;
+            context.beginPath();
+            for (let x = 12; x <= platform.width - 12; x += 8) {
+              const px = platform.x + x;
+              const py = platform.y + platform.height - 2 + Math.sin((x / 8) * Math.PI) * 4;
+              if (x === 12) {
+                context.moveTo(px, py);
+              } else {
+                context.lineTo(px, py);
+              }
+            }
+            context.stroke();
+          }
+
+          if (platform.kind === "vertical") {
+            context.strokeStyle = "rgba(255,255,255,0.22)";
+            context.beginPath();
+            context.moveTo(platform.x + 10, platform.y + 2);
+            context.lineTo(platform.x + 10, platform.y + platform.height - 2);
+            context.moveTo(platform.x + platform.width - 10, platform.y + 2);
+            context.lineTo(platform.x + platform.width - 10, platform.y + platform.height - 2);
+            context.stroke();
+          }
+
+          context.restore();
+        }
+      }
+
+      function drawPlayer() {
+        const player = game.player;
+        context.save();
+        context.translate(player.x, player.y);
+        context.rotate(player.rotation);
+        context.globalAlpha = player.alpha;
+        context.shadowBlur = 20;
+        context.shadowColor = "rgba(140,245,218,0.85)";
+        const gradient = context.createRadialGradient(-4, -6, 4, 0, 0, player.radius + 6);
+        gradient.addColorStop(0, "#ffffff");
+        gradient.addColorStop(0.24, "#dffdf7");
+        gradient.addColorStop(0.68, "#8cf5da");
+        gradient.addColorStop(1, "rgba(140,245,218,0.08)");
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(0, 0, player.radius, 0, Math.PI * 2);
+        context.fill();
+
+        context.strokeStyle = "rgba(255,255,255,0.3)";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(0, 0, player.radius - 2, 0, Math.PI * 2);
+        context.stroke();
+        context.restore();
+      }
+
+      function drawParticles() {
+        for (const particle of game.particles) {
+          context.globalAlpha = Math.max(0, particle.life * 1.2);
+          context.fillStyle = particle.color;
+          context.beginPath();
+          context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.globalAlpha = 1;
+
+        context.font = '700 16px "Orbitron", sans-serif';
+        context.textAlign = "center";
+        for (const label of game.floatingTexts) {
+          context.globalAlpha = Math.max(0, label.life);
+          context.fillStyle = label.color;
+          context.fillText(label.text, label.x, label.y);
+        }
+        context.globalAlpha = 1;
+      }
+
+      function drawStageFlash() {
+        // Obsolete, handled via DOM milestone alert
+      }
+
+      function draw() {
+        context.clearRect(0, 0, width, height);
+        context.save();
+        if (game.shake > 0) {
+          context.translate(random(-game.shake, game.shake), random(-game.shake, game.shake));
+        }
+
+        drawBackground();
+        drawPlatforms();
+        drawParticles();
+        drawPlayer();
+        drawStageFlash();
+
+        context.restore();
+      }
+
+      function loop(timestamp) {
+        const dt = Math.min(0.033, (timestamp - lastTimestamp) / 1000 || 0);
+        lastTimestamp = timestamp;
+        update(dt);
+        draw();
+        window.requestAnimationFrame(loop);
+      }
+
+      function roundRect(ctx, x, y, rectWidth, rectHeight, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + rectWidth, y, x + rectWidth, y + rectHeight, radius);
+        ctx.arcTo(x + rectWidth, y + rectHeight, x, y + rectHeight, radius);
+        ctx.arcTo(x, y + rectHeight, x, y, radius);
+        ctx.arcTo(x, y, x + rectWidth, y, radius);
+        ctx.closePath();
+      }
+
+      function syncPointer(event, forceActive) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = width / rect.width;
+        game.pointerX = (event.clientX - rect.left) * scaleX;
+        game.pointerType = event.pointerType || "mouse";
+        if (typeof forceActive === "boolean") {
+          game.pointerActive = forceActive;
+        } else if (game.pointerType === "mouse") {
+          game.pointerActive = true;
+        }
+      }
+
+      function bindTouchButton(button, stateKey) {
+        const setState = (value) => {
+          game.input[stateKey] = value;
+          if (value) {
+            unlockAudio();
+          }
+        };
+
+        button.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          setState(true);
+        });
+        button.addEventListener("pointerup", () => setState(false));
+        button.addEventListener("pointercancel", () => setState(false));
+        button.addEventListener("pointerleave", () => setState(false));
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.repeat && (event.code === "Space" || event.code === "Enter")) {
+          return;
+        }
+
+        if (event.code === "Space" || event.code === "Enter") {
+          event.preventDefault();
+          activatePrimaryAction();
+          return;
+        }
+
+        if (event.code === "KeyP") {
+          event.preventDefault();
+          togglePause();
+          return;
+        }
+
+        setKeyState(event.code, true);
+      });
+
+      document.addEventListener("keyup", (event) => {
+        setKeyState(event.code, false);
+      });
+
+      canvas.addEventListener("pointerdown", (event) => {
+        unlockAudio();
+
+        if (typeof canvas.setPointerCapture === "function") {
+          try {
+            canvas.setPointerCapture(event.pointerId);
+          } catch (error) {
+            // Ignore capture errors on browsers that reject non-active pointers.
+          }
+        }
+
+        if (game.mode !== "playing") {
+          activatePrimaryAction();
+          return;
+        }
+        syncPointer(event, true);
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        if (game.mode !== "playing" && event.pointerType !== "mouse") {
+          return;
+        }
+        if (event.pointerType !== "mouse") {
+          // Touch/pen: pointermove only fires while finger is pressed, so always
+          // force pointerActive=true so the player keeps following the drag.
+          syncPointer(event, true);
+        } else {
+          syncPointer(event);
+        }
+      });
+
+      canvas.addEventListener("pointerup", (event) => {
+        if (typeof canvas.hasPointerCapture === "function" && canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+
+        if (game.pointerType !== "mouse") {
+          game.pointerActive = false;
+        }
+      });
+
+      canvas.addEventListener("pointercancel", (event) => {
+        if (typeof canvas.hasPointerCapture === "function" && canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+
+        if (game.pointerType !== "mouse") {
+          game.pointerActive = false;
+        }
+      });
+
+      overlay.addEventListener("click", (event) => {
+        event.preventDefault();
+        activatePrimaryAction();
+      });
+
+      actionButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        activatePrimaryAction();
+      });
+
+      pauseButton.addEventListener("click", () => {
+        if (game.mode === "start" || game.mode === "gameover") {
+          return;
+        }
+        togglePause();
+      });
+
+      bindTouchButton(touchLeftButton, "left");
+      bindTouchButton(touchRightButton, "right");
+
+      window.addEventListener("blur", () => {
+        if (game.mode === "playing") {
+          togglePause(true);
+        }
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden && game.mode === "playing") {
+          togglePause(true);
+        }
+      });
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function random(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      bestScoreElement.textContent = String(game.best);
+      createSky();
+      updateHud();
+      showOverlay({
+        kicker: "Sky Platformer",
+        title: "Sky Hop",
+        text: "Seven platform types, a draining combo bar, and five sky zones make cleaner landings matter more than ever.",
+        actionLabel: "Start Hop",
+        showSummary: false,
+        showGames: false
+      });
+      draw();
+      window.requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>
