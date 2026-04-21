@@ -498,6 +498,54 @@
         margin-bottom: 0.5rem;
       }
 
+      html.embed-mode,
+      html.embed-mode body {
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        overflow: hidden;
+      }
+
+      body.embed-mode {
+        display: block;
+      }
+
+      body.embed-mode .site-header,
+      body.embed-mode .site-footer,
+      body.embed-mode .topbar,
+      body.embed-mode .info-panel,
+      body.embed-mode .content-strip,
+      body.embed-mode .canvas-note,
+      body.embed-mode .actions a.button {
+        display: none !important;
+      }
+
+      body.embed-mode .page {
+        width: 100%;
+        padding: 0;
+      }
+
+      body.embed-mode .layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+      }
+
+      body.embed-mode .panel {
+        box-shadow: none;
+      }
+
+      body.embed-mode .game-panel {
+        padding: 0.6rem 0.55rem 0.65rem;
+      }
+
+      body.embed-mode .control-row {
+        justify-content: flex-end;
+      }
+
+      body.embed-mode .hint {
+        display: none;
+      }
+
       @media (max-width: 980px) {
           .topbar {
             grid-template-columns: 1fr;
@@ -863,6 +911,7 @@
 
     <script src="/js/zingcade-progression.js?v=2"></script>
     <script src="/js/progression-ui.js?v=2"></script>
+    <script src="/raw-games/_shared/embed-mode.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
     <script type="module" src="./src/main.js?v=1"></script>
   </body>

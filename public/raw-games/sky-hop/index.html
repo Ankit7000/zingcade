@@ -457,6 +457,50 @@
         margin-bottom: 0.5rem;
       }
 
+      html.embed-mode,
+      html.embed-mode body {
+        min-height: 0;
+        height: auto;
+        overflow: hidden;
+      }
+
+      body.embed-mode .site-header,
+      body.embed-mode .topbar,
+      body.embed-mode .site-footer,
+      body.embed-mode .info-panel,
+      body.embed-mode .content-strip,
+      body.embed-mode .canvas-note,
+      body.embed-mode .actions a.button {
+        display: none !important;
+      }
+
+      body.embed-mode .page {
+        width: 100%;
+        min-height: 0;
+        padding: 0;
+      }
+
+      body.embed-mode .layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+      }
+
+      body.embed-mode .panel {
+        box-shadow: none;
+      }
+
+      body.embed-mode .game-panel {
+        padding: 0.7rem 0.6rem 0;
+      }
+
+      body.embed-mode .control-row {
+        justify-content: flex-end;
+      }
+
+      body.embed-mode .hint {
+        display: none;
+      }
+
       @media (max-width: 980px) {
         .layout,
         .topbar {
@@ -753,6 +797,7 @@
 
     <script src="/js/zingcade-progression.js"></script>
     <script src="/js/progression-ui.js"></script>
+    <script src="/raw-games/_shared/embed-mode.js"></script>
     <script>
       const canvas = document.getElementById("game");
       const context = canvas.getContext("2d");

@@ -99,6 +99,16 @@
     .content-card h2{font-family:"Orbitron",sans-serif;font-size:1rem;margin-bottom:.5rem}
     .content-card p{color:var(--nd-muted);line-height:1.65}
     .mini-label{margin:0 0 .4rem;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--nd-accent);font-weight:600}
+    html.embed-mode,html.embed-mode body{height:auto;min-height:0;max-height:none;overflow:hidden}
+    body.embed-mode{display:block}
+    body.embed-mode .site-header,body.embed-mode .site-footer,body.embed-mode .topbar,body.embed-mode .info-panel,body.embed-mode .content-strip,body.embed-mode .canvas-tip,body.embed-mode .actions a.button{display:none!important}
+    body.embed-mode .page{width:100%;padding:.65rem 0 0}
+    body.embed-mode .layout{grid-template-columns:minmax(0,1fr);gap:0}
+    body.embed-mode .panel{box-shadow:none}
+    body.embed-mode .game-panel{padding:.6rem .55rem .7rem}
+    body.embed-mode .ctrl-row{justify-content:flex-end}
+    body.embed-mode .hint{display:none}
+    body.embed-mode .canvas-wrap{width:100%}
     @media(max-width:980px){.layout,.topbar{grid-template-columns:1fr}.info-panel{display:none}.meta-pill{justify-self:start}}
     @media(max-width:720px){.site-nav,.nav-play,.meta-pill,.title p,.back-link,.hint,.canvas-tip{display:none}
       .nav-shell{min-height:44px}.page{width:min(100% - .65rem,1160px);padding-top:.35rem}.topbar{margin-bottom:.35rem}
@@ -238,6 +248,7 @@
 </footer>
 <script src="/js/zingcade-progression.js?v=2"></script>
 <script src="/js/progression-ui.js?v=2"></script>
+<script src="/raw-games/_shared/embed-mode.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
 <script type="module" src="./src/main.js?v=3"></script>
 </body>

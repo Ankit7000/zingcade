@@ -28,9 +28,9 @@ export default function GameMeta({ game }: GameMetaProps) {
 
           <div>
             <h3 className="font-bold mb-2">Controls</h3>
-            <ul className="text-sm text-gray-400 space-y-1">
+            <ul className="text-sm text-gray-400 space-y-1 list-disc pl-5">
               {game.controls.map(control => (
-                <li key={control}>• {control}</li>
+                <li key={control}>{control}</li>
               ))}
             </ul>
           </div>

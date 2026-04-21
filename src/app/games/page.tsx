@@ -1,13 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import GameCard from '@/components/GameCard'
 import CategoryPills from '@/components/CategoryPills'
 import { games } from '@/data/games'
 
+function readCategoryFromUrl(categories: string[]) {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const params = new URLSearchParams(window.location.search)
+  const category = params.get('category')
+  return category && categories.includes(category) ? category : null
+}
+
 export default function GamesPage() {
+  const categories = useMemo(() => Array.from(new Set(games.flatMap(game => game.categories))), [])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const categories = Array.from(new Set(games.flatMap(game => game.categories)))
+
+  useEffect(() => {
+    const syncCategory = () => {
+      setSelectedCategory(readCategoryFromUrl(categories))
+    }
+
+    syncCategory()
+    window.addEventListener('popstate', syncCategory)
+
+    return () => {
+      window.removeEventListener('popstate', syncCategory)
+    }
+  }, [categories])
+
+  const handleCategorySelect = (category: string | null) => {
+    setSelectedCategory(category)
+
+    const params = new URLSearchParams(window.location.search)
+    if (category) {
+      params.set('category', category)
+    } else {
+      params.delete('category')
+    }
+
+    const query = params.toString()
+    const nextUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname
+    window.history.replaceState({}, '', nextUrl)
+  }
 
   const filteredGames = selectedCategory
     ? games.filter(game => game.categories.includes(selectedCategory))
@@ -21,7 +59,7 @@ export default function GamesPage() {
         <CategoryPills
           categories={categories}
           selected={selectedCategory}
-          onSelect={setSelectedCategory}
+          onSelect={handleCategorySelect}
         />
       </div>
 

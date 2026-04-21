@@ -584,6 +584,42 @@
         font-weight: 700;
       }
 
+      html.embed-mode,
+      html.embed-mode body {
+        min-height: 0;
+        height: auto;
+        overflow: hidden;
+      }
+
+      body.embed-mode .site-header,
+      body.embed-mode .site-footer,
+      body.embed-mode .topbar,
+      body.embed-mode .info-panel,
+      body.embed-mode .content-strip,
+      body.embed-mode .eyebrow-row,
+      body.embed-mode .overlay-actions a.button {
+        display: none !important;
+      }
+
+      body.embed-mode .page {
+        width: 100%;
+        min-height: 0;
+        padding: 0;
+      }
+
+      body.embed-mode .layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+      }
+
+      body.embed-mode .panel {
+        box-shadow: none;
+      }
+
+      body.embed-mode .game-panel {
+        padding: 0.75rem 0.65rem 0;
+      }
+
       @keyframes boardBump {
         0%,
         100% {
@@ -974,6 +1010,7 @@
 
     <script src="/js/zingcade-progression.js"></script>
     <script src="/js/progression-ui.js"></script>
+    <script src="/raw-games/_shared/embed-mode.js"></script>
     <script>
       const SIZE = 4;
       const MOVE_DURATION = 170;

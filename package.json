@@ -5,7 +5,7 @@
   "main": "fix_hub.js",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build.mjs",
     "start": "next start",
     "lint": "next lint"
   },
