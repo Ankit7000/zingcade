@@ -9,6 +9,7 @@ Thumbs.db
 # Local test output
 *.log
 .next/
+out/
 
 # Local planning notes
 ZINGCADE_BRIEFING.md

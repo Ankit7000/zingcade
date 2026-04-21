@@ -5,7 +5,7 @@
   "main": "fix_hub.js",
   "scripts": {
     "dev": "next dev",
-    "build": "set NODE_ENV=production&& next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },

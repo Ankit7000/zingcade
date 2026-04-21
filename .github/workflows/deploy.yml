@@ -24,5 +24,10 @@ jobs:
             git fetch --prune origin
             git reset --hard origin/main
             git clean -fd
+            npm ci
+            rm -rf .next out
+            NODE_ENV=production npm run build
+            rm -rf index.html 404 404.html 500.html _next games raw-games css js images
+            cp -a out/. .
             echo "Post-deploy git status:"
             git status --short

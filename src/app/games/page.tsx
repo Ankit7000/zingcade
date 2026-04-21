@@ -5,8 +5,6 @@ import GameCard from '@/components/GameCard'
 import CategoryPills from '@/components/CategoryPills'
 import { games } from '@/data/games'
 
-export const dynamic = 'force-dynamic'
-
 export default function GamesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const categories = Array.from(new Set(games.flatMap(game => game.categories)))
