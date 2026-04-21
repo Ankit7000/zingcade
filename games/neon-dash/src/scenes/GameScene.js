@@ -1,6 +1,6 @@
-import { InputManager } from "../../../_shared/phaser/systems/InputManager.js";
-import { SceneTransitions } from "../../../_shared/phaser/systems/SceneTransitions.js";
-import { CFG, H, LANE_HALF_W, LANE_REL, PATTERNS, STAGES, TRACK_D, VPX, VPY, W, project } from "../config.js";
+import { InputManager } from "../../../_shared/phaser/systems/InputManager.js?v=2";
+import { SceneTransitions } from "../../../_shared/phaser/systems/SceneTransitions.js?v=2";
+import { CFG, H, LANE_HALF_W, LANE_REL, PATTERNS, STAGES, TRACK_D, VPX, VPY, W, project } from "../config.js?v=2";
 
 const PhaserScene = globalThis.Phaser.Scene;
 const PhaserMath = globalThis.Phaser.Math;

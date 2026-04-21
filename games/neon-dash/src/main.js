@@ -1,4 +1,4 @@
-import { H, W } from "./config.js";
+import { H, W } from "./config.js?v=2";
 
 async function boot() {
   const root = globalThis;
@@ -22,11 +22,11 @@ async function boot() {
     { MenuScene },
     { GameOverScene }
   ] = await Promise.all([
-    import("./scenes/BootScene.js"),
-    import("./scenes/GameScene.js"),
-    import("./scenes/UIScene.js"),
-    import("./scenes/MenuScene.js"),
-    import("./scenes/GameOverScene.js")
+    import("./scenes/BootScene.js?v=2"),
+    import("./scenes/GameScene.js?v=2"),
+    import("./scenes/UIScene.js?v=2"),
+    import("./scenes/MenuScene.js?v=2"),
+    import("./scenes/GameOverScene.js?v=2")
   ]);
 
   const Phaser = root.Phaser;

@@ -1,4 +1,4 @@
-import { getDom, showOverlay } from "../dom.js";
+import { getDom, showOverlay } from "../dom.js?v=2";
 
 const PhaserScene = globalThis.Phaser.Scene;
 

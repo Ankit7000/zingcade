@@ -1,6 +1,6 @@
-import { StorageService } from "../../../_shared/phaser/systems/StorageService.js";
-import { AudioController } from "../../../_shared/phaser/systems/AudioController.js";
-import { ScoreController } from "../../../_shared/phaser/systems/ScoreController.js";
+import { StorageService } from "../../../_shared/phaser/systems/StorageService.js?v=2";
+import { AudioController } from "../../../_shared/phaser/systems/AudioController.js?v=2";
+import { ScoreController } from "../../../_shared/phaser/systems/ScoreController.js?v=2";
 
 const PhaserScene = globalThis.Phaser.Scene;
 

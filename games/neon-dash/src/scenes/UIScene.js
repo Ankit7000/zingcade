@@ -1,6 +1,6 @@
-import { MobileControls } from "../../../_shared/phaser/systems/MobileControls.js";
-import { PauseController } from "../../../_shared/phaser/systems/PauseController.js";
-import { getDom, hideOverlay, pulse, updatePowerHud } from "../dom.js";
+import { MobileControls } from "../../../_shared/phaser/systems/MobileControls.js?v=2";
+import { PauseController } from "../../../_shared/phaser/systems/PauseController.js?v=2";
+import { getDom, hideOverlay, pulse, updatePowerHud } from "../dom.js?v=2";
 
 const PhaserScene = globalThis.Phaser.Scene;
 
