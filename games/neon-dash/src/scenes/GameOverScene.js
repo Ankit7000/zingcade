@@ -1,5 +1,5 @@
-import { getDom, showOverlay } from "../dom.js?v=2";
-import { STAGES } from "../config.js?v=2";
+import { getDom, showOverlay } from "../dom.js?v=3";
+import { STAGES } from "../config.js?v=3";
 
 const PhaserScene = globalThis.Phaser.Scene;
 
@@ -39,7 +39,7 @@ export class GameOverScene extends PhaserScene {
       summary: this.run,
       note: isNewBest
         ? "New best score. The city bows to you."
-        : `Stage reached: ${STAGES[this.run.stageIndex].label}. Keep one escape lane ready before every jump or slide.`,
+        : `Stage reached: ${STAGES[this.run.stageIndex].label}. Read warnings early and keep one escape lane ready before every counter.`,
       showContinue: !this.run.continueUsed,
       showGames: true,
       result: this.result

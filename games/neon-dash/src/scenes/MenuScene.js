@@ -1,4 +1,4 @@
-import { getDom, showOverlay } from "../dom.js?v=2";
+import { getDom, showOverlay } from "../dom.js?v=3";
 
 const PhaserScene = globalThis.Phaser.Scene;
 
@@ -21,7 +21,7 @@ export class MenuScene extends PhaserScene {
     showOverlay(this.dom, {
       kicker: "PERSPECTIVE RUNNER",
       title: "Neon Dash",
-      text: "Three neon lanes. Dodge barriers, lasers and full blocks. Jump, slide, or shift - choose fast or die.",
+      text: "Three neon lanes. Read the warnings, squeeze through authored rushes, jump low barriers, slide under high beams, and outrun the city.",
       actionLabel: "Start Dash"
     });
   }

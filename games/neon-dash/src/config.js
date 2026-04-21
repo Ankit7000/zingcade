@@ -7,8 +7,8 @@ export const LANE_REL = [-133, 0, 133];
 export const LANE_HALF_W = 133;
 
 export const CFG = {
-  baseSpeed: 380,
-  maxSpeed: 1060,
+  baseSpeed: 390,
+  maxSpeed: 1100,
   boostMult: 1.42,
   playerZ: 0.83,
   laneSwapTime: 0.105,
@@ -18,10 +18,11 @@ export const CFG = {
   slideCollideWindow: 0.72,
   spawnZStart: 0.02,
   despawnZ: 1.08,
-  coinSpawnInterval: [1.8, 3.5],
-  obstSpawnInterval: [2.1, 4.5],
+  coinSpawnInterval: [1.7, 3.2],
+  obstSpawnInterval: [1.95, 3.95],
   nearMissBonus: 1,
-  trainWarnDur: 0.85
+  trainWarnDur: 1.12,
+  comboResetTime: 1.9
 };
 
 export const STAGES = [
@@ -33,47 +34,55 @@ export const STAGES = [
 
 // Authored encounter patterns: minStage = earliest stage that allows this pattern
 export const PATTERNS = [
-  { name: "SPLIT", minStage: 0, groups: [
-    { delay: 0, obstacles: [{ type: "barrier", lanes: [0] }, { type: "barrier", lanes: [2] }] }
+  { name: "SPLIT_JUMP", minStage: 0, groups: [
+    { delay: 0, obstacles: [{ type: "lowBar", lanes: [0] }, { type: "lowBar", lanes: [2] }], coins: [{ lane: 1, count: 5, floatH: 18 }] }
   ]},
   { name: "ZIGZAG", minStage: 0, groups: [
-    { delay: 0,   obstacles: [{ type: "barrier", lanes: [0] }] },
-    { delay: 1.0, obstacles: [{ type: "barrier", lanes: [2] }] },
-    { delay: 2.0, obstacles: [{ type: "barrier", lanes: [0] }] }
+    { delay: 0,   obstacles: [{ type: "block", lanes: [0] }], coins: [{ lane: 1, count: 3, floatH: 18 }] },
+    { delay: 0.98, obstacles: [{ type: "block", lanes: [2] }], coins: [{ lane: 1, count: 3, floatH: 18 }] },
+    { delay: 1.96, obstacles: [{ type: "block", lanes: [0] }], coins: [{ lane: 2, count: 3, floatH: 18 }] }
   ]},
-  { name: "LOW_RUSH", minStage: 0, groups: [
+  { name: "JUMP_RUSH", minStage: 0, groups: [
     { delay: 0,   obstacles: [{ type: "lowBar", lanes: [1] }] },
-    { delay: 1.1, obstacles: [{ type: "lowBar", lanes: [0] }, { type: "lowBar", lanes: [2] }] }
+    { delay: 1.05, obstacles: [{ type: "lowBar", lanes: [0] }, { type: "lowBar", lanes: [2] }], coins: [{ lane: 1, count: 5, floatH: 55 }] }
+  ]},
+  { name: "DUCK_POP", minStage: 0, groups: [
+    { delay: 0, obstacles: [{ type: "highBar", lanes: [1] }], coins: [{ lane: 1, count: 4, floatH: 18 }] },
+    { delay: 1.15, obstacles: [{ type: "lowBar", lanes: [1] }], coins: [{ lane: 1, count: 4, floatH: 55 }] }
   ]},
   { name: "TRAIN_RUSH", minStage: 1, groups: [
-    { delay: 0,   obstacles: [{ type: "train", lanes: [1] }] },
-    { delay: 1.6, obstacles: [{ type: "train", lanes: [0] }] }
+    { delay: 0,   obstacles: [{ type: "train", lanes: [1] }], coins: [{ lane: 2, count: 5, floatH: 18 }] },
+    { delay: 1.55, obstacles: [{ type: "train", lanes: [0] }], coins: [{ lane: 1, count: 4, floatH: 18 }] }
   ]},
   { name: "PRESSURE", minStage: 1, groups: [
     { delay: 0,   obstacles: [{ type: "block", lanes: [0] }, { type: "block", lanes: [1] }] },
-    { delay: 2.0, obstacles: [{ type: "train", lanes: [2] }] }
+    { delay: 1.8, obstacles: [{ type: "highBar", lanes: [2] }], coins: [{ lane: 2, count: 5, floatH: 18 }] }
   ]},
-  { name: "BEAM_SPLIT", minStage: 1, groups: [
-    { delay: 0,   obstacles: [{ type: "barrier", lanes: [0] }, { type: "barrier", lanes: [2] }] },
-    { delay: 1.4, obstacles: [{ type: "beam",    lanes: [1] }] }
+  { name: "SQUEEZE", minStage: 1, groups: [
+    { delay: 0,   obstacles: [{ type: "lowBar", lanes: [0] }, { type: "lowBar", lanes: [2] }], coins: [{ lane: 1, count: 4, floatH: 18 }] },
+    { delay: 1.25, obstacles: [{ type: "highBar", lanes: [1] }] }
   ]},
   { name: "TRIPLE_TAP", minStage: 2, groups: [
-    { delay: 0,   obstacles: [{ type: "barrier", lanes: [1] }] },
-    { delay: 0.75,obstacles: [{ type: "barrier", lanes: [0] }] },
-    { delay: 1.5, obstacles: [{ type: "barrier", lanes: [2] }] }
+    { delay: 0,   obstacles: [{ type: "lowBar", lanes: [1] }] },
+    { delay: 0.88,obstacles: [{ type: "highBar", lanes: [0] }] },
+    { delay: 1.76, obstacles: [{ type: "block", lanes: [2] }] }
   ]},
   { name: "TRAIN_SLIDE", minStage: 2, groups: [
-    { delay: 0,   obstacles: [{ type: "train", lanes: [0], slideDir: 1 }] },
-    { delay: 1.8, obstacles: [{ type: "beam",  lanes: [2] }] }
+    { delay: 0,   obstacles: [{ type: "train", lanes: [0], slideDir: 1 }], coins: [{ lane: 2, count: 5, floatH: 18 }] },
+    { delay: 1.7, obstacles: [{ type: "highBar",  lanes: [2] }] }
+  ]},
+  { name: "DRIFTER_SPLIT", minStage: 2, groups: [
+    { delay: 0, obstacles: [{ type: "drifter", lanes: [2], slideDir: -1 }], coins: [{ lane: 0, count: 5, floatH: 18 }] },
+    { delay: 1.42, obstacles: [{ type: "lowBar", lanes: [1] }] }
   ]},
   { name: "OVERDRIVE_RUN", minStage: 3, groups: [
     { delay: 0,   obstacles: [{ type: "train", lanes: [0] }, { type: "train", lanes: [2] }] },
-    { delay: 2.2, obstacles: [{ type: "beam",  lanes: [1] }] }
+    { delay: 2.05, obstacles: [{ type: "highBar",  lanes: [1] }], coins: [{ lane: 1, count: 6, floatH: 18 }] }
   ]},
   { name: "GAUNTLET", minStage: 3, groups: [
     { delay: 0,   obstacles: [{ type: "block", lanes: [0] }] },
-    { delay: 0.8, obstacles: [{ type: "block", lanes: [2] }] },
-    { delay: 1.6, obstacles: [{ type: "train", lanes: [1], slideDir: -1 }] }
+    { delay: 0.9, obstacles: [{ type: "drifter", lanes: [2], slideDir: -1 }] },
+    { delay: 1.88, obstacles: [{ type: "train", lanes: [1], slideDir: -1 }], coins: [{ lane: 2, count: 4, floatH: 18 }] }
   ]}
 ];
 

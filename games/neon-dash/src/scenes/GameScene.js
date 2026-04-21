@@ -1,6 +1,6 @@
 import { InputManager } from "../../../_shared/phaser/systems/InputManager.js?v=2";
 import { SceneTransitions } from "../../../_shared/phaser/systems/SceneTransitions.js?v=2";
-import { CFG, H, LANE_HALF_W, LANE_REL, PATTERNS, STAGES, TRACK_D, VPX, VPY, W, project } from "../config.js?v=2";
+import { CFG, H, LANE_HALF_W, LANE_REL, PATTERNS, STAGES, TRACK_D, VPX, VPY, W, project } from "../config.js?v=3";
 
 const PhaserScene = globalThis.Phaser.Scene;
 const PhaserMath = globalThis.Phaser.Math;
@@ -42,12 +42,12 @@ export class GameScene extends PhaserScene {
       obstacleTimer: 1.8, coinTimer: 1.2, continueUsed: false,
       tip: "Keep your eyes on the horizon - the faster you are, the earlier you must react.",
       // Spectacle additions
-      warnings: [],       // { lanes, t, maxT, color }
-      nearMissT: 0, nearMissCombo: 0, nearMissText: "",
+      warnings: [],       // { lanes, t, maxT, color, type, dir }
+      nearMissT: 0, nearMissCombo: 0, nearMissResetT: 0, nearMissText: "",
       nearMissX: VPX, nearMissY: VPY + TRACK_D * CFG.playerZ - 68,
       sideTrains: [], sideTrainTimer: 2.2,
       patternCooldown: 11, patternQueue: [],
-      crashFlashT: 0,
+      crashFlashT: 0, laneFlash: [0, 0, 0], actionPulseT: 0, speedPulseT: 0,
     };
     this.score.reset();
     this.registry.set("gameState", mode);
@@ -114,23 +114,27 @@ export class GameScene extends PhaserScene {
     this.state.laneT = 0;
     this.audio.play("move");
     const p = project(LANE_REL[next], CFG.playerZ);
-    this.spawnParticles(p.x, p.y - 30, 0x8cf5da, 4, 70);
+    this.state.laneFlash[next] = 0.26;
+    this.state.actionPulseT = 0.16;
+    this.spawnParticles(p.x, p.y - 30, 0x8cf5da, 7, 95);
   }
 
   jump() {
     if (this.state.jumpProg > 0 || this.state.slideProg > 0) return;
     this.state.jumpProg = 0.001;
+    this.state.actionPulseT = 0.22;
     this.audio.play("jump");
     const p = project(LANE_REL[this.state.targetLane], CFG.playerZ);
-    this.spawnParticles(p.x, p.y - 12, 0x77b8ff, 6, 90);
+    this.spawnParticles(p.x, p.y - 12, 0x77b8ff, 12, 135);
   }
 
   slide() {
     if (this.state.jumpProg > 0 || this.state.slideProg > 0) return;
     this.state.slideProg = 0.001;
+    this.state.actionPulseT = 0.2;
     this.audio.play("slide");
     const p = project(LANE_REL[this.state.targetLane], CFG.playerZ);
-    this.spawnParticles(p.x, p.y - 10, 0xbb78ff, 5, 80);
+    this.spawnParticles(p.x, p.y - 8, 0xbb78ff, 10, 125);
   }
 
   update(_, deltaMs) {
@@ -155,6 +159,7 @@ export class GameScene extends PhaserScene {
     if (nextStage !== s.stageIndex) {
       s.stageIndex = nextStage;
       s.stageFlash = 1.4;
+      s.speedPulseT = 1.1;
       SceneTransitions.flash(this, 0x8cf5da, 180, 0.35);
     }
     s.stageFlash = Math.max(0, s.stageFlash - dt);
@@ -163,11 +168,14 @@ export class GameScene extends PhaserScene {
     const zSpeed = worldSpeed / TRACK_D;
     s.obstacles.forEach(o => {
       o.z += dt * zSpeed;
-      // Sliding train: shifts lane as it approaches
+      // Sliding threats use depth-based progress so readability stays consistent as speed rises.
       if (o.slideDir && o.srcLane !== undefined) {
-        o.slideProg = Math.min(1, (o.slideProg || 0) + dt * 0.5);
+        const startZ = o.type === "drifter" ? 0.16 : 0.13;
+        const endZ = o.type === "drifter" ? 0.66 : 0.72;
+        o.slideProg = PhaserMath.Clamp((o.z - startZ) / (endZ - startZ), 0, 1);
         const destLane = PhaserMath.Clamp(o.srcLane + o.slideDir, 0, 2);
-        if (o.slideProg >= 0.5 && !o.laneShifted) {
+        const commit = o.type === "drifter" ? 0.62 : 0.68;
+        if (o.slideProg >= commit && !o.laneShifted) {
           o.lanes = [destLane]; o.laneShifted = true;
         }
       }
@@ -183,7 +191,12 @@ export class GameScene extends PhaserScene {
     // Timers
     s.warnings = s.warnings.filter(w => { w.t -= dt; return w.t > 0; });
     if (s.nearMissT > 0) { s.nearMissT = Math.max(0, s.nearMissT - dt); }
+    if (s.nearMissResetT > 0) {
+      s.nearMissResetT = Math.max(0, s.nearMissResetT - dt);
+      if (s.nearMissResetT <= 0) s.nearMissCombo = 0;
+    }
     if (s.crashFlashT > 0) { s.crashFlashT = Math.max(0, s.crashFlashT - dt); }
+    if (s.speedPulseT > 0) { s.speedPulseT = Math.max(0, s.speedPulseT - dt); }
     this.updateSideTrains(dt);
 
     // Pattern cooldown
@@ -215,6 +228,10 @@ export class GameScene extends PhaserScene {
     s.magnetT  = Math.max(0, s.magnetT - dt);
     s.boostT   = Math.max(0, s.boostT - dt);
     s.invulnT  = Math.max(0, s.invulnT - dt);
+    s.actionPulseT = Math.max(0, s.actionPulseT - dt);
+    for (let i = 0; i < s.laneFlash.length; i++) {
+      s.laneFlash[i] = Math.max(0, s.laneFlash[i] - dt);
+    }
   }
 
   updateSpawns(dt) {
@@ -224,6 +241,7 @@ export class GameScene extends PhaserScene {
     for (const item of s.patternQueue) {
       if (s.time >= item.triggerTime) {
         item.obstacles.forEach(o => this.spawnSpecific(o.type, o.lanes, o.slideDir));
+        (item.coins || []).forEach(c => this.spawnCoinLine(c.lane, c.count, c.floatH, c.spacing));
       } else { remaining.push(item); }
     }
     s.patternQueue = remaining;
@@ -250,34 +268,39 @@ export class GameScene extends PhaserScene {
     if (!available.length) return;
     const pat = available[PhaserMath.Between(0, available.length - 1)];
     pat.groups.forEach(group => {
-      s.patternQueue.push({ triggerTime: s.time + group.delay, obstacles: group.obstacles });
+      s.patternQueue.push({
+        triggerTime: s.time + group.delay,
+        obstacles: group.obstacles || [],
+        coins: group.coins || []
+      });
     });
   }
 
   spawnObstacle() {
-    // Weights per stage: [barrier, beam, block, double, lowBar, train]
+    // Weights per stage: [barrier, highBar, block, double, lowBar, train, drifter]
     const weightTable = [
-      [4, 1, 2, 0, 2, 0],
-      [3, 2, 2, 1, 2, 1],
-      [2, 2, 3, 2, 2, 2],
-      [1, 2, 2, 3, 2, 3]
+      [2, 1, 2, 0, 3, 0, 0],
+      [2, 2, 2, 1, 3, 1, 0],
+      [1, 2, 3, 2, 2, 2, 1],
+      [1, 2, 2, 2, 2, 3, 1]
     ];
     const weights = weightTable[this.state.stageIndex];
-    const types = ["barrier", "beam", "block", "double", "lowBar", "train"];
+    const types = ["barrier", "highBar", "block", "double", "lowBar", "train", "drifter"];
     let roll = Math.random() * weights.reduce((s, v) => s + v, 0);
     let type = "barrier";
     for (let i = 0; i < weights.length; i++) { roll -= weights[i]; if (roll <= 0) { type = types[i]; break; } }
     const clear = PhaserMath.Between(0, 2);
     const lanes = type === "double" ? [0, 1, 2].filter(l => l !== clear) : [PhaserMath.Between(0, 2)];
-    this.spawnSpecific(type, lanes, 0);
+    const slideDir = type === "drifter" ? driftDirForLane(lanes[0]) : 0;
+    this.spawnSpecific(type, lanes, slideDir);
   }
 
   spawnSpecific(type, lanes, slideDir = 0) {
     const o = { type, lanes: lanes.slice(), z: CFG.spawnZStart, hit: false, passed: false };
-    // Train: optional lateral drift across lanes
-    if (type === "train") {
+    // Major threats and drifters can move laterally, but always telegraph the affected lanes.
+    if (type === "train" || type === "drifter") {
       const dir = (slideDir !== undefined && slideDir !== 0) ? slideDir
-        : (Math.random() < 0.28 ? (lanes[0] === 0 ? 1 : lanes[0] === 2 ? -1 : (Math.random() < 0.5 ? -1 : 1)) : 0);
+        : (type === "train" && Math.random() < 0.14 ? driftDirForLane(lanes[0]) : 0);
       if (dir !== 0) {
         const dest = PhaserMath.Clamp(lanes[0] + dir, 0, 2);
         if (dest !== lanes[0]) {
@@ -288,19 +311,23 @@ export class GameScene extends PhaserScene {
     }
     this.state.obstacles.push(o);
     // Warning indicator at horizon for this obstacle
-    const warnColor = type === "train" ? 0xffc672 : type === "beam" ? 0xbb78ff
-      : (type === "block" || type === "double") ? 0xff5050 : 0xff7d6c;
-    const warnLanes = (type === "train" && o.slideDir)
+    const warnColor = type === "train" ? 0xffc672 : (type === "beam" || type === "highBar") ? 0xbb78ff
+      : type === "drifter" ? 0x77b8ff : (type === "block" || type === "double") ? 0xff5050 : 0xff7d6c;
+    const warnLanes = ((type === "train" || type === "drifter") && o.slideDir)
       ? [o.srcLane, PhaserMath.Clamp(o.srcLane + o.slideDir, 0, 2)]
       : lanes;
-    this.state.warnings.push({ lanes: warnLanes, t: CFG.trainWarnDur, maxT: CFG.trainWarnDur, color: warnColor });
+    this.state.warnings.push({ lanes: warnLanes, t: CFG.trainWarnDur, maxT: CFG.trainWarnDur, color: warnColor, type, dir: o.slideDir || 0 });
   }
 
   spawnCoins() {
     const lane = PhaserMath.Between(0, 2);
     const floatH = Math.random() < 0.22 ? 55 : 18;
-    for (let i = 0; i < 5; i++) {
-      this.state.coins.push({ lane, z: CFG.spawnZStart + i * 0.028, floatH, rot: 0, collected: false });
+    this.spawnCoinLine(lane, 5, floatH);
+  }
+
+  spawnCoinLine(lane, count = 5, floatH = 18, spacing = 0.028) {
+    for (let i = 0; i < count; i++) {
+      this.state.coins.push({ lane, z: CFG.spawnZStart + i * spacing, floatH, rot: 0, collected: false });
     }
   }
 
@@ -326,7 +353,7 @@ export class GameScene extends PhaserScene {
 
       let safe = false;
       if ((o.type === "barrier" || o.type === "lowBar") && s.jumpOffset > 20) safe = true;
-      if ((o.type === "beam"    || o.type === "lowBar") && s.slideProg > 0.05 && s.slideProg < CFG.slideCollideWindow) safe = true;
+      if ((o.type === "beam" || o.type === "highBar") && s.slideProg > 0.05 && s.slideProg < CFG.slideCollideWindow) safe = true;
       if (safe) {
         if (!o.nearMissChecked && o.z > CFG.playerZ + 0.01) {
           o.nearMissChecked = true;
@@ -378,8 +405,9 @@ export class GameScene extends PhaserScene {
 
   triggerNearMiss(lane) {
     const s = this.state;
-    s.nearMissCombo = Math.min(s.nearMissCombo + 1, 5);
-    const coins = s.nearMissCombo;
+    s.nearMissCombo = Math.min(s.nearMissCombo + 1, 4);
+    s.nearMissResetT = CFG.comboResetTime;
+    const coins = Math.min(s.nearMissCombo, 3);
     this.score.addCoins(coins);
     s.nearMissT = 1.3;
     s.nearMissText = s.nearMissCombo > 1 ? `NEAR MISS x${s.nearMissCombo}` : "NEAR MISS!";
@@ -392,6 +420,7 @@ export class GameScene extends PhaserScene {
     }
     this.spawnParticles(p.x, p.y - 50, 0x8cf5da, 10, 110);
     this.game.events.emit("nd:coin");
+    this.game.events.emit("nd:score-pulse");
   }
 
   endRun() {
@@ -467,6 +496,8 @@ export class GameScene extends PhaserScene {
     g.clear();
     g.fillGradientStyle(stage.sky0, stage.sky0, stage.sky1, stage.sky1, 1);
     g.fillRect(0, 0, W, H);
+    this.drawHorizon(g);
+    this.drawSpeedStreaks(g);
     this.drawSideTrains(g);
     this.drawTrack(g);
     this.drawWarnings(g);
@@ -513,6 +544,62 @@ export class GameScene extends PhaserScene {
     });
   }
 
+  drawHorizon(g) {
+    const s = this.state;
+    const stage = STAGES[s.stageIndex];
+    const pulse = 0.5 + Math.sin(s.time * 3.2) * 0.5;
+    g.fillStyle(0x8cf5da, 0.045 + pulse * 0.025);
+    g.fillEllipse(VPX, VPY + 8, 310, 38);
+    g.lineStyle(1, 0x8cf5da, 0.2 + pulse * 0.12);
+    g.lineBetween(34, VPY + 12, W - 34, VPY + 12);
+
+    for (let i = 0; i < 14; i++) {
+      const x = (i * 48 + Math.floor(s.dist * 0.012)) % (W + 80) - 40;
+      const h = 26 + ((i * 19 + s.stageIndex * 13) % 62);
+      const top = VPY + 10 - h;
+      g.fillStyle(stage.build, 0.68);
+      g.fillRect(x, top, 22 + (i % 3) * 7, h);
+      if (i % 3 !== 1) {
+        g.fillStyle(i % 2 ? 0xbb78ff : 0x8cf5da, 0.18);
+        g.fillRect(x + 4, top + 8, 14, 3);
+        g.fillRect(x + 4, top + 19, 14, 3);
+      }
+    }
+
+    if (s.stageIndex >= 1) {
+      for (let z = (s.dist * 0.0012) % 0.24 + 0.08; z < 0.95; z += 0.24) {
+        const left = project(-235, z);
+        const right = project(235, z);
+        const top = project(0, z * 0.58);
+        const alpha = PhaserMath.Clamp(z * 0.12, 0.02, 0.1);
+        g.lineStyle(Math.max(1, z * 2.2), s.stageIndex >= 3 ? 0xff7d6c : 0x77b8ff, alpha);
+        g.beginPath();
+        g.moveTo(left.x, left.y);
+        g.lineTo(top.x, top.y - 35 * z);
+        g.lineTo(right.x, right.y);
+        g.strokePath();
+      }
+    }
+  }
+
+  drawSpeedStreaks(g) {
+    const s = this.state;
+    const intensity = PhaserMath.Clamp((s.speed - CFG.baseSpeed) / (CFG.maxSpeed - CFG.baseSpeed), 0, 1);
+    const boost = s.boostT > 0 ? 0.22 : 0;
+    const pulse = s.speedPulseT > 0 ? s.speedPulseT * 0.08 : 0;
+    const alpha = 0.06 + intensity * 0.09 + boost + pulse;
+    for (let i = 0; i < 12; i++) {
+      const z = ((s.dist * 0.0026 + i * 0.071) % 1);
+      if (z < 0.12) continue;
+      const side = i % 2 === 0 ? -1 : 1;
+      const rel = side * (225 + (i % 4) * 18);
+      const p1 = project(rel, z);
+      const p2 = project(rel * 0.92, Math.min(1, z + 0.08 + intensity * 0.06));
+      g.lineStyle(Math.max(1, z * 3.5), i % 3 === 0 ? 0xbb78ff : 0x8cf5da, alpha * z);
+      g.lineBetween(p1.x, p1.y, p2.x, p2.y);
+    }
+  }
+
   drawTrack(g) {
     g.fillStyle(0x060d18, 1);
     g.beginPath();
@@ -526,11 +613,34 @@ export class GameScene extends PhaserScene {
       g.lineStyle(Math.max(1, z * 2.8), 0x8cf5da, PhaserMath.Clamp(z * 0.26, 0, 0.2));
       g.lineBetween(l.x, l.y, r.x, r.y);
     }
+    for (let z = (this.state.dist * 0.00105) % 0.18 + 0.03; z < 1; z += 0.18) {
+      const left = project(-200, z), right = project(200, z);
+      const alpha = PhaserMath.Clamp(z * 0.09, 0.018, 0.08);
+      g.fillStyle(this.state.stageIndex >= 3 ? 0xff7d6c : 0x77b8ff, alpha);
+      g.fillTriangle(left.x, left.y, right.x, right.y, project(0, Math.min(1, z + 0.07)).x, project(0, Math.min(1, z + 0.07)).y);
+    }
     [-65, 65, -210, 210].forEach(relX => {
       const top = project(relX, 0.04), bot = project(relX, 1);
       const outer = Math.abs(relX) > 100;
       g.lineStyle(outer ? 3 : 1.5, 0x8cf5da, outer ? 0.55 : 0.18);
       g.lineBetween(top.x, top.y, bot.x, bot.y);
+    });
+    this.state.laneFlash.forEach((flash, lane) => {
+      if (flash <= 0) return;
+      const left = LANE_REL[lane] - LANE_HALF_W * 0.44;
+      const right = LANE_REL[lane] + LANE_HALF_W * 0.44;
+      const nearL = project(left, CFG.playerZ + 0.06);
+      const nearR = project(right, CFG.playerZ + 0.06);
+      const farR = project(right * 0.86, 0.18);
+      const farL = project(left * 0.86, 0.18);
+      g.fillStyle(0x8cf5da, flash * 0.25);
+      g.beginPath();
+      g.moveTo(farL.x, farL.y);
+      g.lineTo(farR.x, farR.y);
+      g.lineTo(nearR.x, nearR.y);
+      g.lineTo(nearL.x, nearL.y);
+      g.closePath();
+      g.fillPath();
     });
   }
 
@@ -540,14 +650,35 @@ export class GameScene extends PhaserScene {
       const alpha = (w.t / w.maxT) * (blink ? 0.9 : 0.25);
       w.lanes.forEach(lane => {
         const pos = project(LANE_REL[lane], 0.09);
-        const sz = 14;
+        const laneNear = project(LANE_REL[lane], 0.34);
+        g.lineStyle(5, w.color, alpha * 0.18);
+        g.lineBetween(pos.x, pos.y + 6, laneNear.x, laneNear.y);
+        const sz = w.type === "train" ? 18 : 14;
         g.fillStyle(w.color, alpha);
         g.beginPath();
         g.moveTo(pos.x, pos.y + sz);
         g.lineTo(pos.x - sz, pos.y);
         g.lineTo(pos.x + sz, pos.y);
         g.closePath(); g.fillPath();
+        if (w.type === "highBar") {
+          g.lineStyle(2, 0xffffff, alpha * 0.55);
+          g.lineBetween(pos.x - 10, pos.y + 17, pos.x + 10, pos.y + 17);
+        }
       });
+      if (w.dir) {
+        const from = project(LANE_REL[w.lanes[0]], 0.13);
+        const to = project(LANE_REL[w.lanes[w.lanes.length - 1]], 0.13);
+        const dir = Math.sign(to.x - from.x) || w.dir;
+        const ax = PhaserMath.Linear(from.x, to.x, 0.5);
+        const ay = from.y + 24;
+        g.fillStyle(w.color, alpha * 0.75);
+        g.beginPath();
+        g.moveTo(ax + dir * 16, ay);
+        g.lineTo(ax - dir * 8, ay - 9);
+        g.lineTo(ax - dir * 8, ay + 9);
+        g.closePath();
+        g.fillPath();
+      }
     });
   }
 
@@ -568,19 +699,40 @@ export class GameScene extends PhaserScene {
       }
       const w = LANE_HALF_W * 2 * z * 0.88;
 
-      if (obstacle.type === "beam") {
-        g.fillStyle(0xbb78ff, 0.95);
-        g.fillRect(cx - w / 2, groundY - 88 * z, w, 18 * z);
-        g.fillStyle(0xffffff, 0.5);
-        g.fillRect(cx - w / 2 + 2, groundY - 83 * z, w - 4, 6 * z);
+      if (obstacle.type === "beam" || obstacle.type === "highBar") {
+        const beamY = groundY - 86 * z;
+        g.fillStyle(0xbb78ff, 0.15);
+        g.fillRect(cx - w / 2, beamY - 20 * z, w, 48 * z);
+        g.fillStyle(0xbb78ff, 0.96);
+        g.fillRect(cx - w / 2, beamY, w, 18 * z);
+        g.fillStyle(0xffffff, 0.58);
+        g.fillRect(cx - w / 2 + 2, beamY + 5 * z, w - 4, 5 * z);
+        g.lineStyle(2 * z, 0xbb78ff, 0.75);
+        g.lineBetween(cx - w / 2, groundY - 10 * z, cx - w / 2, beamY + 18 * z);
+        g.lineBetween(cx + w / 2, groundY - 10 * z, cx + w / 2, beamY + 18 * z);
+        for (let mark = -1; mark <= 1; mark += 1) {
+          const mx = cx + mark * w * 0.22;
+          g.fillStyle(0xffffff, 0.28);
+          g.beginPath();
+          g.moveTo(mx, beamY + 31 * z);
+          g.lineTo(mx - 7 * z, beamY + 20 * z);
+          g.lineTo(mx + 7 * z, beamY + 20 * z);
+          g.closePath();
+          g.fillPath();
+        }
         return;
       }
       if (obstacle.type === "train") {
-        const th = 95 * z;
-        g.fillStyle(0xe8a020, 0.96);
-        g.fillRect(cx - w / 2, groundY - th, w, th);
-        g.fillStyle(0xb07010, 0.8);
-        g.fillRect(cx - w / 2, groundY - th * 0.35, w, th * 0.35);
+        const th = 112 * z;
+        const nose = 16 * z;
+        g.fillStyle(0x120d18, 0.34);
+        g.fillEllipse(cx, groundY + 4 * z, w * 1.08, 18 * z);
+        g.fillStyle(0xe8a020, 0.98);
+        g.fillRect(cx - w / 2, groundY - th, w, th - nose);
+        g.fillStyle(0xb07010, 0.95);
+        g.fillTriangle(cx - w / 2, groundY - nose, cx + w / 2, groundY - nose, cx, groundY);
+        g.fillStyle(0x3a2210, 0.55);
+        g.fillRect(cx - w / 2, groundY - th * 0.34, w, th * 0.28);
         // Windows
         const ww = w * 0.3, wh = 13 * z, wy = groundY - th + 8 * z;
         g.fillStyle(0x8cf5da, 0.78);
@@ -592,6 +744,9 @@ export class GameScene extends PhaserScene {
         // Border glow
         g.lineStyle(2.5 * z, 0xffd060, 0.9);
         g.strokeRect(cx - w / 2, groundY - th, w, th);
+        g.fillStyle(0xfff1a8, 0.9);
+        g.fillCircle(cx - w * 0.28, groundY - 22 * z, 6 * z);
+        g.fillCircle(cx + w * 0.28, groundY - 22 * z, 6 * z);
         // Slide direction arrow
         if (obstacle.slideDir && !obstacle.laneShifted && (obstacle.slideProg || 0) < 0.65) {
           const arrAlpha = 1 - (obstacle.slideProg || 0) / 0.65;
@@ -609,16 +764,49 @@ export class GameScene extends PhaserScene {
         }
         return;
       }
+      if (obstacle.type === "drifter") {
+        const h = 70 * z;
+        const tilt = (obstacle.slideDir || 0) * 10 * z * (1 - Math.abs((obstacle.slideProg || 0) - 0.5));
+        g.fillStyle(0x77b8ff, 0.18);
+        g.fillRect(cx - w / 2 - tilt, groundY - h - 8 * z, w, h + 10 * z);
+        g.fillStyle(0xff5050, 0.94);
+        g.beginPath();
+        g.moveTo(cx - w / 2 + tilt, groundY - h);
+        g.lineTo(cx + w / 2 + tilt, groundY - h + 8 * z);
+        g.lineTo(cx + w / 2 - tilt, groundY);
+        g.lineTo(cx - w / 2 - tilt, groundY - 8 * z);
+        g.closePath();
+        g.fillPath();
+        g.fillStyle(0x77b8ff, 0.72);
+        g.fillRect(cx - w * 0.34, groundY - h + 11 * z, w * 0.68, 8 * z);
+        g.lineStyle(2 * z, 0xffffff, 0.24);
+        g.strokeRect(cx - w / 2, groundY - h, w, h);
+        if (obstacle.slideDir) {
+          const ghostX = cx - obstacle.slideDir * 28 * z;
+          g.lineStyle(2 * z, 0x77b8ff, 0.24);
+          g.lineBetween(ghostX, groundY - h * 0.5, cx, groundY - h * 0.5);
+        }
+        return;
+      }
       if (obstacle.type === "lowBar") {
-        const h = 22 * z;
+        const h = 26 * z;
+        g.fillStyle(0x2a1208, 0.3);
+        g.fillEllipse(cx, groundY + 3 * z, w * 0.92, 12 * z);
         g.fillStyle(0xff9944, 0.92);
         g.fillRect(cx - w / 2, groundY - h, w, h);
         g.lineStyle(1.5 * z, 0xffcc88, 0.55);
         g.strokeRect(cx - w / 2, groundY - h, w, h);
+        for (let stripe = -2; stripe <= 2; stripe += 1) {
+          const x = cx + stripe * w * 0.18;
+          g.lineStyle(1.2 * z, 0x3a1608, 0.55);
+          g.lineBetween(x - 7 * z, groundY - h + 4 * z, x + 7 * z, groundY - 4 * z);
+        }
         return;
       }
       // barrier / block / double
       const h = obstacle.type === "barrier" ? 42 * z : 90 * z;
+      g.fillStyle(0x12080a, 0.28);
+      g.fillEllipse(cx, groundY + 3 * z, w * 0.94, 14 * z);
       g.fillStyle(obstacle.type === "barrier" ? 0xff7d6c : 0xff5050, 0.94);
       g.fillRect(cx - w / 2, groundY - h, w, h);
       g.lineStyle(2 * z, 0xffffff, 0.24);
@@ -657,11 +845,16 @@ export class GameScene extends PhaserScene {
     const pos = project(lx, z);
     const groundY = pos.y - this.state.jumpOffset;
     const color = this.state.shield ? 0x77b8ff : this.state.boostT > 0 ? 0xcc88ff : 0x8cf5da;
+    const pulse = this.state.actionPulseT > 0 ? this.state.actionPulseT / 0.22 : 0;
+    g.fillStyle(0x8cf5da, 0.08 + pulse * 0.18);
+    g.fillEllipse(pos.x, pos.y + 4 * z, (64 + pulse * 34) * z, (16 + pulse * 8) * z);
     g.lineStyle(3 * z, color, this.state.invulnT > 0 ? 0.7 : 1);
     g.fillStyle(color, 1);
     if (this.state.slideProg > 0.04 && this.state.slideProg < 0.96) {
       g.fillRect(pos.x - 21 * z, groundY - 16 * z, 42 * z, 16 * z);
       g.fillCircle(pos.x + 15 * z, groundY - 20 * z, 9 * z);
+      g.lineStyle(2 * z, 0xbb78ff, 0.35);
+      g.lineBetween(pos.x - 34 * z, groundY - 6 * z, pos.x + 24 * z, groundY - 6 * z);
     } else {
       const hipY = groundY - 22 * z, shoulderY = hipY - 28 * z, headY = shoulderY - 13 * z;
       const swing = Math.sin(this.state.runCycle * Math.PI * 2) * 13 * z;
@@ -671,6 +864,10 @@ export class GameScene extends PhaserScene {
       g.lineBetween(pos.x, shoulderY + 6 * z, pos.x + swing, shoulderY + 22 * z);
       g.lineBetween(pos.x, shoulderY + 6 * z, pos.x - swing, shoulderY + 22 * z);
       g.fillCircle(pos.x, headY, 11 * z);
+      if (this.state.jumpOffset > 12) {
+        g.lineStyle(2 * z, 0x77b8ff, 0.28);
+        g.lineBetween(pos.x - 18 * z, groundY + 12 * z, pos.x + 18 * z, groundY + 12 * z);
+      }
     }
     if (this.state.shield) {
       g.lineStyle(2.5 * z, 0x77b8ff, 0.5);
@@ -708,4 +905,10 @@ function powerColor(type) {
   if (type === "shield") return 0x77b8ff;
   if (type === "magnet") return 0xffc672;
   return 0xbb78ff;
+}
+
+function driftDirForLane(lane) {
+  if (lane <= 0) return 1;
+  if (lane >= 2) return -1;
+  return Math.random() < 0.5 ? -1 : 1;
 }

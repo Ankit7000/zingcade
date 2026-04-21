@@ -1,6 +1,6 @@
 import { MobileControls } from "../../../_shared/phaser/systems/MobileControls.js?v=2";
 import { PauseController } from "../../../_shared/phaser/systems/PauseController.js?v=2";
-import { getDom, hideOverlay, pulse, updatePowerHud } from "../dom.js?v=2";
+import { getDom, hideOverlay, pulse, updatePowerHud } from "../dom.js?v=3";
 
 const PhaserScene = globalThis.Phaser.Scene;
 
@@ -29,9 +29,13 @@ export class UIScene extends PhaserScene {
       canPause: () => this.registry.get("gameState") === "playing"
     });
 
+    this.coinPulse = () => pulse(this.dom.coins);
+    this.powerPulse = () => pulse(this.dom.powerName);
+    this.scorePulse = () => pulse(this.dom.score);
     this.game.events.on("nd:hud", this.updateHud, this);
-    this.game.events.on("nd:coin", () => pulse(this.dom.coins));
-    this.game.events.on("nd:power", () => pulse(this.dom.powerName));
+    this.game.events.on("nd:coin", this.coinPulse);
+    this.game.events.on("nd:power", this.powerPulse);
+    this.game.events.on("nd:score-pulse", this.scorePulse);
     this.game.events.on("nd:show-pause", this.showPause, this);
     this.game.events.on("nd:hide-overlay", this.hideOverlay, this);
     this.events.once("shutdown", () => this.shutdown());
@@ -82,6 +86,9 @@ export class UIScene extends PhaserScene {
       this.dom.continueBtn.removeEventListener("click", this.resumeHandler);
     }
     this.game.events.off("nd:hud", this.updateHud, this);
+    this.game.events.off("nd:coin", this.coinPulse);
+    this.game.events.off("nd:power", this.powerPulse);
+    this.game.events.off("nd:score-pulse", this.scorePulse);
     this.game.events.off("nd:hide-overlay", this.hideOverlay, this);
   }
 }
