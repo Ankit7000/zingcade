@@ -347,11 +347,12 @@ window.ZingcadeUI = (function () {
 
   function iconFor(key) {
     const icons = {
-      token: "XP", map: "3", seven: "7", rank: "R", calendar: "D", target: "T",
+      token: "XP", map: "3", seven: "7", sweep: "ALL", rank: "R", calendar: "D", target: "T",
       merge: "M", dragon: "D", score: "S", void: "V", storm: "R", runner: "R",
       bolt: "B", machine: "A", tokens: "$", prestige: "P", row: "5", vault: "V",
       streak: "3", perfect: "1", save: "6", ball: "B", chain: "C", redline: "R",
-      cloud: "S", height: "H", aurora: "A", dash: "N", coin: "C", overdrive: "O"
+      cloud: "S", height: "H", aurora: "A", dash: "N", coin: "C", overdrive: "O",
+      crown: "C", quarter: "25", loop: "L", control: "50"
     };
     return icons[key] || "*";
   }

@@ -102,13 +102,30 @@ window.Zingcade = (function () {
       metric: (stats) => Math.max(0, stats.score || 0),
       bestLabel: (stats) => `${fmt(stats.score || 0)} pts`,
       xp: (stats) => 25 + Math.floor(Math.max(0, stats.score || 0) * 1.5) + Math.max(0, stats.coins || 0) * 2
+    },
+    "color-crown": {
+      name: "Color Crown",
+      category: "Growth / Control",
+      rankTarget: 100000,
+      metricLabel: "Best control",
+      metric: (stats) =>
+        Math.max(0, stats.score || 0) +
+        Math.max(0, stats.capturePercent || stats.bestCapture || 0) * 900 +
+        Math.max(0, stats.largestCapture || 0) * 22,
+      bestLabel: (stats) => `${fmt(stats.score || 0)} pts / ${fmt(stats.capturePercent || stats.bestCapture || 0)}%`,
+      xp: (stats) =>
+        35 +
+        Math.floor(Math.max(0, stats.score || 0) / 85) +
+        Math.floor(Math.max(0, stats.capturePercent || stats.bestCapture || 0) * 5) +
+        Math.floor(Math.max(0, stats.largestCapture || 0) / 8) +
+        (stats.cleared ? 250 : 0)
     }
   };
 
   const BADGE_DEFINITIONS = [
     badge("global:first-cabinet", "First Cabinet", "Play your first Zingcade cabinet.", "global", null, "token", "common", (ctx) => ctx.profile.totalSessions >= 1),
     badge("global:arcade-explorer", "Arcade Explorer", "Play 3 different cabinets.", "global", null, "map", "rare", (ctx) => playedGames(ctx.profile).length >= 3, (ctx) => progress(playedGames(ctx.profile).length, 3)),
-    badge("global:seven-cabinet-run", "Seven Cabinet Run", "Play every live Zingcade cabinet.", "global", null, "seven", "legendary", (ctx) => playedGames(ctx.profile).length >= Object.keys(GAME_CONFIG).length, (ctx) => progress(playedGames(ctx.profile).length, Object.keys(GAME_CONFIG).length)),
+    badge("global:seven-cabinet-run", "Full Cabinet Run", "Play every live Zingcade cabinet.", "global", null, "sweep", "legendary", (ctx) => playedGames(ctx.profile).length >= Object.keys(GAME_CONFIG).length, (ctx) => progress(playedGames(ctx.profile).length, Object.keys(GAME_CONFIG).length)),
     badge("global:rank-up", "Rank Up", "Reach Silver global rank.", "global", null, "rank", "rare", (ctx) => getRankInfo(ctx.profile.totalXp).rank.id !== "bronze"),
     badge("global:daily-loyalist", "Daily Loyalist", "Solve 3 Daily Vault challenges.", "global", null, "calendar", "epic", (ctx) => stat(ctx.profile, "daily-vault", "dailyWins") >= 3, (ctx) => progress(stat(ctx.profile, "daily-vault", "dailyWins"), 3)),
     badge("global:score-hunter", "Score Hunter", "Set a best score in 4 different cabinets.", "global", null, "target", "epic", (ctx) => scoredGames(ctx.profile).length >= 4, (ctx) => progress(scoredGames(ctx.profile).length, 4)),
@@ -142,7 +159,12 @@ window.Zingcade = (function () {
 
     badge("neon:first-dash", "First Dash", "Complete a Neon Dash run.", "game", "neon-dash", "dash", "common", (ctx) => g(ctx).totalPlays >= 1),
     badge("neon:coin-line", "Coin Line", "Collect 25 coins in one run.", "game", "neon-dash", "coin", "rare", (ctx) => stat(ctx.profile, "neon-dash", "bestCoins") >= 25, (ctx) => progress(stat(ctx.profile, "neon-dash", "bestCoins"), 25)),
-    badge("neon:overdrive", "Overdrive Run", "Score 150 in Neon Dash.", "game", "neon-dash", "overdrive", "epic", (ctx) => g(ctx).bestMetric >= 150, (ctx) => progress(g(ctx).bestMetric, 150))
+    badge("neon:overdrive", "Overdrive Run", "Score 150 in Neon Dash.", "game", "neon-dash", "overdrive", "epic", (ctx) => g(ctx).bestMetric >= 150, (ctx) => progress(g(ctx).bestMetric, 150)),
+
+    badge("crown:first-claim", "First Claim", "Finish a Color Crown run.", "game", "color-crown", "crown", "common", (ctx) => g(ctx).totalPlays >= 1),
+    badge("crown:quarter-map", "Quarter Crown", "Capture 25% of the Color Crown arena.", "game", "color-crown", "quarter", "rare", (ctx) => stat(ctx.profile, "color-crown", "capturePercent") >= 25 || stat(ctx.profile, "color-crown", "bestCapture") >= 25, (ctx) => progress(Math.max(stat(ctx.profile, "color-crown", "capturePercent"), stat(ctx.profile, "color-crown", "bestCapture")), 25)),
+    badge("crown:big-loop", "Big Loop", "Claim 120 cells in one Color Crown capture.", "game", "color-crown", "loop", "epic", (ctx) => stat(ctx.profile, "color-crown", "largestCapture") >= 120, (ctx) => progress(stat(ctx.profile, "color-crown", "largestCapture"), 120)),
+    badge("crown:half-map", "Crown Control", "Capture 50% of the Color Crown arena.", "game", "color-crown", "control", "legendary", (ctx) => stat(ctx.profile, "color-crown", "capturePercent") >= 50 || stat(ctx.profile, "color-crown", "bestCapture") >= 50, (ctx) => progress(Math.max(stat(ctx.profile, "color-crown", "capturePercent"), stat(ctx.profile, "color-crown", "bestCapture")), 50))
   ];
 
   let profile = null;
