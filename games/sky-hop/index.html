@@ -750,6 +750,8 @@
       </div>
     </footer>
 
+    <script src="/js/zingcade-progression.js"></script>
+    <script src="/js/progression-ui.js"></script>
     <script>
       const canvas = document.getElementById("game");
       const context = canvas.getContext("2d");
@@ -763,6 +765,7 @@
       const overlayHeight = document.getElementById("overlay-height");
       const overlayBestHeight = document.getElementById("overlay-best-height");
       const overlayBestCard = document.getElementById("overlay-best-card");
+      let zcLatestResult = null;
       
       const actionButton = document.getElementById("action-button");
       const pauseButton = document.getElementById("pause-button");
@@ -1077,6 +1080,14 @@
         game.bestHeight = Math.max(game.bestHeight, reachedHeight);
         saveBestScore();
         saveBestHeight();
+        zcLatestResult = window.Zingcade
+          ? window.Zingcade.postRun("sky-hop", {
+              score: Math.floor(game.score),
+              height: reachedHeight,
+              bestHeight: game.bestHeight,
+              hops: game.hops
+            })
+          : null;
 
         showOverlay({
           kicker: wasRecord && reachedHeight > 0 ? "New Height Record" : "Fall Complete",
@@ -1099,6 +1110,7 @@
         overlayScore.textContent = String(Math.floor(game.score));
         overlayHeight.textContent = getHeightMeters() + "m";
         overlayBestHeight.textContent = Math.floor(game.bestHeight) + "m";
+        renderZingcadeResult(showSummary ? zcLatestResult : null);
         
         if (wasRecord) {
           overlayBestCard.style.boxShadow = "inset 0 0 15px rgba(140, 245, 218, 0.4)";
@@ -1111,8 +1123,20 @@
         overlay.hidden = false;
       }
 
+      function renderZingcadeResult(result) {
+        const existing = document.getElementById("zc-go-widget");
+        if (existing) {
+          existing.remove();
+        }
+        if (!result || !window.ZingcadeUI) {
+          return;
+        }
+        overlaySummary.insertAdjacentHTML("afterend", '<div id="zc-go-widget">' + window.ZingcadeUI.createGameOverWidget(result) + "</div>");
+      }
+
       function hideOverlay() {
         overlay.hidden = true;
+        renderZingcadeResult(null);
       }
 
       function activatePrimaryAction() {

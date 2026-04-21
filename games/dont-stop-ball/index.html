@@ -728,6 +728,8 @@
       </div>
     </footer>
 
+    <script src="/js/zingcade-progression.js"></script>
+    <script src="/js/progression-ui.js"></script>
     <script>
       const canvas = document.getElementById("game");
       const context = canvas.getContext("2d");
@@ -743,6 +745,7 @@
       const overlayScore = document.getElementById("overlay-score");
       const overlayBest = document.getElementById("overlay-best");
       const overlayChain = document.getElementById("overlay-chain");
+      let zcLatestResult = null;
 
       const scoreElement = document.getElementById("score");
       const bestScoreElement = document.getElementById("best-score");
@@ -1045,6 +1048,13 @@
         game.best = Math.max(game.best, Math.floor(game.score));
         saveBestScore();
         playSound("gameover");
+        zcLatestResult = window.Zingcade
+          ? window.Zingcade.postRun("dont-stop-ball", {
+              score: Math.floor(game.score),
+              bestStreak: game.bestStreak,
+              stage: getStage().name
+            })
+          : null;
 
         const kicker = game.newBestTriggered ? "New Best Run" : "Run Broken";
         const text = game.newBestTriggered
@@ -1071,12 +1081,25 @@
         overlayBest.textContent = String(Math.floor(game.best));
         overlayChain.textContent = String(game.bestStreak);
         gamesLink.hidden = !showGames;
+        renderZingcadeResult(showSummary ? zcLatestResult : null);
         overlay.hidden = false;
+      }
+
+      function renderZingcadeResult(result) {
+        const existing = document.getElementById("zc-go-widget");
+        if (existing) {
+          existing.remove();
+        }
+        if (!result || !window.ZingcadeUI) {
+          return;
+        }
+        overlaySummary.insertAdjacentHTML("afterend", '<div id="zc-go-widget">' + window.ZingcadeUI.createGameOverWidget(result) + "</div>");
       }
 
       function hideOverlay() {
         overlay.hidden = true;
         gamesLink.hidden = true;
+        renderZingcadeResult(null);
       }
 
       function activatePrimaryAction() {

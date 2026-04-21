@@ -570,6 +570,8 @@
       }
     </script>
 
+    <script src="/js/zingcade-progression.js"></script>
+    <script src="/js/progression-ui.js"></script>
     <!-- GAME ENGINE LOGIC -->
     <script>
       // The 6 SVG symbols (Geometric Cyberpunk Runes)
@@ -602,6 +604,7 @@
       const overBest = document.getElementById("over-best");
       const btnPrimary = document.getElementById("btn-primary");
       const solutionReveal = document.getElementById("solution-reveal");
+      let zcLatestResult = null;
 
       let mode = "daily"; // or "practice"
       let secretCode = [];
@@ -875,6 +878,15 @@
           saveData();
           markDailyComplete();
         }
+        zcLatestResult = window.Zingcade
+          ? window.Zingcade.postRun("daily-vault", {
+              won: true,
+              mode,
+              attempts: currentRow + 1,
+              streak: currentStreak,
+              bestStreak
+            })
+          : null;
         
         setTimeout(() => {
           showOverlay({
@@ -894,6 +906,15 @@
           saveData();
           markDailyComplete();
         }
+        zcLatestResult = window.Zingcade
+          ? window.Zingcade.postRun("daily-vault", {
+              won: false,
+              mode,
+              attempts: ROWS,
+              streak: currentStreak,
+              bestStreak
+            })
+          : null;
         
         setTimeout(() => {
           showOverlay({
@@ -913,6 +934,7 @@
         overlayText.textContent = text;
         overStreak.textContent = currentStreak;
         overBest.textContent = bestStreak;
+        renderZingcadeResult(zcLatestResult);
         
         if (showSolution) {
           solutionReveal.hidden = false;
@@ -940,6 +962,7 @@
       }
       
       function showOverlayCompletedDaily() {
+        zcLatestResult = null;
         overlayKicker.textContent = "Cooldown Active";
         overlayKicker.className = "overlay-kicker";
         overlayTitle.textContent = "Come Back Tomorrow";
@@ -947,6 +970,7 @@
         solutionReveal.hidden = true;
         overStreak.textContent = currentStreak;
         overBest.textContent = bestStreak;
+        renderZingcadeResult(null);
         
         btnPrimary.textContent = "Play Practice Mode";
         btnPrimary.onclick = () => {
@@ -958,6 +982,18 @@
 
       function hideOverlay() {
         overlay.hidden = true;
+        renderZingcadeResult(null);
+      }
+
+      function renderZingcadeResult(result) {
+        const existing = document.getElementById("zc-go-widget");
+        if (existing) {
+          existing.remove();
+        }
+        if (!result || !window.ZingcadeUI) {
+          return;
+        }
+        document.querySelector(".overlay-stats").insertAdjacentHTML("afterend", '<div id="zc-go-widget">' + window.ZingcadeUI.createGameOverWidget(result) + "</div>");
       }
 
       // Input Bindings

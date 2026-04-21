@@ -223,6 +223,8 @@
     </nav>
   </div>
 </footer>
+<script src="/js/zingcade-progression.js"></script>
+<script src="/js/progression-ui.js"></script>
 <script>
 // ============================================================
 // NEON DASH - SUBWAY SURFERS STYLE PERSPECTIVE RUNNER ENGINE
@@ -302,6 +304,7 @@ const actionBtn = document.getElementById('actionBtn');
 const contBtn   = document.getElementById('continueBtn');
 const gamesLink = document.getElementById('gamesLink');
 const pauseBtn  = document.getElementById('pauseBtn');
+let zcLatestResult = null;
 
 // ---- LOCAL STORAGE ----
 function lsGet(k){ try{ return Number(localStorage.getItem(k)||0); }catch(e){ return 0; } }
@@ -1025,6 +1028,14 @@ function triggerGameOver(){
   const isNewBest = G.score > G.best;
   if(G.coinCount>G.bestCoins){ G.bestCoins=G.coinCount; lsSet('nd_bestcoins',G.bestCoins); }
   if(isNewBest){ G.best=G.score; lsSet('nd_best',G.best); }
+  zcLatestResult = window.Zingcade
+    ? window.Zingcade.postRun('neon-dash', {
+        score: G.score,
+        coins: G.coinCount,
+        bestCoins: G.bestCoins,
+        stage: STAGES[G.stageIdx].label
+      })
+    : null;
   showGameOver(isNewBest);
 }
 
@@ -1067,7 +1078,15 @@ function showGameOver(isNewBest=false){
     contBtn.hidden=true;
   }
   gamesLink.hidden=false;
+  renderZingcadeResult(zcLatestResult);
   overlay.hidden=false;
+}
+
+function renderZingcadeResult(result){
+  const existing=document.getElementById('zc-go-widget');
+  if(existing) existing.remove();
+  if(!result||!window.ZingcadeUI) return;
+  onote.insertAdjacentHTML('afterend','<div id="zc-go-widget">'+window.ZingcadeUI.createGameOverWidget(result)+'</div>');
 }
 
 function continueRun(){
@@ -1089,6 +1108,7 @@ function showOverlay(kicker,title,text){
 function hideOverlay(){
   overlay.hidden=true;
   osummary.hidden=true; onote.hidden=true;
+  renderZingcadeResult(null);
   actionBtn.hidden=false; contBtn.hidden=true; gamesLink.hidden=true;
 }
 

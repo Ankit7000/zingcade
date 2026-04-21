@@ -972,6 +972,8 @@
       </div>
     </footer>
 
+    <script src="/js/zingcade-progression.js"></script>
+    <script src="/js/progression-ui.js"></script>
     <script>
       const SIZE = 4;
       const MOVE_DURATION = 170;
@@ -1122,6 +1124,7 @@
       const overlayEvolutionElement = document.getElementById("overlay-evolution");
       const overlayRankElement = document.getElementById("overlay-rank");
       const overlayRestartButton = document.getElementById("overlay-restart");
+      let zcLatestResult = null;
       
       const milestoneAlert = document.getElementById("milestone-alert");
       const milestoneText = document.getElementById("milestone-text");
@@ -1513,6 +1516,13 @@
 
       function showGameOver() {
         const profileRank = getRankState(state.bestScore, state.bestTier);
+        zcLatestResult = window.Zingcade
+          ? window.Zingcade.postRun("merge-monster-2048", {
+              score: state.score,
+              bestTier: state.highestTierThisRun,
+              tier: state.highestTierThisRun
+            })
+          : null;
         overlayScoreElement.textContent = String(state.score);
         overlayBestElement.textContent = String(state.bestScore);
         overlayEvolutionElement.textContent = getTierMeta(state.highestTierThisRun).name;
@@ -1525,12 +1535,25 @@
           overlayBestCardElement.style.boxShadow = "none";
           overlayBestCardElement.style.borderColor = "rgba(255, 255, 255, 0.08)";
         }
+        renderZingcadeResult(zcLatestResult);
         
         overlayElement.hidden = false;
       }
 
       function hideGameOver() {
         overlayElement.hidden = true;
+        renderZingcadeResult(null);
+      }
+
+      function renderZingcadeResult(result) {
+        const existing = document.getElementById("zc-go-widget");
+        if (existing) {
+          existing.remove();
+        }
+        if (!result || !window.ZingcadeUI) {
+          return;
+        }
+        document.querySelector(".overlay-summary").insertAdjacentHTML("afterend", '<div id="zc-go-widget">' + window.ZingcadeUI.createGameOverWidget(result) + "</div>");
       }
 
       function bumpBoard() {

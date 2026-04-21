@@ -716,19 +716,22 @@
           playSound("score");
         }
         
-        // Compute Rank
-        let curRank = RANKS[0];
-        for (let i = 0; i < RANKS.length; i++) {
-          if (state.bestScore < RANKS[i].cap) {
-            curRank = RANKS[i];
-            break;
-          }
+        // Zingcade Progression Hook
+        if (window.Zingcade) {
+            const zcRes = window.Zingcade.postRun('rainball-rush', { score: finalScore });
+            if (zcRes) {
+                goRank.textContent = zcRes.gameRank.rank.name;
+                goRank.style.color = zcRes.gameRank.rank.color;
+                
+                // Inject XP Widget
+                let existing = document.getElementById('zc-go-widget');
+                if (existing) existing.remove();
+                
+                const widgetHtml = window.ZingcadeUI.createGameOverWidget(zcRes);
+                const rankBox = document.querySelector('.rank-box');
+                rankBox.insertAdjacentHTML('afterend', '<div id="zc-go-widget">' + widgetHtml + '</div>');
+            }
         }
-        
-        goScore.textContent = finalScore;
-        goRecord.hidden = !isNewBest;
-        goRank.textContent = curRank.name;
-        goRank.style.color = curRank.color;
         
         document.getElementById("gameover-overlay").hidden = false;
       }
@@ -736,5 +739,7 @@
       // Initial visual setup
       resize();
     </script>
+    <script src="/js/zingcade-progression.js"></script>
+    <script src="/js/progression-ui.js"></script>
   </body>
 </html>
