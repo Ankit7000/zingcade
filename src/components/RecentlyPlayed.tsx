@@ -20,14 +20,14 @@ export default function RecentlyPlayed() {
 
   if (recentGames.length === 0) {
     return (
-      <div className="arcade-card">
+      <div className="arcade-card p-4">
         <p className="text-gray-400">No recently played games. Start playing!</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
       {recentGames.map(game => (
         <GameCard key={game.slug} game={game} />
       ))}

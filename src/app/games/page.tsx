@@ -52,10 +52,16 @@ export default function GamesPage() {
     : games
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">All Games</h1>
+    <div className="container mx-auto space-y-5 px-4 py-5 sm:space-y-6 sm:py-8">
+      <div className="space-y-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">Arcade Shelf</p>
+        <h1 className="text-3xl font-bold">All Games</h1>
+        <p className="max-w-2xl text-sm leading-6 text-gray-400">
+          Browse by vibe, scan the cabinet art, and tap straight into a game.
+        </p>
+      </div>
 
-      <div className="mb-6">
+      <div>
         <CategoryPills
           categories={categories}
           selected={selectedCategory}
@@ -63,7 +69,12 @@ export default function GamesPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="flex items-center justify-between gap-4 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+        <span>{selectedCategory ?? 'All categories'}</span>
+        <span>{filteredGames.length} games</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
         {filteredGames.map(game => (
           <GameCard key={game.slug} game={game} />
         ))}

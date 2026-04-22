@@ -29,23 +29,26 @@ export default async function GamePage({ params }: GamePageProps) {
     .slice(0, 4)
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="container mx-auto px-4 pb-10 pt-3 sm:py-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
         {/* Game Player */}
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <GamePlayer game={game} />
         </div>
 
         {/* Game Meta */}
-        <div className="space-y-6">
+        <div className="space-y-6 lg:pt-2">
           <GameMeta game={game} />
         </div>
       </div>
 
       {/* Related Games */}
       {relatedGames.length > 0 && (
-        <section className="mt-12">
-          <h2 className="text-2xl font-bold mb-4">You Might Also Like</h2>
+        <section className="mt-8 space-y-4 sm:mt-12">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">Next Up</p>
+            <h2 className="text-2xl font-bold">You Might Also Like</h2>
+          </div>
           <RelatedGames games={relatedGames} />
         </section>
       )}

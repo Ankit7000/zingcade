@@ -261,6 +261,22 @@
           display: block;
         }
       }
+
+      html.embed-mode,
+      html.embed-mode body {
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        overflow: hidden;
+      }
+
+      body.embed-mode header {
+        display: none;
+      }
+
+      body.embed-mode .game-shell {
+        max-width: none;
+      }
     </style>
   </head>
   <body>
@@ -308,6 +324,7 @@
     </div>
 
     <!-- AUDIO CONTEXT -->
+    <script src="/raw-games/_shared/embed-mode.js"></script>
     <script>
       let audioCtx;
       function unlockAudio() {
