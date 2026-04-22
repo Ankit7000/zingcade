@@ -45,6 +45,14 @@
 }
 
 @layer components {
+  .portal-card {
+    @apply border border-white/55 bg-white/78 shadow-[0_16px_28px_rgba(71,85,105,0.12)] backdrop-blur;
+  }
+
+  .portal-pill {
+    @apply inline-flex min-h-8 items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em];
+  }
+
   .tile-shell {
     @apply border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0)),rgba(9,14,27,0.95)] shadow-[0_18px_52px_rgba(0,0,0,0.34)] backdrop-blur;
   }
