@@ -1,0 +1,79 @@
+import Link from 'next/link'
+
+type CategoryLane = {
+  label: string
+  href: string
+  thumbnail: string
+  accent: string
+}
+
+const lanes: CategoryLane[] = [
+  {
+    label: 'Fast Runs',
+    href: '/games?category=Action',
+    thumbnail: '/images/thumbnails/neon-dash.jpg',
+    accent: 'from-cyan-400/45 via-cyan-300/10 to-transparent',
+  },
+  {
+    label: 'Merge & Puzzle',
+    href: '/games?category=Puzzle',
+    thumbnail: '/images/thumbnails/merge-monster-2048.jpg',
+    accent: 'from-emerald-400/45 via-emerald-300/10 to-transparent',
+  },
+  {
+    label: 'Daily Brain',
+    href: '/games?category=Daily%20Challenge',
+    thumbnail: '/images/thumbnails/daily-vault.jpg',
+    accent: 'from-amber-400/45 via-amber-300/10 to-transparent',
+  },
+  {
+    label: 'Claim Territory',
+    href: '/games?category=Control',
+    thumbnail: '/images/thumbnails/color-crown.jpg',
+    accent: 'from-fuchsia-400/45 via-fuchsia-300/10 to-transparent',
+  },
+  {
+    label: 'Idle Growth',
+    href: '/games?category=Idle',
+    thumbnail: '/images/thumbnails/arcade-tycoon.jpg',
+    accent: 'from-violet-400/45 via-violet-300/10 to-transparent',
+  },
+  {
+    label: 'Arcade Survival',
+    href: '/games?category=Arcade%20Survival',
+    thumbnail: '/images/thumbnails/dont-stop-ball.jpg',
+    accent: 'from-orange-400/45 via-orange-300/10 to-transparent',
+  },
+]
+
+export default function HomeCategoryStrip() {
+  return (
+    <div className="hide-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+      {lanes.map((lane) => (
+        <Link
+          key={lane.label}
+          href={lane.href}
+          className="group relative block min-w-[14rem] overflow-hidden rounded-[24px] border border-white/8 bg-slate-900/70 sm:min-w-[16rem] lg:min-w-[17rem]"
+        >
+          <div className="aspect-[1.8] w-full overflow-hidden">
+            <img
+              src={lane.thumbnail}
+              alt={lane.label}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+          <div className={`absolute inset-0 bg-gradient-to-br ${lane.accent}`} />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
+            <span className="max-w-[10rem] text-base font-bold leading-tight text-white sm:text-lg">
+              {lane.label}
+            </span>
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-lg text-white transition-transform duration-300 group-hover:translate-x-0.5">
+              +
+            </span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  )
+}
