@@ -61,6 +61,274 @@
     @apply inline-flex min-h-14 items-center justify-center rounded-[20px] border border-white/70 px-4 shadow-[0_14px_24px_rgba(71,85,105,0.08)] backdrop-blur transition-transform hover:-translate-y-0.5;
   }
 
+  .mock-art-zingcade-brand,
+  .mock-art-neon-dash-home,
+  .mock-art-gravity-swap,
+  .mock-art-word-blitz,
+  .mock-art-drift-rush,
+  .mock-art-flip-tiles,
+  .mock-art-rocket-rush,
+  .mock-art-basket-fever,
+  .mock-art-ninja-run,
+  .mock-art-stack-jump,
+  .mock-art-bounce-up,
+  .mock-art-tiny-archer,
+  .mock-art-ufo-invaders,
+  .mock-art-merge-blox {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mock-art-zingcade-brand {
+    background:
+      radial-gradient(circle at 18% 16%, rgba(255, 209, 102, 0.95) 0 5%, transparent 6%),
+      radial-gradient(circle at 80% 20%, rgba(216, 180, 255, 0.95) 0 5%, transparent 6%),
+      radial-gradient(circle at 76% 74%, rgba(171, 196, 255, 0.8) 0 7%, transparent 8%),
+      radial-gradient(circle at 28% 78%, rgba(255, 255, 255, 0.96) 0 10%, transparent 11%),
+      linear-gradient(145deg, #5120df 0%, #3620c8 40%, #16124f 100%);
+  }
+
+  .mock-art-neon-dash-home {
+    background:
+      radial-gradient(circle at 35% 65%, rgba(255, 0, 144, 0.55), transparent 22%),
+      radial-gradient(circle at 55% 60%, rgba(56, 189, 248, 0.32), transparent 26%),
+      linear-gradient(180deg, rgba(11, 22, 54, 0.2), rgba(11, 22, 54, 0.1)),
+      linear-gradient(145deg, #140f54 0%, #1b1764 35%, #090d2b 100%);
+  }
+
+  .mock-art-neon-dash-home::before,
+  .mock-art-gravity-swap::before,
+  .mock-art-word-blitz::before,
+  .mock-art-drift-rush::before,
+  .mock-art-flip-tiles::before,
+  .mock-art-rocket-rush::before,
+  .mock-art-basket-fever::before,
+  .mock-art-ninja-run::before,
+  .mock-art-stack-jump::before,
+  .mock-art-bounce-up::before,
+  .mock-art-tiny-archer::before,
+  .mock-art-ufo-invaders::before,
+  .mock-art-merge-blox::before {
+    content: "";
+    position: absolute;
+  }
+
+  .mock-art-neon-dash-home::before {
+    inset: auto 10% 14% 16%;
+    height: 44%;
+    border-radius: 22px 22px 60px 60px;
+    background:
+      radial-gradient(circle at 24% 70%, rgba(56, 189, 248, 0.85) 0 8%, transparent 9%),
+      radial-gradient(circle at 76% 70%, rgba(255, 94, 94, 0.85) 0 8%, transparent 9%),
+      linear-gradient(145deg, rgba(45, 212, 191, 0.22), rgba(255, 255, 255, 0.08)),
+      linear-gradient(180deg, #101634 0%, #2b356d 55%, #101634 100%);
+    box-shadow:
+      0 0 0 2px rgba(56, 189, 248, 0.2),
+      0 20px 50px rgba(255, 0, 144, 0.22);
+  }
+
+  .mock-art-gravity-swap {
+    background:
+      radial-gradient(circle at 18% 18%, rgba(124, 58, 237, 0.4), transparent 24%),
+      linear-gradient(145deg, #3421c8 0%, #251f92 55%, #111a44 100%);
+  }
+
+  .mock-art-gravity-swap::before {
+    left: 14%;
+    top: 18%;
+    width: 26%;
+    height: 40%;
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 42% 35%, #4dd5ff 0 14%, transparent 15%),
+      linear-gradient(180deg, #d9f5ff 0%, #8bc6ff 100%);
+    box-shadow:
+      110px 70px 0 -22px rgba(255, 204, 51, 0.92),
+      185px 28px 0 -18px rgba(255, 225, 255, 0.72);
+  }
+
+  .mock-art-word-blitz {
+    background:
+      radial-gradient(circle at 18% 18%, rgba(255, 222, 89, 0.22), transparent 22%),
+      linear-gradient(145deg, #2d6dff 0%, #245de0 48%, #14357b 100%);
+  }
+
+  .mock-art-word-blitz::before {
+    left: 12%;
+    right: 12%;
+    bottom: 16%;
+    height: 26%;
+    border-radius: 18px;
+    background:
+      linear-gradient(90deg, #ffffff 0 23%, transparent 23% 27%, #ffffff 27% 50%, transparent 50% 54%, #ffffff 54% 77%, transparent 77% 81%, #ffffff 81% 100%);
+  }
+
+  .mock-art-drift-rush {
+    background:
+      radial-gradient(circle at 74% 28%, rgba(255, 153, 0, 0.2), transparent 22%),
+      linear-gradient(145deg, #58a5ff 0%, #3b82f6 38%, #0f2756 100%);
+  }
+
+  .mock-art-drift-rush::before {
+    left: 18%;
+    right: 12%;
+    bottom: 16%;
+    height: 34%;
+    border-radius: 24px 24px 40px 40px;
+    background:
+      linear-gradient(90deg, transparent 0 14%, #ef4444 14% 18%, #ffffff 18% 22%, #ef4444 22% 26%, transparent 26% 100%),
+      linear-gradient(180deg, #cfe6ff 0%, #7fb6ff 62%, #27477d 100%);
+    box-shadow: 20px 12px 0 -2px rgba(255, 255, 255, 0.55);
+  }
+
+  .mock-art-flip-tiles {
+    background: linear-gradient(145deg, #1d6cff 0%, #2a84ff 45%, #25508e 100%);
+  }
+
+  .mock-art-flip-tiles::before {
+    left: 18%;
+    top: 24%;
+    width: 62%;
+    height: 50%;
+    border-radius: 16px;
+    background:
+      linear-gradient(135deg, #f7fafc 0%, #dbeafe 100%);
+    box-shadow:
+      48px 18px 0 -10px rgba(255, 255, 255, 0.95),
+      -26px 36px 0 -12px rgba(37, 99, 235, 0.9);
+    transform: skew(-10deg);
+  }
+
+  .mock-art-rocket-rush {
+    background:
+      radial-gradient(circle at 74% 24%, rgba(255, 255, 255, 0.14), transparent 16%),
+      linear-gradient(145deg, #4527ce 0%, #6d28d9 45%, #182043 100%);
+  }
+
+  .mock-art-rocket-rush::before {
+    left: 40%;
+    top: 18%;
+    width: 22%;
+    height: 54%;
+    border-radius: 50% 50% 45% 45%;
+    background:
+      radial-gradient(circle at 50% 28%, #dbeafe 0 16%, transparent 17%),
+      linear-gradient(180deg, #fff7ed 0%, #fb923c 65%, #7c2d12 100%);
+    transform: rotate(22deg);
+  }
+
+  .mock-art-basket-fever {
+    background:
+      linear-gradient(145deg, #102b74 0%, #1e40af 48%, #0b1738 100%);
+  }
+
+  .mock-art-basket-fever::before {
+    right: 10%;
+    top: 18%;
+    width: 34%;
+    height: 62%;
+    border: 6px solid rgba(255, 255, 255, 0.95);
+    border-bottom: 0;
+    border-radius: 8px;
+    box-shadow: -90px 50px 0 -32px rgba(251, 146, 60, 0.95);
+  }
+
+  .mock-art-ninja-run {
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 52%, #334155 100%);
+  }
+
+  .mock-art-ninja-run::before {
+    left: 34%;
+    top: 20%;
+    width: 30%;
+    height: 52%;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 50% 14%, #f8fafc 0 10%, transparent 11%),
+      linear-gradient(180deg, #1f2937 0%, #111827 100%);
+  }
+
+  .mock-art-stack-jump {
+    background: linear-gradient(145deg, #312e81 0%, #5b21b6 52%, #1f1147 100%);
+  }
+
+  .mock-art-stack-jump::before {
+    left: 24%;
+    bottom: 18%;
+    width: 52%;
+    height: 44%;
+    border-radius: 16px;
+    background:
+      linear-gradient(180deg, #a3e635 0 34%, #4d7c0f 34% 100%);
+    box-shadow:
+      18px -18px 0 -6px rgba(163, 230, 53, 0.95),
+      38px -36px 0 -10px rgba(163, 230, 53, 0.88);
+  }
+
+  .mock-art-bounce-up {
+    background: linear-gradient(145deg, #3b1aa8 0%, #5b21b6 52%, #1d2362 100%);
+  }
+
+  .mock-art-bounce-up::before {
+    left: 26%;
+    top: 28%;
+    width: 48%;
+    height: 36%;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 26% 50%, #7dd3fc 0 18%, transparent 19%),
+      radial-gradient(circle at 76% 50%, #60a5fa 0 20%, transparent 21%);
+  }
+
+  .mock-art-tiny-archer {
+    background: linear-gradient(145deg, #244f46 0%, #1f7667 52%, #15332e 100%);
+  }
+
+  .mock-art-tiny-archer::before {
+    left: 34%;
+    top: 22%;
+    width: 32%;
+    height: 52%;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 50% 12%, #fde68a 0 10%, transparent 11%),
+      linear-gradient(180deg, #14532d 0%, #1f2937 100%);
+  }
+
+  .mock-art-ufo-invaders {
+    background: linear-gradient(145deg, #1f2a7a 0%, #312e81 52%, #10163e 100%);
+  }
+
+  .mock-art-ufo-invaders::before {
+    left: 18%;
+    top: 30%;
+    width: 64%;
+    height: 24%;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 20% 50%, #38bdf8 0 12%, transparent 13%),
+      radial-gradient(circle at 50% 50%, #818cf8 0 12%, transparent 13%),
+      radial-gradient(circle at 80% 50%, #a78bfa 0 12%, transparent 13%);
+  }
+
+  .mock-art-merge-blox {
+    background: linear-gradient(145deg, #5b21b6 0%, #6d28d9 52%, #3b0764 100%);
+  }
+
+  .mock-art-merge-blox::before {
+    left: 24%;
+    top: 24%;
+    width: 54%;
+    height: 54%;
+    border-radius: 16px;
+    background:
+      linear-gradient(135deg, #fb923c 0 28%, transparent 28% 42%, #a3e635 42% 70%, transparent 70% 100%),
+      linear-gradient(180deg, #fef08a, #facc15);
+    box-shadow:
+      -18px 18px 0 -8px rgba(248, 113, 113, 0.95),
+      18px 18px 0 -8px rgba(96, 165, 250, 0.95);
+  }
+
   .tile-shell {
     @apply border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0)),rgba(9,14,27,0.95)] shadow-[0_18px_52px_rgba(0,0,0,0.34)] backdrop-blur;
   }
