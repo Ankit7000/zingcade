@@ -1,38 +1,56 @@
 import Link from 'next/link'
+import type { Game } from '@/data/games'
 import { games } from '@/data/games'
 
-type Tile = {
-  title: string
-  href: string
-  label?: string
-  image?: string
-  artClass?: string
+type LiveTile = {
+  kind: 'live'
+  game: Game
   className?: string
-  titleClassName?: string
-  small?: boolean
+  compact?: boolean
+  showHook?: boolean
 }
 
-function PortalTile({ tile }: { tile: Tile }) {
+type SoonTile = {
+  kind: 'soon'
+  title: string
+  className?: string
+  artClass: string
+  compact?: boolean
+}
+
+type Tile = LiveTile | SoonTile
+
+function GameBoardTile({ tile }: { tile: Tile }) {
+  const isLive = tile.kind === 'live'
+
   return (
-    <Link href={tile.href} className={`portal-card group relative overflow-hidden rounded-[28px] p-3 ${tile.className ?? ''}`}>
-      {tile.image ? (
+    <Link
+      href={isLive ? `/games/${tile.game.slug}` : '/games'}
+      className={`portal-card group relative overflow-hidden rounded-[28px] p-3 ${tile.className ?? ''}`}
+    >
+      {isLive ? (
         <img
-          src={tile.image}
-          alt={tile.title}
+          src={tile.game.thumbnail}
+          alt={tile.game.title}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
         />
       ) : (
         <div className={`absolute inset-0 ${tile.artClass}`} />
       )}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,10,24,0.03),rgba(7,10,24,0.14)_40%,rgba(7,10,24,0.9)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,10,24,0.03),rgba(7,10,24,0.14)_42%,rgba(7,10,24,0.9)_100%)]" />
       <div className="relative flex h-full flex-col justify-between">
-        {tile.label ? <span className="portal-pill w-fit bg-white/18 text-white backdrop-blur">{tile.label}</span> : <span />}
+        <span
+          className={`portal-pill w-fit ${
+            isLive ? 'bg-white/18 text-white backdrop-blur' : 'bg-lime-300 text-slate-950'
+          }`}
+        >
+          {isLive ? tile.game.categories[0] : 'Coming Soon'}
+        </span>
         <div className="space-y-1">
-          <div
-            className={`${tile.small ? 'text-[1.1rem]' : 'text-[1.85rem]'} font-black uppercase tracking-[-0.05em] text-white ${tile.titleClassName ?? ''}`}
-          >
-            {tile.title}
+          <div className={`${tile.compact ? 'text-[1.1rem]' : 'text-[1.85rem]'} font-black uppercase tracking-[-0.05em] text-white`}>
+            {isLive ? tile.game.title : tile.title}
           </div>
+          {isLive && tile.showHook ? <div className="line-clamp-1 text-sm text-white/86">{tile.game.hook}</div> : null}
         </div>
       </div>
     </Link>
@@ -40,12 +58,14 @@ function PortalTile({ tile }: { tile: Tile }) {
 }
 
 function ThumbTile({ tile }: { tile: Tile }) {
+  const isLive = tile.kind === 'live'
+
   return (
-    <Link href={tile.href} className="portal-card group relative aspect-square overflow-hidden rounded-[18px] p-0">
-      {tile.image ? (
+    <Link href={isLive ? `/games/${tile.game.slug}` : '/games'} className="portal-card group relative aspect-square overflow-hidden rounded-[18px] p-0">
+      {isLive ? (
         <img
-          src={tile.image}
-          alt={tile.title}
+          src={tile.game.thumbnail}
+          alt={tile.game.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
         />
       ) : (
@@ -56,52 +76,100 @@ function ThumbTile({ tile }: { tile: Tile }) {
 }
 
 export default function Home() {
-  const bySlug = new Map(games.map(game => [game.slug, game]))
+  const neonDash = games.find(game => game.slug === 'neon-dash') ?? games[0]
+  const remainingLiveGames = games.filter(game => game.slug !== 'neon-dash')
 
-  const neonDash = bySlug.get('neon-dash')!
-  const skyHop = bySlug.get('sky-hop')!
-  const dontStopBall = bySlug.get('dont-stop-ball')!
-  const colorCrown = bySlug.get('color-crown')!
-  const mergeMonster = bySlug.get('merge-monster-2048')!
-  const rainballRush = bySlug.get('rainball-rush')!
-  const dailyVault = bySlug.get('daily-vault')!
-  const arcadeTycoon = bySlug.get('arcade-tycoon')!
+  const topRightLiveTiles = remainingLiveGames.slice(0, 6).map(game => ({
+    kind: 'live' as const,
+    game,
+    compact: true,
+  }))
 
-  const topRightTiles: Tile[] = [
-    { title: 'Sky Hop', href: `/games/${skyHop.slug}`, image: skyHop.thumbnail, small: true },
-    { title: 'Dont Stop Ball', href: `/games/${dontStopBall.slug}`, image: dontStopBall.thumbnail, small: true, titleClassName: 'leading-none' },
-    { title: 'Color Crown', href: `/games/${colorCrown.slug}`, image: colorCrown.thumbnail, small: true },
-    { title: 'Flip Tiles', href: '/games', artClass: 'mock-art-flip-tiles', small: true },
-    { title: 'Rocket Rush', href: '/games', artClass: 'mock-art-rocket-rush', small: true },
-    { title: 'Basket Fever', href: '/games', artClass: 'mock-art-basket-fever', small: true },
-  ]
-
-  const lowerTiles: Tile[] = [
-    { title: 'Gravity Swap', href: '/games', artClass: 'mock-art-gravity-swap', className: 'min-h-[265px]' },
-    { title: 'Word Blitz', href: '/games', artClass: 'mock-art-word-blitz', className: 'min-h-[265px]' },
-    { title: 'Drift Rush', href: '/games', artClass: 'mock-art-drift-rush', className: 'min-h-[265px]' },
-    { title: 'Ninja Run', href: '/games', artClass: 'mock-art-ninja-run', className: 'min-h-[124px]', small: true },
-    { title: 'Stack Jump', href: '/games', artClass: 'mock-art-stack-jump', className: 'min-h-[124px]', small: true },
-    { title: 'Bounce Up', href: '/games', artClass: 'mock-art-bounce-up', className: 'min-h-[124px]', small: true },
-    { title: 'Tiny Archer', href: '/games', artClass: 'mock-art-tiny-archer', className: 'min-h-[124px]', small: true },
-    { title: 'UFO Invaders', href: '/games', artClass: 'mock-art-ufo-invaders', className: 'min-h-[124px]', small: true },
-    { title: 'Merge Blox', href: '/games', artClass: 'mock-art-merge-blox', className: 'min-h-[124px]', small: true },
+  const lowerMixedTiles: Tile[] = [
+    {
+      kind: 'live',
+      game: remainingLiveGames[6],
+      className: 'min-h-[265px]',
+      showHook: true,
+    },
+    {
+      kind: 'soon',
+      title: 'Word Blitz',
+      artClass: 'mock-art-word-blitz',
+      className: 'min-h-[265px]',
+    },
+    {
+      kind: 'soon',
+      title: 'Drift Rush',
+      artClass: 'mock-art-drift-rush',
+      className: 'min-h-[265px]',
+    },
+    {
+      kind: 'soon',
+      title: 'Ninja Run',
+      artClass: 'mock-art-ninja-run',
+      className: 'min-h-[124px]',
+      compact: true,
+    },
+    {
+      kind: 'soon',
+      title: 'Stack Jump',
+      artClass: 'mock-art-stack-jump',
+      className: 'min-h-[124px]',
+      compact: true,
+    },
+    {
+      kind: 'soon',
+      title: 'Bounce Up',
+      artClass: 'mock-art-bounce-up',
+      className: 'min-h-[124px]',
+      compact: true,
+    },
+    {
+      kind: 'soon',
+      title: 'Tiny Archer',
+      artClass: 'mock-art-tiny-archer',
+      className: 'min-h-[124px]',
+      compact: true,
+    },
+    {
+      kind: 'soon',
+      title: 'UFO Invaders',
+      artClass: 'mock-art-ufo-invaders',
+      className: 'min-h-[124px]',
+      compact: true,
+    },
+    {
+      kind: 'soon',
+      title: 'Merge Blox',
+      artClass: 'mock-art-merge-blox',
+      className: 'min-h-[124px]',
+      compact: true,
+    },
   ]
 
   const popularThumbs: Tile[] = [
-    { title: 'Drift Rush', href: '/games', artClass: 'mock-art-drift-rush' },
-    { title: 'Arcade Tycoon', href: `/games/${arcadeTycoon.slug}`, image: arcadeTycoon.thumbnail },
-    { title: 'Sky Hop', href: `/games/${skyHop.slug}`, image: skyHop.thumbnail },
-    { title: 'Dont Stop Ball', href: `/games/${dontStopBall.slug}`, image: dontStopBall.thumbnail },
-    { title: 'Basket Fever', href: '/games', artClass: 'mock-art-basket-fever' },
-    { title: 'Daily Vault', href: `/games/${dailyVault.slug}`, image: dailyVault.thumbnail },
-    { title: 'Color Crown', href: `/games/${colorCrown.slug}`, image: colorCrown.thumbnail },
-    { title: 'Rainball Rush', href: `/games/${rainballRush.slug}`, image: rainballRush.thumbnail },
-    { title: 'Merge Monster', href: `/games/${mergeMonster.slug}`, image: mergeMonster.thumbnail },
-    { title: 'Neon Dash', href: `/games/${neonDash.slug}`, image: neonDash.thumbnail },
+    ...games.map(game => ({ kind: 'live' as const, game })),
+    {
+      kind: 'soon' as const,
+      title: 'Drift Rush',
+      artClass: 'mock-art-drift-rush',
+    },
+    {
+      kind: 'soon' as const,
+      title: 'Basket Fever',
+      artClass: 'mock-art-basket-fever',
+    },
   ]
 
-  const categories = ['New', 'Popular', 'Runner', 'Driving', 'Puzzle', 'Skill', 'Multiplayer', '.io Games', 'More']
+  const categories = ['All Games', 'Runner', 'Driving', 'Action', 'Puzzle', 'Skill', 'Adventure', '.io Games', 'More']
+  const trustItems = [
+    ['Instant Play', 'No downloads, ever.'],
+    ['100% Free', 'All games are free to play.'],
+    ['New Games Daily', 'Fresh games every day.'],
+    ['Safe & Secure', 'Family friendly games.'],
+    ['Play Anywhere', 'On desktop or mobile.'],
+  ]
 
   return (
     <div className="relative overflow-hidden pb-10 pt-5">
@@ -168,13 +236,14 @@ export default function Home() {
               href={`/games/${neonDash.slug}`}
               className="portal-card group relative overflow-hidden rounded-[34px] p-6 xl:row-span-2"
             >
-              <div className="absolute inset-0 mock-art-neon-dash-home" />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,10,24,0.04),rgba(7,10,24,0.18)_48%,rgba(7,10,24,0.84)_100%)]" />
+              <img src={neonDash.thumbnail} alt={neonDash.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_26%_18%,rgba(34,211,238,0.16),transparent_24%),radial-gradient(circle_at_74%_18%,rgba(217,70,239,0.18),transparent_28%),linear-gradient(90deg,rgba(8,12,24,0.74)_0%,rgba(8,12,24,0.42)_44%,rgba(8,12,24,0.18)_100%),linear-gradient(180deg,rgba(8,12,24,0.04),rgba(8,12,24,0.18)_48%,rgba(8,12,24,0.84)_100%)]" />
               <div className="relative flex h-full flex-col justify-between">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="text-[4.3rem] font-black uppercase tracking-[-0.08em] text-white drop-shadow-[0_0_22px_rgba(59,130,246,0.35)]">
-                    Neon Dash
+                    {neonDash.title}
                   </div>
+                  <div className="text-2xl font-semibold text-white/92">Run. Jump. Survive.</div>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="inline-flex min-h-12 items-center rounded-[18px] bg-[linear-gradient(135deg,#d9ff32,#a8ff14)] px-5 text-lg font-bold text-slate-950 shadow-[0_14px_28px_rgba(163,230,53,0.22)]">
@@ -189,26 +258,26 @@ export default function Home() {
               </div>
             </Link>
 
-            {topRightTiles.map(tile => (
-              <PortalTile key={tile.title} tile={tile} />
+            {topRightLiveTiles.map(tile => (
+              <GameBoardTile key={tile.game.slug} tile={tile} />
             ))}
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[1.04fr_0.88fr_1.28fr_0.56fr_0.56fr_0.56fr]">
-            <PortalTile tile={lowerTiles[0]} />
-            <PortalTile tile={lowerTiles[1]} />
-            <PortalTile tile={lowerTiles[2]} />
+            <GameBoardTile tile={lowerMixedTiles[0]} />
+            <GameBoardTile tile={lowerMixedTiles[1]} />
+            <GameBoardTile tile={lowerMixedTiles[2]} />
             <div className="grid gap-4">
-              <PortalTile tile={lowerTiles[3]} />
-              <PortalTile tile={lowerTiles[6]} />
+              <GameBoardTile tile={lowerMixedTiles[3]} />
+              <GameBoardTile tile={lowerMixedTiles[6]} />
             </div>
             <div className="grid gap-4">
-              <PortalTile tile={lowerTiles[4]} />
-              <PortalTile tile={lowerTiles[7]} />
+              <GameBoardTile tile={lowerMixedTiles[4]} />
+              <GameBoardTile tile={lowerMixedTiles[7]} />
             </div>
             <div className="grid gap-4">
-              <PortalTile tile={lowerTiles[5]} />
-              <PortalTile tile={lowerTiles[8]} />
+              <GameBoardTile tile={lowerMixedTiles[5]} />
+              <GameBoardTile tile={lowerMixedTiles[8]} />
             </div>
           </div>
         </section>
@@ -227,6 +296,20 @@ export default function Home() {
           ))}
         </section>
 
+        <section className="grid gap-4 xl:grid-cols-7">
+          {[
+            { kind: 'soon' as const, title: 'Neon Climb', artClass: 'mock-art-neon-climb' },
+            { kind: 'soon' as const, title: 'Pixel Path', artClass: 'mock-art-pixel-path' },
+            { kind: 'soon' as const, title: 'Dashy Run', artClass: 'mock-art-dashy-run' },
+            { kind: 'soon' as const, title: 'Cube Flip', artClass: 'mock-art-cube-flip' },
+            { kind: 'soon' as const, title: 'Color Switch', artClass: 'mock-art-color-switch' },
+            { kind: 'soon' as const, title: 'Space Drift', artClass: 'mock-art-space-drift' },
+            { kind: 'soon' as const, title: 'Jump Tower', artClass: 'mock-art-jump-tower' },
+          ].map(tile => (
+            <GameBoardTile key={tile.title} tile={{ ...tile, className: 'min-h-[152px]', compact: true }} />
+          ))}
+        </section>
+
         <section className="portal-surface rounded-[30px] p-4">
           <div className="grid items-center gap-4 xl:grid-cols-[260px_minmax(0,1fr)_76px]">
             <div className="rounded-[22px] bg-white/88 px-5 py-5 shadow-[0_12px_22px_rgba(71,85,105,0.06)]">
@@ -234,8 +317,8 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-4 gap-3 sm:grid-cols-8 xl:grid-cols-10">
-              {popularThumbs.map(tile => (
-                <ThumbTile key={`thumb-${tile.title}`} tile={tile} />
+              {popularThumbs.map((tile, index) => (
+                <ThumbTile key={`thumb-${index}`} tile={tile} />
               ))}
             </div>
 
@@ -246,6 +329,20 @@ export default function Home() {
               &gt;
             </button>
           </div>
+        </section>
+
+        <section className="grid gap-3 rounded-[28px] border border-white/50 bg-white/75 p-4 shadow-[0_18px_34px_rgba(71,85,105,0.08)] backdrop-blur md:grid-cols-5">
+          {trustItems.map(([title, copy]) => (
+            <div key={title} className="flex items-start gap-3 rounded-[18px] px-2 py-1">
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-sky-100 text-lg font-black text-violet-600">
+                *
+              </div>
+              <div>
+                <div className="text-base font-bold text-slate-800">{title}</div>
+                <div className="text-sm text-slate-600">{copy}</div>
+              </div>
+            </div>
+          ))}
         </section>
       </div>
     </div>
