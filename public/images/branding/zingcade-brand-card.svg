@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="72" y1="52" x2="648" y2="664" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5C33FF"/>
+      <stop offset=".55" stop-color="#2E73FF"/>
+      <stop offset="1" stop-color="#102047"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(544 120) rotate(132.572) scale(355.259)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9AE6FF" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#9AE6FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="84" y="322" width="282" height="252" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#0B1738" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <rect width="720" height="720" rx="56" fill="url(#bg)"/>
+  <rect width="720" height="720" rx="56" fill="url(#glow)"/>
+  <g opacity=".35" stroke="#fff">
+    <path d="M36 84h208" stroke-width="2"/>
+    <path d="M536 120h148" stroke-width="2"/>
+    <path d="M544 524h132" stroke-width="2"/>
+  </g>
+  <g fill="#FFD84D">
+    <circle cx="104" cy="94" r="10"/>
+    <circle cx="612" cy="106" r="7"/>
+    <circle cx="626" cy="514" r="6"/>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M214 496c-54 0-98-43-98-96 0-45 32-83 76-93l34-97c4-12 16-20 29-20h210c13 0 25 8 29 20l34 97c44 10 76 48 76 93 0 53-44 96-98 96H214Z" fill="#fff" fill-opacity=".98"/>
+    <rect x="214" y="398" width="102" height="76" rx="24" fill="#6A68FF"/>
+    <rect x="404" y="398" width="102" height="76" rx="24" fill="#67B5FF"/>
+    <circle cx="360" cy="436" r="48" fill="#EEF5FF"/>
+    <circle cx="360" cy="436" r="22" fill="#A0B8FF"/>
+    <rect x="246" y="282" width="48" height="48" rx="14" fill="#6A68FF"/>
+    <rect x="428" y="282" width="48" height="48" rx="14" fill="#67B5FF"/>
+    <rect x="342" y="258" width="36" height="96" rx="18" fill="#FFD84D"/>
+    <rect x="312" y="288" width="96" height="36" rx="18" fill="#FFD84D"/>
+  </g>
+  <g>
+    <text x="108" y="612" fill="#FFFFFF" font-size="88" font-family="Arial, sans-serif" font-weight="800" letter-spacing="-3">ZINGCADE</text>
+    <text x="112" y="666" fill="#D9E7FF" font-size="28" font-family="Arial, sans-serif" font-weight="700" letter-spacing="2">INSTANT PLAY ARCADE</text>
+  </g>
+</svg>

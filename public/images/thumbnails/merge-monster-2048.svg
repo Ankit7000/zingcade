@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="52" x2="834" y2="482" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A1539"/>
+      <stop offset=".55" stop-color="#29215C"/>
+      <stop offset="1" stop-color="#0F1833"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" rx="40" fill="url(#bg)"/>
+  <rect x="160" y="80" width="640" height="380" rx="34" fill="#121B33" stroke="#FFFFFF" stroke-opacity=".08" stroke-width="8"/>
+  <g fill="#1F294B">
+    <rect x="206" y="126" width="118" height="118" rx="24"/>
+    <rect x="344" y="126" width="118" height="118" rx="24"/>
+    <rect x="482" y="126" width="118" height="118" rx="24"/>
+    <rect x="620" y="126" width="118" height="118" rx="24"/>
+    <rect x="206" y="264" width="118" height="118" rx="24"/>
+    <rect x="344" y="264" width="118" height="118" rx="24"/>
+    <rect x="482" y="264" width="118" height="118" rx="24"/>
+    <rect x="620" y="264" width="118" height="118" rx="24"/>
+  </g>
+  <g>
+    <rect x="206" y="126" width="118" height="118" rx="24" fill="#FFE08A"/>
+    <circle cx="265" cy="178" r="26" fill="#FFF3CF"/>
+    <circle cx="251" cy="170" r="4" fill="#724C12"/>
+    <circle cx="279" cy="170" r="4" fill="#724C12"/>
+    <path d="M250 193c9 10 21 10 30 0" stroke="#724C12" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g>
+    <rect x="482" y="126" width="118" height="118" rx="24" fill="#8EF2A9"/>
+    <circle cx="541" cy="182" r="30" fill="#B8FFD0"/>
+    <circle cx="528" cy="173" r="5" fill="#155B2B"/>
+    <circle cx="553" cy="173" r="5" fill="#155B2B"/>
+    <path d="M524 194c13-7 26-7 39 0" stroke="#155B2B" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g>
+    <rect x="344" y="264" width="118" height="118" rx="24" fill="#79C4FF"/>
+    <path d="M378 332c18-46 52-76 88-76 28 0 40 21 36 50-8 44-44 76-82 76-27 0-43-17-42-50Z" fill="#D7F0FF"/>
+    <circle cx="423" cy="314" r="6" fill="#16446C"/>
+    <circle cx="447" cy="314" r="6" fill="#16446C"/>
+  </g>
+  <g>
+    <rect x="620" y="264" width="118" height="118" rx="24" fill="#FF9C85"/>
+    <path d="M650 346c0-48 36-84 78-84 24 0 44 15 52 38-15 16-26 42-26 63 0 12 2 21 6 27-10 8-22 12-36 12-42 0-74-23-74-56Z" fill="#FFD2C8"/>
+  </g>
+  <text x="66" y="106" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">MERGE</text>
+  <text x="66" y="158" fill="#FFD86B" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">MONSTER</text>
+</svg>

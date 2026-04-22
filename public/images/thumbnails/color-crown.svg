@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="42" x2="838" y2="504" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D2DFF"/>
+      <stop offset=".52" stop-color="#8F42FF"/>
+      <stop offset="1" stop-color="#32135E"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" rx="40" fill="url(#bg)"/>
+  <g>
+    <path d="M332 342c34-74 70-148 108-222l102 154 104-112 66 180H332Z" fill="#FFD84D"/>
+    <circle cx="402" cy="246" r="22" fill="#FF6FB5"/>
+    <circle cx="478" cy="190" r="24" fill="#67D8FF"/>
+    <circle cx="560" cy="246" r="22" fill="#A4FF4B"/>
+  </g>
+  <g fill="#A4FF4B">
+    <rect x="142" y="158" width="48" height="48" rx="14" transform="rotate(22 142 158)"/>
+    <rect x="766" y="120" width="56" height="56" rx="16" transform="rotate(-18 766 120)"/>
+  </g>
+  <g fill="#67D8FF">
+    <rect x="122" y="290" width="36" height="36" rx="12" transform="rotate(-18 122 290)"/>
+    <rect x="770" y="306" width="42" height="42" rx="14" transform="rotate(22 770 306)"/>
+  </g>
+  <g fill="#FF8BD3">
+    <rect x="214" y="92" width="28" height="28" rx="10" transform="rotate(-15 214 92)"/>
+    <rect x="698" y="242" width="26" height="26" rx="9" transform="rotate(18 698 242)"/>
+  </g>
+  <text x="86" y="116" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">COLOR</text>
+  <text x="86" y="168" fill="#FFD84D" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">CROWN</text>
+</svg>

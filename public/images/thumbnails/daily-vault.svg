@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="98" y1="52" x2="854" y2="488" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0C2445"/>
+      <stop offset=".52" stop-color="#163B72"/>
+      <stop offset="1" stop-color="#09152B"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" rx="40" fill="url(#bg)"/>
+  <rect x="196" y="86" width="568" height="368" rx="36" fill="#12203D" stroke="#FFFFFF" stroke-opacity=".08" stroke-width="8"/>
+  <circle cx="480" cy="270" r="128" fill="#0E1B35" stroke="#A5FF2D" stroke-width="10"/>
+  <circle cx="480" cy="270" r="86" fill="#132449" stroke="#FFFFFF" stroke-opacity=".16" stroke-width="6"/>
+  <circle cx="480" cy="270" r="18" fill="#A5FF2D"/>
+  <path d="M480 198v72l48 32" stroke="#A5FF2D" stroke-width="10" stroke-linecap="round"/>
+  <rect x="304" y="126" width="68" height="44" rx="18" fill="#1F335E"/>
+  <rect x="392" y="126" width="68" height="44" rx="18" fill="#1F335E"/>
+  <rect x="480" y="126" width="68" height="44" rx="18" fill="#1F335E"/>
+  <rect x="568" y="126" width="68" height="44" rx="18" fill="#1F335E"/>
+  <circle cx="338" cy="148" r="8" fill="#67D8FF"/>
+  <circle cx="426" cy="148" r="8" fill="#FFD84D"/>
+  <circle cx="514" cy="148" r="8" fill="#FF7D4D"/>
+  <circle cx="602" cy="148" r="8" fill="#A5FF2D"/>
+  <text x="84" y="110" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">DAILY</text>
+  <text x="84" y="162" fill="#A5FF2D" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">VAULT</text>
+</svg>

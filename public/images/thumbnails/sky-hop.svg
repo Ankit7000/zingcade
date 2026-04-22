@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="480" y1="20" x2="480" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5CCBFF"/>
+      <stop offset="1" stop-color="#C3F0FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" rx="40" fill="url(#sky)"/>
+  <g fill="#FFFFFF" opacity=".86">
+    <ellipse cx="184" cy="120" rx="88" ry="38"/>
+    <ellipse cx="682" cy="106" rx="74" ry="32"/>
+    <ellipse cx="796" cy="152" rx="52" ry="24"/>
+  </g>
+  <g>
+    <path d="M628 246c0-66 53-118 118-118 65 0 118 52 118 118 0 52-33 96-80 112-12 44-49 72-94 72-56 0-102-45-102-100 0-28 11-54 30-72 7-5 10-8 10-12Z" fill="#FFFFFF"/>
+    <circle cx="716" cy="240" r="8" fill="#1B3A5A"/>
+    <circle cx="754" cy="240" r="8" fill="#1B3A5A"/>
+    <path d="M716 274c12 12 28 12 40 0" stroke="#1B3A5A" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g>
+    <path d="M120 362h154l-22 54H96l24-54Z" fill="#63C53B"/>
+    <path d="M142 326h112l20 36H120l22-36Z" fill="#8AED57"/>
+    <path d="M314 316h174l-22 54H290l24-54Z" fill="#63C53B"/>
+    <path d="M340 278h128l20 38H314l26-38Z" fill="#8AED57"/>
+    <path d="M544 390h198l-24 58H516l28-58Z" fill="#63C53B"/>
+    <path d="M572 348h144l26 42H544l28-42Z" fill="#8AED57"/>
+  </g>
+  <circle cx="640" cy="112" r="22" fill="#FFE96A"/>
+  <text x="72" y="104" fill="#FFFFFF" font-size="58" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">SKY</text>
+  <text x="72" y="160" fill="#2762E5" font-size="58" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">HOP</text>
+</svg>
