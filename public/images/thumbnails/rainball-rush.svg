@@ -1,29 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
   <defs>
-    <linearGradient id="bg" x1="110" y1="44" x2="842" y2="504" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#102552"/>
-      <stop offset=".5" stop-color="#1A4A8E"/>
-      <stop offset="1" stop-color="#0C1732"/>
+    <linearGradient id="bg" x1="110" y1="44" x2="844" y2="504" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F2653"/>
+      <stop offset=".54" stop-color="#195090"/>
+      <stop offset="1" stop-color="#0A1530"/>
     </linearGradient>
+    <radialGradient id="stormGlow" cx="0" cy="0" r="1" gradientTransform="translate(470 294) rotate(90) scale(168 252)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6FDBFF" stop-opacity=".36"/>
+      <stop offset="1" stop-color="#6FDBFF" stop-opacity="0"/>
+    </radialGradient>
   </defs>
   <rect width="960" height="540" rx="40" fill="url(#bg)"/>
-  <g opacity=".7" stroke="#A7D8FF" stroke-width="8" stroke-linecap="round">
-    <path d="m152 116 54 96"/>
-    <path d="m242 86 48 112"/>
-    <path d="m332 128 40 88"/>
-    <path d="m626 84 48 110"/>
-    <path d="m716 116 54 96"/>
-    <path d="m804 94 38 82"/>
+  <rect width="960" height="540" rx="40" fill="url(#stormGlow)"/>
+  <g opacity=".68" stroke="#B7E2FF" stroke-width="8" stroke-linecap="round">
+    <path d="m154 108 46 92"/>
+    <path d="m250 82 50 118"/>
+    <path d="m346 124 36 86"/>
+    <path d="m620 80 46 114"/>
+    <path d="m716 114 54 100"/>
+    <path d="m814 92 34 80"/>
   </g>
-  <circle cx="480" cy="308" r="88" fill="#69C7FF"/>
-  <circle cx="448" cy="278" r="28" fill="#E8F7FF"/>
-  <path d="m394 392 40-92 104-12-68 118-76-14Z" fill="#7B6BFF" opacity=".6"/>
-  <g fill="#FF6A6A">
-    <rect x="212" y="352" width="52" height="26" rx="13"/>
-    <rect x="302" y="318" width="70" height="28" rx="14"/>
-    <rect x="650" y="328" width="62" height="28" rx="14"/>
-    <rect x="730" y="362" width="54" height="26" rx="13"/>
+  <ellipse cx="480" cy="386" rx="182" ry="44" fill="#0C1B39" fill-opacity=".38"/>
+  <path d="M302 362c0-88 78-156 178-156s178 68 178 156c0 28-8 54-22 76H324c-14-22-22-48-22-76Z" fill="#102247" stroke="#7CA9FF" stroke-opacity=".32" stroke-width="8"/>
+  <circle cx="480" cy="316" r="90" fill="#65CFFF"/>
+  <circle cx="448" cy="282" r="28" fill="#EAF9FF"/>
+  <circle cx="480" cy="316" r="112" stroke="#FFFFFF" stroke-opacity=".12" stroke-width="10"/>
+  <g fill="#FF6F6F">
+    <circle cx="238" cy="360" r="20"/>
+    <circle cx="322" cy="320" r="26"/>
+    <circle cx="626" cy="316" r="24"/>
+    <circle cx="714" cy="368" r="22"/>
+    <circle cx="788" cy="292" r="16"/>
   </g>
-  <text x="76" y="112" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">RAINBALL</text>
-  <text x="76" y="164" fill="#6FDBFF" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">RUSH</text>
+  <g stroke="#FFFFFF" stroke-opacity=".34" stroke-width="8">
+    <circle cx="238" cy="360" r="34"/>
+    <circle cx="322" cy="320" r="44"/>
+    <circle cx="626" cy="316" r="40"/>
+    <circle cx="714" cy="368" r="36"/>
+  </g>
 </svg>

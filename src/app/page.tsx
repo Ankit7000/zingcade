@@ -19,14 +19,21 @@ function HomeTile({ game, className = '', compact = false }: HomeTileProps) {
         alt={game.title}
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
       />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,10,24,0.04),rgba(7,10,24,0.18)_42%,rgba(7,10,24,0.88)_100%)]" />
+      <div
+        className={`absolute inset-0 ${
+          compact
+            ? 'bg-[linear-gradient(180deg,rgba(7,10,24,0.04),rgba(7,10,24,0.12)_44%,rgba(7,10,24,0.82)_100%)]'
+            : 'bg-[linear-gradient(180deg,rgba(7,10,24,0.04),rgba(7,10,24,0.18)_42%,rgba(7,10,24,0.88)_100%)]'
+        }`}
+      />
       <div className="relative flex h-full flex-col justify-between">
-        <span className="portal-pill w-fit bg-white/18 text-white backdrop-blur">{game.categories[0]}</span>
+        {!compact && (
+          <span className="portal-pill w-fit bg-white/16 text-white backdrop-blur">{game.categories[0]}</span>
+        )}
         <div className="space-y-1">
-          <div className={`${compact ? 'text-[1.15rem]' : 'text-[1.85rem]'} font-black uppercase tracking-[-0.05em] text-white`}>
+          <div className={`${compact ? 'text-[1.08rem]' : 'text-[1.85rem]'} font-black uppercase tracking-[-0.05em] text-white`}>
             {game.title}
           </div>
-          {!compact && <div className="line-clamp-1 text-sm text-white/86">{game.hook}</div>}
         </div>
       </div>
     </Link>

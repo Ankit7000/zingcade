@@ -1,30 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
   <defs>
-    <linearGradient id="bg" x1="90" y1="42" x2="838" y2="504" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6D2DFF"/>
-      <stop offset=".52" stop-color="#8F42FF"/>
-      <stop offset="1" stop-color="#32135E"/>
+    <linearGradient id="bg" x1="102" y1="46" x2="846" y2="502" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6829FF"/>
+      <stop offset=".54" stop-color="#8E3EFF"/>
+      <stop offset="1" stop-color="#25124E"/>
     </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(492 254) rotate(90) scale(162 208)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD85A" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#FFD85A" stop-opacity="0"/>
+    </radialGradient>
   </defs>
   <rect width="960" height="540" rx="40" fill="url(#bg)"/>
+  <rect width="960" height="540" rx="40" fill="url(#glow)"/>
+  <path d="M120 390c96-36 210-56 340-56s250 18 380 56v112H120V390Z" fill="#341262"/>
+  <g stroke="#7040D3" stroke-width="3" opacity=".55">
+    <path d="M160 368h640"/>
+    <path d="M160 408h640"/>
+    <path d="M160 448h640"/>
+    <path d="M240 348v168"/>
+    <path d="M320 340v176"/>
+    <path d="M400 336v180"/>
+    <path d="M480 334v182"/>
+    <path d="M560 336v180"/>
+    <path d="M640 344v172"/>
+    <path d="M720 354v162"/>
+  </g>
+  <path d="M344 316c36-76 76-154 118-232l98 160 110-120 74 192H344Z" fill="#FFD95B"/>
+  <circle cx="418" cy="224" r="22" fill="#FF73C4"/>
+  <circle cx="486" cy="160" r="24" fill="#70D8FF"/>
+  <circle cx="566" cy="224" r="22" fill="#A8FF52"/>
+  <path d="M494 248c84 0 152 42 152 94 0 8-2 16-4 24l-116-34-120 26c-18-14-30-32-30-50 0-52 52-60 118-60Z" fill="#411870" fill-opacity=".62"/>
+  <path d="M388 360c0-40 30-74 74-88" stroke="#FF73C4" stroke-width="10" stroke-linecap="round"/>
+  <path d="M456 276c38 10 58 34 58 72" stroke="#70D8FF" stroke-width="10" stroke-linecap="round"/>
   <g>
-    <path d="M332 342c34-74 70-148 108-222l102 154 104-112 66 180H332Z" fill="#FFD84D"/>
-    <circle cx="402" cy="246" r="22" fill="#FF6FB5"/>
-    <circle cx="478" cy="190" r="24" fill="#67D8FF"/>
-    <circle cx="560" cy="246" r="22" fill="#A4FF4B"/>
+    <circle cx="208" cy="154" r="24" fill="#9CFF47"/>
+    <circle cx="802" cy="124" r="28" fill="#72DAFF"/>
+    <circle cx="762" cy="284" r="18" fill="#FF7CCB"/>
+    <circle cx="178" cy="284" r="18" fill="#FFDB5E"/>
   </g>
-  <g fill="#A4FF4B">
-    <rect x="142" y="158" width="48" height="48" rx="14" transform="rotate(22 142 158)"/>
-    <rect x="766" y="120" width="56" height="56" rx="16" transform="rotate(-18 766 120)"/>
-  </g>
-  <g fill="#67D8FF">
-    <rect x="122" y="290" width="36" height="36" rx="12" transform="rotate(-18 122 290)"/>
-    <rect x="770" y="306" width="42" height="42" rx="14" transform="rotate(22 770 306)"/>
-  </g>
-  <g fill="#FF8BD3">
-    <rect x="214" y="92" width="28" height="28" rx="10" transform="rotate(-15 214 92)"/>
-    <rect x="698" y="242" width="26" height="26" rx="9" transform="rotate(18 698 242)"/>
-  </g>
-  <text x="86" y="116" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">COLOR</text>
-  <text x="86" y="168" fill="#FFD84D" font-size="52" font-family="Arial, sans-serif" font-weight="900" letter-spacing="-2">CROWN</text>
 </svg>
