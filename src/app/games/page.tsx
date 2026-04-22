@@ -52,13 +52,10 @@ export default function GamesPage() {
     : games
 
   return (
-    <div className="container mx-auto space-y-5 px-4 py-5 sm:space-y-6 sm:py-8">
-      <div className="space-y-2">
+    <div className="container mx-auto space-y-4 px-4 py-4 sm:space-y-5 sm:py-6">
+      <div className="space-y-1.5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">Arcade Shelf</p>
-        <h1 className="text-3xl font-bold">All Games</h1>
-        <p className="max-w-2xl text-sm leading-6 text-gray-400">
-          Browse by vibe, scan the cabinet art, and tap straight into a game.
-        </p>
+        <h1 className="text-2xl font-bold sm:text-3xl">All Games</h1>
       </div>
 
       <div>
@@ -74,9 +71,9 @@ export default function GamesPage() {
         <span>{filteredGames.length} games</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5 xl:grid-cols-6">
         {filteredGames.map(game => (
-          <GameCard key={game.slug} game={game} />
+          <GameCard key={game.slug} game={game} compact />
         ))}
       </div>
     </div>

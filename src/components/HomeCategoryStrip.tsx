@@ -48,14 +48,14 @@ const lanes: CategoryLane[] = [
 
 export default function HomeCategoryStrip() {
   return (
-    <div className="hide-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+    <div className="hide-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
       {lanes.map((lane) => (
         <Link
           key={lane.label}
           href={lane.href}
-          className="group relative block min-w-[14rem] overflow-hidden rounded-[24px] border border-white/8 bg-slate-900/70 sm:min-w-[16rem] lg:min-w-[17rem]"
+          className="group relative block min-w-[11.25rem] overflow-hidden rounded-[18px] border border-white/8 bg-slate-900/70 sm:min-w-[13rem] lg:min-w-[14rem]"
         >
-          <div className="aspect-[1.8] w-full overflow-hidden">
+          <div className="aspect-[2.15] w-full overflow-hidden">
             <img
               src={lane.thumbnail}
               alt={lane.label}
@@ -63,13 +63,10 @@ export default function HomeCategoryStrip() {
             />
           </div>
           <div className={`absolute inset-0 bg-gradient-to-br ${lane.accent}`} />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
-            <span className="max-w-[10rem] text-base font-bold leading-tight text-white sm:text-lg">
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3">
+            <span className="max-w-[8rem] text-sm font-bold leading-tight text-white sm:text-base">
               {lane.label}
-            </span>
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-lg text-white transition-transform duration-300 group-hover:translate-x-0.5">
-              +
             </span>
           </div>
         </Link>

@@ -7,14 +7,14 @@ interface HomeGameWallProps {
 
 export default function HomeGameWall({ games }: HomeGameWallProps) {
   return (
-    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
       {games.map((game) => (
         <Link
           key={game.slug}
           href={`/games/${game.slug}`}
-          className="group relative overflow-hidden rounded-[22px] border border-white/8 bg-slate-900/70 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.9)] transition-transform duration-300 hover:-translate-y-1 hover:border-cyan-300/35"
+          className="group relative overflow-hidden rounded-[18px] border border-white/8 bg-slate-900/70 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.9)] transition-transform duration-300 hover:-translate-y-1 hover:border-cyan-300/35"
         >
-          <div className="aspect-[1.04] w-full overflow-hidden">
+          <div className="aspect-[0.95] w-full overflow-hidden">
             <img
               src={game.thumbnail}
               alt={game.title}
@@ -22,17 +22,14 @@ export default function HomeGameWall({ games }: HomeGameWallProps) {
             />
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent" />
-          <div className="absolute left-2.5 top-2.5 inline-flex rounded-full border border-white/12 bg-slate-950/75 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-cyan-100 sm:left-3 sm:top-3 sm:px-2.5 sm:text-[10px]">
+          <div className="absolute left-2 top-2 inline-flex rounded-full border border-white/12 bg-slate-950/75 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-cyan-100 sm:left-2.5 sm:top-2.5 sm:px-2 sm:text-[9px]">
             {game.categories[0]}
           </div>
-          <div className="absolute inset-x-0 bottom-0 p-3">
-            <div className="space-y-1">
-              <h3 className="text-sm font-bold leading-tight text-white sm:text-base lg:text-lg">
+          <div className="absolute inset-x-0 bottom-0 p-2 sm:p-2.5">
+            <div className="space-y-0.5">
+              <h3 className="text-[11px] font-bold leading-tight text-white sm:text-sm lg:text-base">
                 {game.title}
               </h3>
-              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-cyan-100/80 sm:text-xs">
-                Play now
-              </p>
             </div>
           </div>
         </Link>

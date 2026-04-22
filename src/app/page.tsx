@@ -12,12 +12,12 @@ export default function Home() {
     <div className="pb-12">
       {featuredGame && <FeaturedGame game={featuredGame} />}
 
-      <div className="container mx-auto space-y-6 px-4 pt-4 sm:space-y-8 sm:pt-5">
-        <section className="space-y-4">
+      <div className="container mx-auto space-y-4 px-4 pt-3 sm:space-y-5 sm:pt-4">
+        <section className="space-y-3">
           <div className="flex items-end justify-between gap-3">
             <div className="space-y-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">Arcade floor</p>
-              <h2 className="text-xl font-bold text-white sm:text-2xl">Pick a cabinet and jump in</h2>
+              <h2 className="text-lg font-bold text-white sm:text-xl">Pick a cabinet and jump in</h2>
             </div>
             <Link
               href="/games"
@@ -35,10 +35,10 @@ export default function Home() {
           </Link>
         </section>
 
-        <section className="space-y-3">
+        <section className="space-y-2.5">
           <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">Quick lanes</p>
-            <h2 className="text-xl font-bold text-white sm:text-2xl">Find a lane fast</h2>
+            <h2 className="text-lg font-bold text-white sm:text-xl">Find a lane fast</h2>
           </div>
           <HomeCategoryStrip />
         </section>
