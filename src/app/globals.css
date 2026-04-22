@@ -45,6 +45,10 @@
 }
 
 @layer components {
+  .tile-shell {
+    @apply border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0)),rgba(9,14,27,0.95)] shadow-[0_18px_52px_rgba(0,0,0,0.34)] backdrop-blur;
+  }
+
   .arcade-card {
     @apply bg-gray-800/50 backdrop-blur-sm rounded-xl border border-cyan-500/20 p-6 shadow-lg;
     background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(17, 24, 39, 0.9) 100%);
