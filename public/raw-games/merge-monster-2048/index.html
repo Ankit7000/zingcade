@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Merge Monster 2048 | Zingcade</title>
     <meta
       name="description"
@@ -36,6 +36,7 @@
       html,
       body {
         overscroll-behavior: none;
+        overflow: hidden;
       }
 
       body {
@@ -366,6 +367,7 @@
 
       .tile-layer {
         pointer-events: none;
+        touch-action: none;
       }
 
       .tile {
@@ -586,8 +588,9 @@
 
       html.embed-mode,
       html.embed-mode body {
-        min-height: 0;
         height: auto;
+        min-height: 0;
+        max-height: none;
         overflow: hidden;
       }
 
@@ -597,7 +600,8 @@
       body.embed-mode .info-panel,
       body.embed-mode .content-strip,
       body.embed-mode .eyebrow-row,
-      body.embed-mode .overlay-actions a.button {
+      body.embed-mode .overlay-actions a.button,
+      body.embed-mode .utility-row .hint {
         display: none !important;
       }
 

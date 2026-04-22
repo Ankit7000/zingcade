@@ -21,6 +21,7 @@ function clampFrameHeight(height: number, viewportHeight: number) {
 export default function GamePlayer({ game }: GamePlayerProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [frameHeight, setFrameHeight] = useState(DEFAULT_FRAME_HEIGHT)
+  const [gameStarted, setGameStarted] = useState(false)
 
   useEffect(() => {
     setIsLoading(true)

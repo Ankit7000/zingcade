@@ -6,7 +6,7 @@ interface GameMetaProps {
 
 export default function GameMeta({ game }: GameMetaProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6"><a href="/games/" className="inline-block mb-4 text-cyan-400 hover:underline">← Back to Games</a>
       <div className="arcade-card">
         <h2 className="text-xl font-bold text-cyan-400 mb-4">{game.title}</h2>
         <p className="text-gray-300 mb-4">{game.description}</p>
@@ -23,7 +23,8 @@ export default function GameMeta({ game }: GameMetaProps) {
                   {category}
                 </span>
               ))}
-            </div>
+</div>
+          <a href={`/raw-games/${game.slug}/index.html`} target="_blank" className="inline-block mt-4 text-cyan-400 hover:underline">Play Fullscreen</a>
           </div>
 
           <div>
