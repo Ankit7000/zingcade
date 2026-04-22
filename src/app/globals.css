@@ -45,12 +45,20 @@
 }
 
 @layer components {
+  .portal-surface {
+    @apply border border-white/60 bg-white/72 shadow-[0_16px_30px_rgba(71,85,105,0.08)] backdrop-blur;
+  }
+
   .portal-card {
     @apply border border-white/55 bg-white/78 shadow-[0_16px_28px_rgba(71,85,105,0.12)] backdrop-blur;
   }
 
   .portal-pill {
     @apply inline-flex min-h-8 items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em];
+  }
+
+  .portal-chip {
+    @apply inline-flex min-h-14 items-center justify-center rounded-[20px] border border-white/70 px-4 shadow-[0_14px_24px_rgba(71,85,105,0.08)] backdrop-blur transition-transform hover:-translate-y-0.5;
   }
 
   .tile-shell {
