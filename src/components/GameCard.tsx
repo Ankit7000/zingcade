@@ -8,7 +8,7 @@ interface GameCardProps {
 export default function GameCard({ game }: GameCardProps) {
   return (
     <Link href={`/games/${game.slug}`} className="block group">
-      <div className="arcade-card hover:border-cyan-400/60 hover:shadow-lg hover:shadow-cyan-400/10 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1">
+      <div className="arcade-card bg-gray-900/30 hover:border-cyan-400/60 hover:shadow-xl hover:shadow-cyan-400/20 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 flex flex-col h-full">
         <div className="aspect-video bg-gray-800 rounded-lg mb-4 overflow-hidden relative">
           <img
             src={game.thumbnail}
